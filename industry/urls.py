@@ -9,3 +9,5 @@ router.register('business', IndustryViewSet, basename='business')
 urlpatterns = [
     path('', include(router.urls))
 ]
+
+
