@@ -39,14 +39,14 @@ urlpatterns = [
     
     #path('sean/', include('sean.urls')),
     path('industry/', include('industry.urls')),
-    #path('', include('orgs.urls')),
+    #path('', include('orgss.urls')),
     #path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('words/', include('words.urls')),
     
     #path('scenarios/', include('scenarios.urls')),
     #path('seanscenarios/', include('sean_scenarios.urls')),
     #path('assessments/', include('assessments.urls')),
-    #path('orgs/', include('orgs.urls')),
+    #path('orgs/', include('orgss.urls')),
     #path('learningcourse/', include('learningcourse.urls')),
     #path('series/', include('series.urls')),
     #path('assign/', include('assign.urls')),
