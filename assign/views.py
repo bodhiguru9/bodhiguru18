@@ -6,13 +6,13 @@ from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
-#from assign.models import SeriesAssignUser, AssessmentProgress, ItemProgress
-from assign.models import SeriesAssignUser, AssessmentProgress
+from assign.models import SeriesAssignUser, AssessmentProgress, ItemProgress
+
 from assign.serializers import SeriesAssignUserSerializer, SeriesAssignUserListSerializer
-#from assign.serializers import AssessmentProgressSerializer, ItemProgressSerializer
-from assign.serializers import AssessmentProgressSerializer
-#from series.models import Seasons, AssessmentSeason, ItemSeason, Series
-from series.models import Seasons, AssessmentSeason, Series
+from assign.serializers import AssessmentProgressSerializer, ItemProgressSerializer
+
+from series.models import Seasons, AssessmentSeason, ItemSeason, Series
+
 from orgss.models import Role
 from accounts.models import Account
 
@@ -179,7 +179,7 @@ class AssessmentProgressViewSet(ViewSet):
             "message": "Assessment Progress Deleted"
         }
         return Response(response, status=status.HTTP_200_OK)
-"""
+
 class ItemProgressViewSet(ViewSet):
     permission_classes = [IsAuthenticated]
     
@@ -270,7 +270,7 @@ class ItemProgressViewSet(ViewSet):
             "message": "Item Progress Deleted"
         }
         return Response(response, status=status.HTTP_200_OK)
-"""
+
 class ProgressCheckViewSet(ViewSet):
     permission_classes = [IsAuthenticated]
     

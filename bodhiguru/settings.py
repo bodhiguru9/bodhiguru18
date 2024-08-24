@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'series',
     'assign',
     'learningcourse',
+    'zola',
 ]
 
 MIDDLEWARE = [

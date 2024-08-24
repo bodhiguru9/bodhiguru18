@@ -37,7 +37,7 @@ urlpatterns = [
     path('api/token/', LoginViewSet.as_view(), name='token_obtain_pair'),
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     
-    #path('sean/', include('sean.urls')),
+    path('zola/', include('zola.urls')),
     path('industry/', include('industry.urls')),
     path('', include('orgss.urls')),
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),

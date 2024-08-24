@@ -2,7 +2,7 @@ from django.db import models
 
 from orgss.models import SubOrg
 from assessments.models import Assessment
-#from sean.models import Item
+from zola.models import Item
 from learningcourse.models import LearningCourse
 
 
@@ -38,14 +38,14 @@ class AssessmentSeason(models.Model):
     
     def __str__(self):
         return f"{self.season.name} - {self.assessments}"
-"""
+
 class ItemSeason(models.Model):
     season = models.ForeignKey(Seasons, on_delete=models.CASCADE)
     item = models.ForeignKey(Item, on_delete=models.CASCADE)
     
     def __str__(self):
         return f"{self.season.name} - {self.item.item_name}"
-"""
+
 class LearningCourseSeason(models.Model):
     season = models.ForeignKey(Seasons, on_delete=models.CASCADE)
     learning_course = models.ForeignKey(LearningCourse, on_delete=models.CASCADE)

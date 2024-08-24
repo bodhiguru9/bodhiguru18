@@ -2,9 +2,9 @@ from rest_framework import serializers
 
 from series.models import Series, Seasons, SeasonLota
 #from series.models import AssessmentSeason, ItemSeason, LearningCourseSeason, QuadGameSeason
-from series.models import AssessmentSeason, LearningCourseSeason
+from series.models import AssessmentSeason, LearningCourseSeason, ItemSeason
 from assessments.serializers import AssessmentListSerializer
-#from sean.serializers import ItemUserSerializer
+from zola.serializers import ItemUserSerializer
 from learningcourse.serializers import LearningCourseListSerializer
 
 
@@ -63,7 +63,7 @@ class AssessmentSeasonListAssignSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssessmentSeason
         fields = ["id", "assessments"]
-"""       
+       
 class ItemSeasonListAssignSerializer(serializers.ModelSerializer):
     item = serializers.SerializerMethodField()
     
@@ -73,7 +73,7 @@ class ItemSeasonListAssignSerializer(serializers.ModelSerializer):
     class Meta:
         model = ItemSeason
         fields = ["id", "item"]
-"""        
+       
 class LearningCourseListAssignSerializer(serializers.ModelSerializer):
     learning_course = serializers.SerializerMethodField()
     
@@ -100,11 +100,11 @@ class SeasonsListAssignSerializer(serializers.ModelSerializer):
     def get_assessments(self, obj):
         data = AssessmentSeason.objects.filter(season=obj, assessments__is_live=True)
         return AssessmentSeasonListAssignSerializer(data, many=True).data
-    """
+    
     def get_item(self, obj):
         data = ItemSeason.objects.filter(season=obj, item__is_live=True)
         return ItemSeasonListAssignSerializer(data, many=True).data
-    """
+ 
     def get_learning_course(self, obj):
         data = LearningCourseSeason.objects.filter(season=obj)
         return LearningCourseListAssignSerializer(data, many=True).data

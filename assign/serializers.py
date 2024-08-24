@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
 from assign.models import SeriesAssignUser
-#from assign.models import AssessmentProgress, ItemProgress
-from assign.models import AssessmentProgress
+from assign.models import AssessmentProgress, ItemProgress
+
 from series.serializers import SeriesListSerializer
 
 class SeriesAssignUserSerializer(serializers.ModelSerializer):
@@ -28,9 +28,8 @@ class AssessmentProgressSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssessmentProgress
         fields = ["user", "assessment_season", "is_completed"]
-"""        
+        
 class ItemProgressSerializer(serializers.ModelSerializer):
     class Meta:
         model = ItemProgress
         fields = ["user", "item_season", "is_completed"]
-"""
