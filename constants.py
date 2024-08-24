@@ -1,4 +1,4 @@
-DEFAULT_PASSWORD = "123Zolasen$$"
+DEFAULT_PASSWORD = "123ZolaTs$$"
 
 system_prompt = (
     """Given the word predict type and competency, classify type and competency into one of these categories:
