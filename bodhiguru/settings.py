@@ -58,6 +58,8 @@ INSTALLED_APPS = [
     'accounts',
     'users',
     'assessments',
+    'series',
+    'assign',
 ]
 
 MIDDLEWARE = [

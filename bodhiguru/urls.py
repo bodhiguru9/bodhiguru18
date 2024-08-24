@@ -48,8 +48,8 @@ urlpatterns = [
     path('assessments/', include('assessments.urls')),
     path('orgs/', include('orgss.urls')),
     #path('learningcourse/', include('learningcourse.urls')),
-    #path('series/', include('series.urls')),
-    #path('assign/', include('assign.urls')),
+    path('series/', include('series.urls')),
+    path('assign/', include('assign.urls')),
     #path('saas/', include('SaaS.urls')),
     path('competency/', include('competency.urls')),
     
