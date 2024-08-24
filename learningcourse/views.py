@@ -1,88 +1,74 @@
 from django.shortcuts import get_object_or_404
 
 from rest_framework import status
-from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
-from series.models import Series, Seasons, SeasonLota
-from assign.models import SeriesAssignUser
-from series.serializers import SeriesSerializer, SeriesListSerializer
-from series.serializers import SeasonsSerializer, SeasonsListSerializer
-from series.serializers import SeasonsListAssignSerializer
-from series.serializers import SeasonLotaSerializer, SeasonLotaListSerializer
+from learningcourse.models import LearningCourse, LearningCourseVideo, LearningCourseDocument
+from learningcourse.serializers import LearningCourseSerializer, LearningCourseListSerializer
+from learningcourse.serializers import LearningCourseVideoSerializer, LearningCourseVideoListSerializer
+from learningcourse.serializers import LearningCourseDocumentSerializer, LearningCourseDocumentListSerializer
 
-class SeriesViewSet(ViewSet):
-    permission_classes = [IsAuthenticated]
-    
+class LearningCourseViewSet(ViewSet):
     @staticmethod
     def get_object(pk=None):
-        return get_object_or_404(Series, pk=pk)
+        return get_object_or_404(LearningCourse, pk=pk)
     
     @staticmethod
     def get_queryset():
-        return Series.objects.all()
+        return LearningCourse.objects.all()
     
     def list(self, request):
-        user_id = request.query_params.get('user_id')
-        user_role = request.user.user_role
         queryset = self.get_queryset()
-        if user_id:
-            series_assigned_ids = SeriesAssignUser.objects.filter(user__id=user_id).values_list('series__id', flat=True)
-            queryset = self.get_queryset().filter(sub_org__org=request.user.org).exclude(id__in=series_assigned_ids)
-        if user_role and user_role.lower() == 'admin':
-            queryset = queryset.filter(sub_org=request.user.role.suborg)
-        elif user_role and user_role.lower() == 'super_admin':
-            queryset = queryset.filter(sub_org__org=request.user.org)
-        serializer = SeriesListSerializer(queryset, many=True)
+        serializer = LearningCourseListSerializer(queryset, many=True)
         response = {
             "status": "success",
-            "message": "Series list",
+            "message": "Learning Course List",
             "data": serializer.data
         }
         return Response(response, status=status.HTTP_200_OK)
     
     def retrieve(self, request, pk=None):
         instance = self.get_object(pk)
-        serializer = SeriesListSerializer(instance)
+        serializer = LearningCourseListSerializer(instance)
         response = {
             "status": "success",
-            "message": "Series detail",
+            "message": "Learning Course Detail",
             "data": serializer.data
         }
         return Response(response, status=status.HTTP_200_OK)
     
     def create(self, request):
-        serializer = SeriesSerializer(data=request.data)
+        serializer = LearningCourseSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             response = {
                 "status": "success",
-                "message": "Series created",
+                "message": "Learning Course Created",
                 "data": serializer.data
             }
             return Response(response, status=status.HTTP_201_CREATED)
         response = {
             "status": "error",
-            "message": "Series not created",
+            "message": "Learning Course Not Created",
             "data": serializer.errors
         }
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
     
     def update(self, request, pk=None):
         instance = self.get_object(pk)
-        serializer = SeriesSerializer(instance, data=request.data, partial=True)
+        serializer = LearningCourseSerializer(instance, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             response = {
                 "status": "success",
-                "message": "Series updated",
+                "message": "Learning Course Updated",
                 "data": serializer.data
             }
             return Response(response, status=status.HTTP_200_OK)
         response = {
             "status": "error",
-            "message": "Series not updated",
+            "message": "Learning Course Not Updated",
             "data": serializer.errors
         }
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
@@ -92,71 +78,71 @@ class SeriesViewSet(ViewSet):
         instance.delete()
         response = {
             "status": "success",
-            "message": "Series deleted",
+            "message": "Learning Course Deleted",
             "data": {}
         }
-        return Response(response, status=status.HTTP_200_OK)
-
-class SeasonsViewSet(ViewSet):
+        return Response(response, status=status.HTTP_204_NO_CONTENT)
+    
+class LearningCourseVideoViewSet(ViewSet):
     @staticmethod
     def get_object(pk=None):
-        return get_object_or_404(Seasons, pk=pk)
+        return get_object_or_404(LearningCourseVideo, pk=pk)
     
     @staticmethod
     def get_queryset():
-        return Seasons.objects.all()
+        return LearningCourseVideo.objects.all()
     
     def list(self, request):
         queryset = self.get_queryset()
-        serializer = SeasonsListAssignSerializer(queryset, many=True)
+        serializer = LearningCourseVideoListSerializer(queryset, many=True)
         response = {
             "status": "success",
-            "message": "Seasons list",
+            "message": "Learning Course Video List",
             "data": serializer.data
         }
         return Response(response, status=status.HTTP_200_OK)
     
     def retrieve(self, request, pk=None):
         instance = self.get_object(pk)
-        serializer = SeasonsListAssignSerializer(instance)
+        serializer = LearningCourseVideoListSerializer(instance)
         response = {
             "status": "success",
-            "message": "Seasons detail",
+            "message": "Learning Course Video Detail",
             "data": serializer.data
         }
         return Response(response, status=status.HTTP_200_OK)
     
     def create(self, request):
-        serializer = SeasonsSerializer(data=request.data)
+        serializer = LearningCourseVideoSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             response = {
                 "status": "success",
-                "message": "Seasons created",
+                "message": "Learning Course Video Created",
                 "data": serializer.data
             }
             return Response(response, status=status.HTTP_201_CREATED)
         response = {
             "status": "error",
-            "message": "Seasons not created",
+            "message": "Learning Course Video Not Created",
             "data": serializer.errors
         }
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
     
     def update(self, request, pk=None):
         instance = self.get_object(pk)
-        serializer = SeasonsSerializer(instance, data=request.data, partial=True)
+        serializer = LearningCourseVideoSerializer(instance, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             response = {
                 "status": "success",
-                "message": "Seasons updated",
+                "message": "Learning Course Video Updated",
                 "data": serializer.data
             }
             return Response(response, status=status.HTTP_200_OK)
         response = {
             "status": "error",
-            "message": "Seasons not updated",
+            "message": "Learning Course Video Not Updated",
             "data": serializer.errors
         }
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
@@ -166,71 +152,71 @@ class SeasonsViewSet(ViewSet):
         instance.delete()
         response = {
             "status": "success",
-            "message": "Seasons deleted",
+            "message": "Learning Course Video Deleted",
             "data": {}
         }
-        return Response(response, status=status.HTTP_200_OK)
-
-class SeasonLotaViewSet(ViewSet):
+        return Response(response, status=status.HTTP_204_NO_CONTENT)
+    
+class LearningCourseDocumentViewSet(ViewSet):
     @staticmethod
     def get_object(pk=None):
-        return get_object_or_404(SeasonLota, pk=pk)
+        return get_object_or_404(LearningCourseDocument, pk=pk)
     
     @staticmethod
     def get_queryset():
-        return SeasonLota.objects.all()
+        return LearningCourseDocument.objects.all()
     
     def list(self, request):
         queryset = self.get_queryset()
-        serializer = SeasonLotaListSerializer(queryset, many=True)
+        serializer = LearningCourseDocumentListSerializer(queryset, many=True)
         response = {
             "status": "success",
-            "message": "SeasonLota list",
+            "message": "Learning Course Document List",
             "data": serializer.data
         }
         return Response(response, status=status.HTTP_200_OK)
     
     def retrieve(self, request, pk=None):
         instance = self.get_object(pk)
-        serializer = SeasonLotaListSerializer(instance)
+        serializer = LearningCourseDocumentListSerializer(instance)
         response = {
             "status": "success",
-            "message": "SeasonLota detail",
+            "message": "Learning Course Document Detail",
             "data": serializer.data
         }
         return Response(response, status=status.HTTP_200_OK)
     
     def create(self, request):
-        serializer = SeasonLotaSerializer(data=request.data)
+        serializer = LearningCourseDocumentSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             response = {
                 "status": "success",
-                "message": "SeasonLota created",
+                "message": "Learning Course Document Created",
                 "data": serializer.data
             }
             return Response(response, status=status.HTTP_201_CREATED)
         response = {
             "status": "error",
-            "message": "SeasonLota not created",
+            "message": "Learning Course Document Not Created",
             "data": serializer.errors
         }
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
     
     def update(self, request, pk=None):
         instance = self.get_object(pk)
-        serializer = SeasonLotaSerializer(instance, data=request.data, partial=True)
+        serializer = LearningCourseDocumentSerializer(instance, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             response = {
                 "status": "success",
-                "message": "SeasonLota updated",
+                "message": "Learning Course Document Updated",
                 "data": serializer.data
             }
             return Response(response, status=status.HTTP_200_OK)
         response = {
             "status": "error",
-            "message": "SeasonLota not updated",
+            "message": "Learning Course Document Not Updated",
             "data": serializer.errors
         }
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
@@ -240,6 +226,7 @@ class SeasonLotaViewSet(ViewSet):
         instance.delete()
         response = {
             "status": "success",
-            "message": "SeasonLota deleted",
+            "message": "Learning Course Document Deleted",
+            "data": {}
         }
-        return Response(response, status=status.HTTP_200_OK)
+        return Response(response, status=status.HTTP_204_NO_CONTENT)

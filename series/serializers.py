@@ -2,10 +2,10 @@ from rest_framework import serializers
 
 from series.models import Series, Seasons, SeasonLota
 #from series.models import AssessmentSeason, ItemSeason, LearningCourseSeason, QuadGameSeason
-from series.models import AssessmentSeason
+from series.models import AssessmentSeason, LearningCourseSeason
 from assessments.serializers import AssessmentListSerializer
 #from sean.serializers import ItemUserSerializer
-#from learningcourse.serializers import LearningCourseListSerializer
+from learningcourse.serializers import LearningCourseListSerializer
 
 
 class SeriesSerializer(serializers.ModelSerializer):
@@ -73,7 +73,7 @@ class ItemSeasonListAssignSerializer(serializers.ModelSerializer):
     class Meta:
         model = ItemSeason
         fields = ["id", "item"]
-        
+"""        
 class LearningCourseListAssignSerializer(serializers.ModelSerializer):
     learning_course = serializers.SerializerMethodField()
     
@@ -84,13 +84,13 @@ class LearningCourseListAssignSerializer(serializers.ModelSerializer):
         model = LearningCourseSeason
         fields = ["id", "learning_course"]
         
-"""
+
 
 class SeasonsListAssignSerializer(serializers.ModelSerializer):
     series = serializers.SerializerMethodField()
     assessments = serializers.SerializerMethodField()
     #item = serializers.SerializerMethodField()
-    #learning_course = serializers.SerializerMethodField()
+    learning_course = serializers.SerializerMethodField()
     
     seasonlota = serializers.SerializerMethodField()
     
@@ -104,12 +104,12 @@ class SeasonsListAssignSerializer(serializers.ModelSerializer):
     def get_item(self, obj):
         data = ItemSeason.objects.filter(season=obj, item__is_live=True)
         return ItemSeasonListAssignSerializer(data, many=True).data
-    
+    """
     def get_learning_course(self, obj):
         data = LearningCourseSeason.objects.filter(season=obj)
         return LearningCourseListAssignSerializer(data, many=True).data
     
-    """
+  
     def get_seasonlota(self, obj):
         data = SeasonLota.objects.filter(season=obj)
         return SeasonLotaListSerializer(data, many=True).data

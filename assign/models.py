@@ -2,9 +2,9 @@ from django.db import models
 
 from accounts.models import Account
 from series.models import Series
-from series.models import AssessmentSeason
+from series.models import AssessmentSeason, LearningCourseSeason
 #from series.models import AssessmentSeason, ItemSeason, LearningCourseSeason
-#from learningcourse.models import LearningCourse, LearningCourseVideo, LearningCourseDocument
+from learningcourse.models import LearningCourse, LearningCourseVideo, LearningCourseDocument
 
 class SeriesAssignUser(models.Model):
     user = models.ForeignKey(Account, on_delete=models.CASCADE)
