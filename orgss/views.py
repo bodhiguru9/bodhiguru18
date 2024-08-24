@@ -7,9 +7,9 @@ from rest_framework.viewsets import ViewSet
 from rest_framework_tracking.mixins import LoggingMixin
 
 from orgss.models import Org, SubOrg, Role
-from orgss.serilaizers import OrgSerializer, OrgListSerializer
-from orgss.serilaizers import SubOrgSerializer, SubOrgListSerializer
-from orgss.serilaizers import RoleSerializer, RoleListSerializer
+from orgss.serializers import OrgSerializer, OrgListSerializer
+from orgss.serializers import SubOrgSerializer, SubOrgListSerializer
+from orgss.serializers import RoleSerializer, RoleListSerializer
 
 class OrgViewSet(LoggingMixin, ViewSet):
     @staticmethod
