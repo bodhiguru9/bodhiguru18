@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     'assign',
     'learningcourse',
     'zola',
+    'zola_sentences',
 ]
 
 MIDDLEWARE = [

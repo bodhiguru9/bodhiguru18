@@ -33,6 +33,7 @@ class Item(models.Model):
     item_emotion = models.TextField(null=True, blank=True)
     item_answercount = models.IntegerField(default=0)
     category = models.CharField(max_length=256, blank=True, default="Personal")
+    tags = models.CharField(max_length=256, blank=True, default="tags")
     thumbnail = models.FileField(upload_to='media/item/thumbnail', null=True, blank=True)  
     item_gender = models.CharField(max_length=30, choices=Gender_CHOICES, default="all")
     item_type = models.CharField(max_length=30, choices=Type_CHOICES, default="simulation")
@@ -62,4 +63,6 @@ class Suggestion(models.Model):
         return self.suggestion_text
 
     name = models.CharField(max_length=256)
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, default=1)
     suggestion_text = models.TextField()
+    
