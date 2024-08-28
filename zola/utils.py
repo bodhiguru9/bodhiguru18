@@ -4,11 +4,11 @@ import pandas as pd
 from openai import OpenAI
 from datetime import datetime
 from constants import system_prompt, assistant_content
-#from bodhiguru.settings import get_env_variable
+from bodhiguru.settings import get_env_variable
 
 nlp = spacy.load("en_core_web_sm")
-#openapikey = get_env_variable("api_key")
-#client = OpenAI(api_key=openapikey)
+openapikey = get_env_variable("api_key")
+client = OpenAI(api_key=openapikey)
 
 def string_to_words(username, user_response, power_words, negative_words):
     for word in power_words:
