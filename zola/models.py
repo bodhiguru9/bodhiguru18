@@ -40,6 +40,7 @@ class Item(models.Model):
     scenario_type = models.CharField(max_length= 30, choices=Scenario_Type_CHOICES, default="sales")
     coming_across_as = models.CharField(max_length=250, null=True, blank=True)
     competencys = models.ManyToManyField(Competency, blank=True)
+    words = models.TextField(default = "words")
     role = models.ForeignKey(Role, on_delete=models.CASCADE, related_name='seanrole', null=True, blank=True)
     level = models.IntegerField(default=1)
     expert = models.URLField(blank = True, null=True)
