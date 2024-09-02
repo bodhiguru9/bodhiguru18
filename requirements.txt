@@ -18,7 +18,7 @@ colorama==0.4.6
 confection==0.1.5
 cymem==2.0.8
 dataclasses-json==0.6.7
-Django==5.0.2
+Django==5.1
 django-cors-headers==4.4.0
 django-crontab==0.7.1
 django-environ==0.11.2
