@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.dispatch import receiver
 from django.db.models.signals import post_save
+from django.utils import timezone
+from django.core.validators import RegexValidator
 
 from orgss.models import Org, Role
 
@@ -69,6 +71,14 @@ class Account(AbstractBaseUser):
     username = models.CharField(max_length= 25, unique = True)
     email = models.EmailField(max_length=70, unique = True)
     password = models.CharField(max_length=100)
+    contact_number = models.CharField(
+        max_length=10, 
+        validators=[RegexValidator(regex=r'^\d{10}$', message="Enter a valid 10-digit mobile number.")],
+        blank=False, default = '1234567890',
+        null=False
+    )
+    validity = models.IntegerField(default=30)  # Validity in days
+
 
     date_joined = models.DateTimeField(auto_now_add = True)
     last_login = models.DateTimeField(auto_now_add = True)

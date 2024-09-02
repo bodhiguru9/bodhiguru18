@@ -28,9 +28,10 @@ def register(request):
         'password': request.data.get('password'),
         'email': request.data.get('email'),
         'username': request.data.get('username'),
+        'contact_number': request.data.get('contact_number'),
     }
     try:
-        default_org = Org.objects.get(name__icontains="aicansell")
+        default_org = Org.objects.get(name__icontains="bodhigru")
         request_data['org'] = default_org.id
     except Org.DoesNotExist:
         request_data['org'] = None

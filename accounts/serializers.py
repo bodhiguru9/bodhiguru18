@@ -37,7 +37,7 @@ class SignUpSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     class Meta:
         model = Account
-        fields = ['email', 'first_name', 'last_name', 'password', 'org', 'username']
+        fields = ['email', 'first_name', 'last_name', 'password', 'contact_number', 'org', 'username']
         
     def create(self, validated_data):
         user = Account.objects.create(
@@ -45,6 +45,7 @@ class SignUpSerializer(serializers.ModelSerializer):
                 email=validated_data['email'],
                 first_name=validated_data['first_name'],
                 last_name=validated_data['last_name'],
+                contact_number=validated_data['contact_number'],
                 org=validated_data.get('org'),
                 )
         user.set_password(validated_data['password'])
@@ -56,7 +57,7 @@ class UserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Account
-        fields = ['id', 'email', 'first_name', 'last_name', 'username', 'role', 'is_email_confirmed', 'user_role']
+        fields = ['id', 'email', 'first_name', 'contact_number', 'last_name', 'username', 'role', 'is_email_confirmed', 'user_role']
 
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True)
