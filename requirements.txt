@@ -62,7 +62,7 @@ numpy==1.24.0
 openai==1.42.0
 orjson==3.10.7
 packaging==24.1
-pandas==2.2.2
+pandas==2.0.1
 pillow==10.4.0
 preshed==3.0.9
 psycopg2-binary==2.9.9
