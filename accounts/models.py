@@ -10,7 +10,7 @@ from orgss.models import Org, Role
 from uuid import uuid4
 
 class MyAccountManager(BaseUserManager):
-    def create_user(self, first_name, last_name, email, username, password=None):
+    def create_user(self, first_name, last_name, email, username, contact_number, password=None):
         if not email:
             raise ValueError("User must have an email address")
 
@@ -22,19 +22,22 @@ class MyAccountManager(BaseUserManager):
             username = username,
             first_name = first_name,
             last_name = last_name,
+            contact_number = contact_number,
+
         )        
 
         user.set_password(password)
         user.save(using = self.db)
         return user
 
-    def create_superuser(self, first_name, last_name, email, username, password):
+    def create_superuser(self, first_name, last_name, email, contact_number, username, password):
         user = self.create_user(
             email = self.normalize_email(email),
             first_name = first_name,
             last_name = last_name,
             username = username,
             password = password,
+            contact_number = contact_number,
 
         )   
 
