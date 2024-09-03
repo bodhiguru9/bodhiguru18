@@ -22,6 +22,7 @@ class MyAccountManager(BaseUserManager):
             username = username,
             first_name = first_name,
             last_name = last_name,
+    
 
         )        
 
@@ -36,7 +37,7 @@ class MyAccountManager(BaseUserManager):
             last_name = last_name,
             username = username,
             password = password,
-
+        
         )   
 
         user.is_admin = True
