@@ -23,6 +23,7 @@ from django.conf import settings
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import ValidationError
+from rest_framework import serializers
 
 from django.contrib.sites.shortcuts import get_current_site
 
@@ -70,6 +71,29 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         signup_date = user.date_joined
         if timezone.now() > signup_date + timedelta(days=user.validity):
             raise ValidationError("Your account validity has expired.")
+
+        # Add additional data to the response
+        data.update({
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'username': user.username,
+                'org': {
+                    'name': user.org.name,
+                    'industry': user.org.industry,
+                    'validity': user.org.validity,
+                    'is_active': user.org.is_active,
+                },
+                'validity': user.validity,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'user_role': user.user_role,
+                'is_email_confirmed': user.is_email_confirmed,
+                'active': user.active
+            },
+            'status': 'success',
+            'message': 'User logged in successfully.'
+        })
 
         return data
 
