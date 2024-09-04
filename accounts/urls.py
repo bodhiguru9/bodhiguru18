@@ -1,7 +1,9 @@
 from django.urls import path, include
 from . import views
 from accounts.views import ( SendEmailConfirmationTokenAPIView,
-                             UserInformationAPIVIew, confirm_email_view, SendWelcomeEmailView, CustomTokenObtainPairView)
+                             UserInformationAPIVIew, confirm_email_view,
+                             SendWelcomeEmailView, CustomTokenObtainPairView, 
+                             DownloadSampleCSV, BulkUserUploadView)
 
 
 urlpatterns = [
@@ -17,5 +19,7 @@ urlpatterns = [
     path('check-org-validity/', views.check_org_validity, name='check-org-validity'),
     path('login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     #path('bulk-upload/', BulkUserUploadAPIView.as_view(), name='bulk-user-upload'),
+    path('download-sample-csv/', DownloadSampleCSV.as_view(), name='download-sample-csv'),
+    path('upload-users/', BulkUserUploadView.as_view(), name='bulk-user-upload'),
 
 ] 

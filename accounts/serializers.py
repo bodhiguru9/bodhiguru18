@@ -5,6 +5,9 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from orgss.models import Org
 
+
+from rest_framework import serializers
+
 class LoginSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField()
     org = serializers.SerializerMethodField()
@@ -90,3 +93,28 @@ class WelcomeEmailSerializer(serializers.Serializer):
             return value
         except Account.DoesNotExist:
             raise serializers.ValidationError("User with this email does not exist.") 
+
+
+
+class BulkUserUploadSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    first_name = serializers.CharField(max_length=50)
+    last_name = serializers.CharField(max_length=50)
+    username = serializers.CharField(max_length=150)
+    password = serializers.CharField(write_only=True)
+    contact_number = serializers.CharField(max_length=15)
+
+    def create(self, validated_data):
+        # Ensure the email is unique
+        if Account.objects.filter(email=validated_data['email']).exists():
+            raise serializers.ValidationError(f"Email {validated_data['email']} is already in use.")
+        
+        user = User.objects.create_user(
+            email=validated_data['email'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
+            username=validated_data['username'],
+            password=validated_data['password'],
+            contact_number=validated_data['contact_number']
+        )
+        return user

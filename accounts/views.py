@@ -25,6 +25,11 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import ValidationError
 from rest_framework import serializers
 
+from django.http import HttpResponse
+
+from rest_framework.parsers import MultiPartParser
+from .serializers import BulkUserUploadSerializer
+
 import csv
 
 from django.contrib.sites.shortcuts import get_current_site
@@ -325,46 +330,44 @@ class LoginViewSet(APIView):
         
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-"""
-class BulkUserUploadAPIView(generics.CreateAPIView):
-    serializer_class = SignUpSerializer
+
+class DownloadSampleCSV(APIView):
+    def get(self, request, *args, **kwargs):
+        # Create the HttpResponse object with the CSV header.
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="sample_users.csv"'
+
+        # Write the header and sample data to CSV
+        writer = csv.writer(response)
+        writer.writerow(['email', 'first_name', 'last_name', 'username', 'password', 'contact_number'])
+        writer.writerow(['sample@example.com', 'John', 'Doe', 'johndoe', 'password123', '1234567890'])
+
+        return response
+
+
+class BulkUserUploadView(APIView):
+    parser_classes = [MultiPartParser]  # Supports file upload
 
     def post(self, request, *args, **kwargs):
-        csv_file = request.FILES['file']
-        
-        # Check if the uploaded file is CSV
-        if not csv_file.name.endswith('.csv'):
-            return Response({'error': 'File is not CSV'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Process the CSV file
+        file = request.FILES.get('file')
+        if not file:
+            return Response({"detail": "No file uploaded."}, status=status.HTTP_400_BAD_REQUEST)
+
+        decoded_file = file.read().decode('utf-8').splitlines()
+        reader = csv.DictReader(decoded_file)
+        errors = []
         users_created = 0
-        try:
-            decoded_file = csv_file.read().decode('utf-8').splitlines()
-            csv_reader = csv.DictReader(decoded_file)
-            for row in csv_reader:
-                # Validate and create users
-                serializer = SignUpSerializer(data=row)
-                if serializer.is_valid():
-                    serializer.save()
 
-                    # Send registration email
-                    user_data = serializer.data
-                    send_registration_email(user_data['email'], user_data['username'], user_data['password'])
+        for row in reader:
+            serializer = BulkUserUploadSerializer(data=row)
+            if serializer.is_valid():
+                serializer.save()
+                users_created += 1
+            else:
+                errors.append({"row": row, "errors": serializer.errors})
 
-                    users_created += 1
-                else:
-                    # Handle serializer errors
-                    pass  # Handle serializer errors here
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        
-        return Response({'success': f'{users_created} users created successfully.'}, status=status.HTTP_201_CREATED)
+        if errors:
+            return Response({"detail": f"{users_created} users created successfully", "errors": errors}, status=status.HTTP_400_BAD_REQUEST)
 
-def send_registration_email(email, username, password):
-    # Construct and send registration email
-    subject = 'Welcome to YourApp!'
-    message = f'Hi {username},\n\nWelcome to YourApp! You can access the web app using:\nURL: https://yourapp.com\nUsername: {username}\nPassword: {password}\n\nEnjoy using YourApp!'
-    from_email = 'yourapp@example.com'
-    send_mail(subject, message, from_email, [email])
+        return Response({"detail": f"All {users_created} users created successfully."}, status=status.HTTP_201_CREATED)
 
-"""    
