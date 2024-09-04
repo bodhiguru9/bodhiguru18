@@ -5,6 +5,8 @@ from django.db.models.signals import post_save
 from django.utils import timezone
 from django.core.validators import RegexValidator
 
+from datetime import timedelta
+
 from orgss.models import Org, Role
 
 from uuid import uuid4
@@ -92,7 +94,7 @@ class Account(AbstractBaseUser):
 
     is_email_confirmed = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
-
+    
     role = models.ForeignKey(Role, on_delete=models.CASCADE, null=True, blank=True)
     org = models.ForeignKey(Org, on_delete=models.CASCADE, null=True, blank=True)
 
@@ -101,6 +103,7 @@ class Account(AbstractBaseUser):
 
     objects = MyAccountManager()
 
+    
     def __str__(self):
         return self.email
 
@@ -108,7 +111,9 @@ class Account(AbstractBaseUser):
         return self.is_admin
 
     def has_module_perms(self, add_label):
-        return True        
+        return True   
+
+        
     
 class UserProfile(models.Model):
 

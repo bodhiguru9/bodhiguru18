@@ -2,15 +2,29 @@ from django.db import models
 
 from industry.models import Industry
 from competency.models import Competency
+from django.utils import timezone
+from datetime import timedelta
 
 class Org(models.Model):
     name = models.CharField(max_length=250, null=True, blank=True)
     description = models.CharField(max_length=500, blank=True, null=True)
     industry = models.ForeignKey(Industry, on_delete=models.CASCADE, related_name='industry', null=True, blank=True)
     logo = models.FileField(upload_to='media/logo', blank=True, null=True)
+    validity = models.IntegerField(default=30)  # Default validity is 30 days
+    is_active = models.BooleanField(default=True)
+
     
     def __str__(self):
         return self.name
+
+    def disable_soon(self):
+        # Checks if 3 days are left before disabling
+        return self.validity <= 3
+
+    def disable(self):
+        # Disable org after validity expires
+        self.is_active = False
+        self.save()    
 
 class SubOrg(models.Model):
     def __str__(self):

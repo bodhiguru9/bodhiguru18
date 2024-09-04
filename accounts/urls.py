@@ -14,6 +14,6 @@ urlpatterns = [
 
     path('confirm-email/', confirm_email_view, name='confirm_email_view'),
     path('send-welcome-email/', SendWelcomeEmailView.as_view(), name='send-welcome-email'),
-    
+    path('check-org-validity/', views.check_org_validity, name='check-org-validity'),
 
 ] 

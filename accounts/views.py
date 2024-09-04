@@ -12,6 +12,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from django.core.mail import send_mail, EmailMessage
 from datetime import datetime, timedelta
+from django.utils import timezone
 
 from rest_framework.views import APIView
 from accounts.utils import send_confirmation_email
@@ -51,6 +52,30 @@ def register(request):
         'message': serializer.errors
     }
     return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def check_org_validity(request):
+    current_date = timezone.now()
+    orgs_to_disable = Org.objects.filter(is_active=True, validity__lte=(current_date - timezone.timedelta(days=30)))
+    
+    for org in orgs_to_disable:
+        org.is_active = False
+        org.save()
+
+        # Disable associated users
+        Account.objects.filter(org=org).update(is_active=False)
+
+        # Send email to admin
+        send_mail(
+            'Organization Disabled',
+            'The organization {} has been disabled.'.format(org.name),
+            'arindam@bodhiguru.com',
+            ['arindam@bodhiguru.com'],
+            fail_silently=False,
+        )
+
+    return Response({'status': 'Checked for expired orgs and disabled them if necessary'}, status=status.HTTP_200_OK)
 
 @api_view(['GET']) 
 @permission_classes([IsAuthenticated])
