@@ -1,7 +1,7 @@
 from django.urls import path, include
 from . import views
 from accounts.views import ( SendEmailConfirmationTokenAPIView,
-                             UserInformationAPIVIew, confirm_email_view, SendWelcomeEmailView)
+                             UserInformationAPIVIew, confirm_email_view, SendWelcomeEmailView, CustomTokenObtainPairView)
 
 
 urlpatterns = [
@@ -15,5 +15,6 @@ urlpatterns = [
     path('confirm-email/', confirm_email_view, name='confirm_email_view'),
     path('send-welcome-email/', SendWelcomeEmailView.as_view(), name='send-welcome-email'),
     path('check-org-validity/', views.check_org_validity, name='check-org-validity'),
+    path('login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
 
 ] 

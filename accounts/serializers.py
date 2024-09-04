@@ -3,6 +3,7 @@ from rest_framework.validators import UniqueValidator
 from accounts.models import Account, Profile, EmailConfirmationToken
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
+from orgss.models import Org
 
 class LoginSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField()
@@ -52,12 +53,18 @@ class SignUpSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
+class OrgSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Org
+        fields = ['id', 'name', 'industry', 'validity', 'is_active']
+
 class UserSerializer(serializers.ModelSerializer):
     role = serializers.StringRelatedField()
+    org = OrgSerializer()
     
     class Meta:
         model = Account
-        fields = ['id', 'email', 'first_name', 'contact_number', 'last_name', 'validity', 'username', 'role', 'is_email_confirmed', 'active', 'user_role']
+        fields = ['id', 'email', 'first_name', 'contact_number', 'last_name', 'validity', 'username', 'role', 'org', 'is_email_confirmed', 'active', 'user_role']
 
 class ChangePasswordSerializer(serializers.Serializer):
     old_password = serializers.CharField(required=True)

@@ -20,6 +20,10 @@ from accounts.serializers import LoginSerializer
 from orgss.models import Org
 from django.conf import settings
 
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework.exceptions import ValidationError
+
 from django.contrib.sites.shortcuts import get_current_site
 
 @api_view(['POST'])
@@ -53,6 +57,24 @@ def register(request):
     }
     return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        user = self.user
+
+        # Check if the user's organization is still valid
+        if not user.org.is_active:
+            raise ValidationError("Your organization is disabled. Contact your administrator.")
+
+        # Optionally, check user validity as well
+        signup_date = user.date_joined
+        if timezone.now() > signup_date + timedelta(days=user.validity):
+            raise ValidationError("Your account validity has expired.")
+
+        return data
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 @api_view(['GET'])
 def check_org_validity(request):
