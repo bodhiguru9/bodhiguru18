@@ -1,37 +1,60 @@
+# record/views.py
+
 import csv
-from io import StringIO
 from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import OrganizationReportSerializer
-from django.db.models import Count
-from orgss.models import Org
-from zola.models import Item
-from accounts.models import Account
+from rest_framework import status
+from orgss.models import Org  # Assuming your orgss app is named 'orgss'
+from accounts.models import Account, UserProfile
+#from profiles.models import UserProfile  # Assuming profiles app has UserProfile model
+from .serializers import OrgReportSerializer
 
-class DailyReportAPIView(APIView):
-    def get(self, request, *args, **kwargs):
-        # Generate report data
-        data = []
-        organizations = Org.objects.all()
+class OrgReportAPIView(APIView):
+    def get(self, request, format=None):
+        report_data = []
 
-        for org in organizations:
-            user_count = Account.objects.filter(organization=org).count()
-            items_responded = Item.objects.filter(user__organization=org).count()
+        orgs = Org.objects.all()
 
-            data.append({
-                'organization_name': org.name,
+        for org in orgs:
+            users = Account.objects.filter(org=org)
+            user_count = users.count()
+            total_scenarios_attempted = 0
+
+            for user in users:
+                user_profile = UserProfile.objects.get(user=user)
+                total_scenarios_attempted += user_profile.scenarios_attempted  # Adjust field name as necessary
+
+            report_data.append({
+                'org_name': org.name,
                 'user_count': user_count,
-                'items_responded': items_responded
+                'total_scenarios_attempted': total_scenarios_attempted
             })
 
-        # Convert data to CSV
-        output = StringIO()
-        writer = csv.writer(output)
-        writer.writerow(['Organization Name', 'User Count', 'Items Responded'])
-        for row in data:
-            writer.writerow([row['organization_name'], row['user_count'], row['items_responded']])
+        serializer = OrgReportSerializer(report_data, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
-        response = HttpResponse(output.getvalue(), content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="daily_report.csv"'
+
+class DownloadOrgReportCSV(APIView):
+    def get(self, request, format=None):
+        # Create the HttpResponse object with CSV header.
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="org_report.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(['Organization Name', 'Number of Users', 'Total Scenarios Attempted'])
+
+        orgs = Org.objects.all()
+
+        for org in orgs:
+            users = Account.objects.filter(org=org)
+            user_count = users.count()
+            total_scenarios_attempted = 0
+
+            for user in users:
+                user_profile = UserProfile.objects.get(user=user)
+                total_scenarios_attempted += user_profile.scenarios_attempted  # Adjust field name as necessary
+
+            writer.writerow([org.name, user_count, total_scenarios_attempted])
+
         return response
