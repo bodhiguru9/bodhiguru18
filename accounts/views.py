@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from accounts.serializers import SignUpSerializer, UserSerializer, profileSerializer, WelcomeEmailSerializer
 from accounts.models import Account, Profile, EmailConfirmationToken
 from django.contrib.auth.hashers import make_password
-from rest_framework import status
+from rest_framework import status, generics
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated
 from django.utils.crypto import get_random_string
@@ -24,6 +24,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import ValidationError
 from rest_framework import serializers
+
+import csv
 
 from django.contrib.sites.shortcuts import get_current_site
 
@@ -322,3 +324,47 @@ class LoginViewSet(APIView):
         }
         
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+"""
+class BulkUserUploadAPIView(generics.CreateAPIView):
+    serializer_class = SignUpSerializer
+
+    def post(self, request, *args, **kwargs):
+        csv_file = request.FILES['file']
+        
+        # Check if the uploaded file is CSV
+        if not csv_file.name.endswith('.csv'):
+            return Response({'error': 'File is not CSV'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Process the CSV file
+        users_created = 0
+        try:
+            decoded_file = csv_file.read().decode('utf-8').splitlines()
+            csv_reader = csv.DictReader(decoded_file)
+            for row in csv_reader:
+                # Validate and create users
+                serializer = SignUpSerializer(data=row)
+                if serializer.is_valid():
+                    serializer.save()
+
+                    # Send registration email
+                    user_data = serializer.data
+                    send_registration_email(user_data['email'], user_data['username'], user_data['password'])
+
+                    users_created += 1
+                else:
+                    # Handle serializer errors
+                    pass  # Handle serializer errors here
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response({'success': f'{users_created} users created successfully.'}, status=status.HTTP_201_CREATED)
+
+def send_registration_email(email, username, password):
+    # Construct and send registration email
+    subject = 'Welcome to YourApp!'
+    message = f'Hi {username},\n\nWelcome to YourApp! You can access the web app using:\nURL: https://yourapp.com\nUsername: {username}\nPassword: {password}\n\nEnjoy using YourApp!'
+    from_email = 'yourapp@example.com'
+    send_mail(subject, message, from_email, [email])
+
+"""    

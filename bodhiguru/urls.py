@@ -52,6 +52,8 @@ urlpatterns = [
     path('assign/', include('assign.urls')),
     #path('saas/', include('SaaS.urls')),
     path('competency/', include('competency.urls')),
+    path('api/', include('resources.urls')),  # Include resources app URLs
+    path('api/records/', include('record.urls')),  # Include Record app URLs
     
     #path('downloadfile/', DownloadFiles.as_view(), name='download-file')
 
