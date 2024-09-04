@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from accounts.serializers import SignUpSerializer, UserSerializer, profileSerializer
+from accounts.serializers import SignUpSerializer, UserSerializer, profileSerializer, WelcomeEmailSerializer
 from accounts.models import Account, Profile, EmailConfirmationToken
 from django.contrib.auth.hashers import make_password
 from rest_framework import status
@@ -17,6 +17,7 @@ from rest_framework.views import APIView
 from accounts.utils import send_confirmation_email
 from accounts.serializers import LoginSerializer
 from orgss.models import Org
+from django.conf import settings
 
 from django.contrib.sites.shortcuts import get_current_site
 
@@ -137,6 +138,7 @@ class SendEmailConfirmationTokenAPIView(APIView):
         
         return Response(response, status=status.HTTP_201_CREATED)
 
+
 @api_view(['GET'])
 def confirm_email_view(request):
     token_id = request.GET.get('token_id', None)
@@ -153,6 +155,26 @@ def confirm_email_view(request):
         data = {'is_email_confirmed': False}
         return Response({'message': 'Email has not been confirmed'} )
         #return render(request, template_name='users/confirm_email_view.html', context=data)
+
+
+class SendWelcomeEmailView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = WelcomeEmailSerializer(data=request.data)
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            user = Account.objects.get(email=email)
+            
+            # Send welcome email
+            subject = 'Welcome to Our Service!'
+            message = f'Hi {user.username},\n\nThank you for confirming your email. Welcome aboard!'
+            email_from = settings.DEFAULT_FROM_EMAIL
+            recipient_list = [user.email]
+            send_mail(subject, message, email_from, recipient_list)
+            
+
+            return Response({'message': 'Welcome email sent successfully!'}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class LoginViewSet(APIView):
     def post(self, request):

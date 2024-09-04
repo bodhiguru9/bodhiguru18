@@ -1,7 +1,7 @@
 from django.urls import path, include
 from . import views
 from accounts.views import ( SendEmailConfirmationTokenAPIView,
-                             UserInformationAPIVIew, confirm_email_view)
+                             UserInformationAPIVIew, confirm_email_view, SendWelcomeEmailView)
 
 
 urlpatterns = [
@@ -13,7 +13,7 @@ urlpatterns = [
     path('api/send-confirmation-email/', SendEmailConfirmationTokenAPIView.as_view(), name='send_email_confirmation_api_view'),
 
     path('confirm-email/', confirm_email_view, name='confirm_email_view'),
-   
-
+    path('send-welcome-email/', SendWelcomeEmailView.as_view(), name='send-welcome-email'),
+    
 
 ] 

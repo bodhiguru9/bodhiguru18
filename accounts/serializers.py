@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from accounts.models import Account, Profile
+from accounts.models import Account, Profile, EmailConfirmationToken
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 
@@ -70,3 +70,16 @@ class profileSerializer(serializers.ModelSerializer):
     class Meta:
         model=Profile
         fields="__all__"
+
+class WelcomeEmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        try:
+            user = Account.objects.get(email=value)
+            token_exists = EmailConfirmationToken.objects.filter(user=user).exists()
+            if not token_exists:
+                raise serializers.ValidationError("No confirmation token exists for this user.")
+            return value
+        except Account.DoesNotExist:
+            raise serializers.ValidationError("User with this email does not exist.") 
