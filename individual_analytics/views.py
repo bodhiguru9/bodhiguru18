@@ -6,9 +6,22 @@ from .permissions import IsAdminOrSubAdmin
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import PermissionDenied
 
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from accounts.serializers import UserProfileSerializer
+from individual_analytics.permissions import IsAdminOrSubAdmin
+
+from django.contrib.auth.models import User
+
+
+
+
 class UserListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAdminOrSubAdmin]
     serializer_class = AccountSerializer
+
+   
 
     def get_queryset(self):
         # Get the admin/sub_admin's org using their email
@@ -20,22 +33,30 @@ class UserListView(generics.ListAPIView):
             return Account.objects.filter(org=account.org, sub_org_id=sub_org)
         
         # Return users within the same org
+      
         return Account.objects.filter(org=account.org)
 
-class UserDetailView(generics.RetrieveAPIView):
+class UserDetailView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrSubAdmin]
-    serializer_class = UserProfileSerializer
 
-    def get_object(self):
-        # Retrieve the user profile by email and ensure they are part of the same org/sub-org
-        email = self.kwargs['email']
-        user_profile = get_object_or_404(UserProfile, user__email=email)
-        
-        # Get the admin/sub_admin's org using their email
-        account = get_object_or_404(Account, email=self.request.user.email)
+    def get(self, request, email, *args, **kwargs):
+        try:
+            # Check if the requesting user has the necessary permissions
+            if not (request.user.role in ['admin', 'sub_admin']):
+                raise PermissionDenied("You do not have permission to access this resource.")
+            
+            # Retrieve the UserProfile based on the email
+            try:
+                user = User.objects.get(email=email)  # Assuming `User` has the email field
+                user_profile = UserProfile.objects.get(user=user)
+            except UserProfile.DoesNotExist:
+                return Response({"error": "UserProfile not found"}, status=404)
+            except User.DoesNotExist:
+                return Response({"error": "User not found"}, status=404)
 
-        # Check if the user belongs to the same org
-        if user_profile.user.account.org == account.org:
-            return user_profile
-        else:
-            raise PermissionDenied("You do not have permission to view this user's data.")
+            # Serialize the UserProfile data
+            serializer = UserProfileSerializer(user_profile)
+            
+            return Response(serializer.data)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
