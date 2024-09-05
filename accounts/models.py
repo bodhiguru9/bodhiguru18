@@ -12,27 +12,19 @@ from orgss.models import Org, Role
 from uuid import uuid4
 
 class MyAccountManager(BaseUserManager):
-    def create_user(self, first_name, last_name, email, username, password=None):
+    def create_user(self, email, username, first_name, last_name, contact_number, org, password=None):
         if not email:
-            raise ValueError("User must have an email address")
-
-        if not username:
-            raise ValueError("User must have a username")
-
-        user = self.model(
-            email = self.normalize_email(email),
-            username = username,
-            first_name = first_name,
-            last_name = last_name,
-    
-
-        )        
-
+            raise ValueError('Users must have an email address')
+        
+        email = self.normalize_email(email)
+        user = self.model(email=email, username=username,
+                            first_name=first_name, last_name=last_name,
+                            contact_number=contact_number, org=org)
         user.set_password(password)
-        user.save(using = self.db)
-        return user
+        user.save(using=self._db)
+        return user    
 
-    def create_superuser(self, first_name, last_name, email, username, password):
+    def create_superuser(self, email, username, first_name, last_name, contact_number, org, password):
         user = self.create_user(
             email = self.normalize_email(email),
             first_name = first_name,
@@ -50,7 +42,6 @@ class MyAccountManager(BaseUserManager):
 
         user.save(using = self.db)
         return user
-
 
     
     def __str__(self):
@@ -96,7 +87,7 @@ class Account(AbstractBaseUser):
     active = models.BooleanField(default=True)
     
     role = models.ForeignKey(Role, on_delete=models.CASCADE, null=True, blank=True)
-    org = models.ForeignKey(Org, on_delete=models.CASCADE, null=True, blank=True)
+    org = models.ForeignKey(Org, on_delete=models.CASCADE, null=False, blank=False, default = 1)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']

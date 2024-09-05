@@ -3,11 +3,12 @@ from . import views
 from accounts.views import ( SendEmailConfirmationTokenAPIView,
                              UserInformationAPIVIew, confirm_email_view,
                              SendWelcomeEmailView, CustomTokenObtainPairView, 
-                             DownloadSampleCSV, BulkUserUploadView)
+                             DownloadSampleCSV, BulkUserUploadView, RegisterView)
 
 
 urlpatterns = [
-    path('register/', views.register, name='register'),
+    #path('register/', views.register, name='register'),
+    path('register/', RegisterView.as_view(), name='register'),
     path('current_user/', views.current_user, name='current_user'),
     path('forgot_password/', views.forgot_password, name='forgot_password'),
     path('reset_password/<str:token>', views.reset_password, name='reset_password'),

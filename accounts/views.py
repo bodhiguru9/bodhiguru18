@@ -33,6 +33,8 @@ from .serializers import BulkUserUploadSerializer
 import csv
 
 from django.contrib.sites.shortcuts import get_current_site
+from .serializers import RegisterSerializer
+from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 @api_view(['POST'])
 def register(request):
@@ -371,3 +373,16 @@ class BulkUserUploadView(APIView):
 
         return Response({"detail": f"All {users_created} users created successfully."}, status=status.HTTP_201_CREATED)
 
+class RegisterView(generics.CreateAPIView):
+    queryset = Account.objects.all()
+    serializer_class = RegisterSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({
+                'user': serializer.data,
+                'message': 'User registered successfully.'
+            }, status=HTTP_201_CREATED)
+        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)

@@ -6,8 +6,6 @@ from django.contrib.auth.password_validation import validate_password
 from orgss.models import Org
 
 
-from rest_framework import serializers
-
 class LoginSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField()
     org = serializers.SerializerMethodField()
@@ -118,3 +116,26 @@ class BulkUserUploadSerializer(serializers.Serializer):
             contact_number=validated_data['contact_number']
         )
         return user
+
+class RegisterSerializer(serializers.ModelSerializer):
+    org_name = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = Account
+        fields = ['email', 'username', 'first_name', 'last_name', 'contact_number', 'org_name', 'password']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        org_name = validated_data.pop('org_name')
+        org, created = Org.objects.get_or_create(name=org_name)
+        
+        user = Account.objects.create_user(
+            email=validated_data['email'],
+            username=validated_data['username'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
+            contact_number=validated_data['contact_number'],
+            org=org,
+            password=validated_data['password']
+        )
+        return user        
