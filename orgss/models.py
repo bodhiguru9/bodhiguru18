@@ -38,8 +38,14 @@ class Role(models.Model):
     def __str__(self):
         return f"{self.name} - {self.suborg.name} - {self.suborg.org.name}"
 
-    name = models.CharField(max_length=250)
+    ROLE_CHOICES = [
+        ('employee', 'Employee'),
+        ('sub-admin', 'Sub-Admin'),
+        ('admin', 'Admin'),
+    ]    
+
     suborg = models.ForeignKey(SubOrg, on_delete=models.CASCADE, related_name='suborgrole', null=True, blank=True)
+    role_type = models.CharField(max_length=20, choices=ROLE_CHOICES, default = 'admin')
 
 class Weightage(models.Model):
     suborg = models.ForeignKey(SubOrg, on_delete=models.CASCADE, related_name='suborg', null=True, blank=True)
