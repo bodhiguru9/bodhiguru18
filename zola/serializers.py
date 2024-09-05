@@ -1,7 +1,8 @@
 from rest_framework import serializers
 
-from zola.models import Item
+from zola.models import Item, ItemResult
 from competency.serializers import CompetencySerializer, CompetencyListSerializer
+
 
 
 class ItemLiSerializer(serializers.ModelSerializer):
@@ -64,3 +65,9 @@ class ItemRecommendSerializer(serializers.ModelSerializer):
         model = Item
         depth = 1
         fields = ['coming_across_as','competencys']   
+
+
+class ItemResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ItemResult
+        fields = ['id', 'user', 'item', 'score', 'created_at']

@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
-from accounts.models import Account, Profile, EmailConfirmationToken
+from accounts.models import Account, Profile, EmailConfirmationToken, UserProfile
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from orgss.models import Org
@@ -138,4 +138,9 @@ class RegisterSerializer(serializers.ModelSerializer):
             org=org,
             password=validated_data['password']
         )
-        return user        
+        return user      
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields ="__all__"

@@ -13,14 +13,16 @@ from rest_framework.parsers import JSONParser
 from rest_framework.viewsets import ViewSet
 from rest_framework_tracking.mixins import LoggingMixin
 
-from zola.serializers import ItemListSerializer1, ItemEmotionSerializer, ItemRecommendSerializer
-from zola.serializers import ItemLiSerializer, ItemUserSerializer, ItemCreateSerializer
+from zola.serializers import (ItemListSerializer1, ItemEmotionSerializer, ItemRecommendSerializer,
+                                ItemLiSerializer, ItemUserSerializer, ItemCreateSerializer,
+                                ItemResultSerializer, ItemSerializer)
+
 from zola.models import Item, ItemResult
 from accounts.models import Account, UserProfile
 from orgss.models import Role, Weightage
 from assessments.models import AssessmentResult
 from assign.models import SeriesAssignUser
-#from SaaS.permissions import SaaSAccessPermissionItem
+
 from users.models import UserRightsMapping
 from competency.models import Competency
 from series.models import Seasons, ItemSeason
@@ -33,6 +35,8 @@ from datetime import datetime
 import spacy
 import threading
 nlp = spacy.load('en_core_web_sm')
+
+from django.db.models import Sum
 
 
 class ItemViewSet(LoggingMixin, ViewSet):
@@ -755,3 +759,49 @@ def item_rec(request, pk):
             return Response(serializer.data)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+class SubmitScoreView(APIView):
+    permission_classes = [IsAuthenticated]  # Ensures only authenticated users can access this view
+
+    def post(self, request, *args, **kwargs):
+        user = request.user  # Authenticated user
+        item_id = request.data.get('item')
+        score = request.data.get('score')
+
+        try:
+            item = Item.objects.get(id=item_id)
+        except Item.DoesNotExist:
+            return Response({"error": "Item not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Save the item result
+        item_result = ItemResult.objects.create(user=user, item=item, score=score)
+        item_result.save()
+
+        return Response({"message": "Score submitted successfully!"}, status=status.HTTP_201_CREATED)
+
+class CheckLevelProgressionView(APIView):
+    permission_classes = [IsAuthenticated]  # Ensures only authenticated users can access this view
+
+    def get(self, request, *args, **kwargs):
+        user = request.user  # Get the authenticated user
+        user_profile = UserProfile.objects.get(user=user)
+        current_level = user_profile.current_level
+
+        # Calculate total score for the current level
+        total_score = ItemResult.objects.filter(user=user, item__level=current_level).aggregate(
+            total_score=Sum('score')
+        )['total_score']
+
+        if total_score is None:
+            total_score = 0
+
+        # Check if total score for the current level is 70 or more
+        if total_score >= 180:
+            if current_level < 3:
+                user_profile.current_level += 1
+                user_profile.save()
+                return Response({"message": f"You have been promoted to level {user_profile.current_level}!"}, status=status.HTTP_200_OK)
+            else:
+                return Response({"message": "You have already reached the highest level."}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "Your total score for this level is not enough to move to the next level. Your score needs to be more than 180"}, status=status.HTTP_200_OK)
