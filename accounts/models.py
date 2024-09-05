@@ -107,7 +107,7 @@ class Account(AbstractBaseUser):
         
 class UserProfile(models.Model):
     user = models.OneToOneField(Account, on_delete=models.CASCADE)
-    scenarios_attempted = models.IntegerField(default=0)
+    scenarios_attempted = models.IntegerField()
     
     scenarios_attempted_score = models.TextField(null=True, blank=True, default="")
     user_powerwords = models.TextField(blank=True, null=True)

@@ -36,13 +36,14 @@ class UserListView(generics.ListAPIView):
       
         return Account.objects.filter(org=account.org)
 
+
 class UserDetailView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrSubAdmin]
 
     def get(self, request, email, *args, **kwargs):
         try:
             # Check if the requesting user has the necessary permissions
-            if not (request.user.role in ['admin', 'sub_admin']):
+            if not (request.user.is_superuser or request.user.role in ['admin', 'sub_admin']):
                 raise PermissionDenied("You do not have permission to access this resource.")
             
             # Retrieve the UserProfile based on the email
@@ -60,3 +61,4 @@ class UserDetailView(APIView):
             return Response(serializer.data)
         except Exception as e:
             return Response({"error": str(e)}, status=500)
+
