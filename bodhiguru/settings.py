@@ -79,6 +79,8 @@ INSTALLED_APPS = [
     'zola_sentences',
     'resources',
     'record',
+    'org_analytics',
+    'individual_analytics',
 ]
 
 MIDDLEWARE = [

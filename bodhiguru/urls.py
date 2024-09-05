@@ -54,6 +54,8 @@ urlpatterns = [
     path('competency/', include('competency.urls')),
     path('api/', include('resources.urls')),  # Include resources app URLs
     path('api/record/', include('record.urls')),  # Include Record app URLs
+    path('org_analytics/', include('org_analytics.urls')),
+    path('individual_analytics/', include('individual_analytics.urls')),
     
     #path('downloadfile/', DownloadFiles.as_view(), name='download-file')
 
