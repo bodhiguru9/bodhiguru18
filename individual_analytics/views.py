@@ -13,10 +13,10 @@ from accounts.serializers import UserProfileSerializer
 from individual_analytics.permissions import IsAdminOrSubAdmin
 
 from django.contrib.auth.models import User
+from rest_framework import status
 
 
-
-
+"""
 class UserListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAdminOrSubAdmin]
     serializer_class = AccountSerializer
@@ -24,6 +24,7 @@ class UserListView(generics.ListAPIView):
    
 
     def get_queryset(self):
+        
         # Get the admin/sub_admin's org using their email
         account = get_object_or_404(Account, email=self.request.user.email)
         sub_org = self.request.query_params.get('sub_org')
@@ -35,6 +36,60 @@ class UserListView(generics.ListAPIView):
         # Return users within the same org
       
         return Account.objects.filter(org=account.org)
+
+class UserListView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminOrSubAdmin]
+
+    def get(self, request, *args, **kwargs):
+        try:
+            # Assuming you are querying the correct UserProfile objects
+            queryset = UserProfile.objects.all()  # Or any specific filtering
+            if queryset.exists():
+                print(queryset)
+                serializer = UserProfileSerializer(queryset, many=True)
+                return Response(serializer.data)
+            else:
+                return Response({"error": "No profiles found"}, status=404)
+        except Exception as e:
+            return Response({"error": str(e)}, status=500)
+"""
+
+class UserListView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminOrSubAdmin]
+
+    def get(self, request, *args, **kwargs):
+        try:
+            # Get the admin user's org or sub_org
+            account = Account.objects.get(email=request.user.email)
+            print(f"User role: {account.role}")
+            if account.role not in ['admin', 'sub_admin']:
+                return Response({"error": "You do not have permission to view this data."}, status=status.HTTP_403_FORBIDDEN)
+
+            # Filter UserProfiles by the admin's org or sub_org
+            if account.sub_org:
+                user_profiles = UserProfile.objects.filter(user__account__sub_org=account.sub_org)
+            else:
+                user_profiles = UserProfile.objects.filter(user__account__org=account.org)
+
+            # Join UserProfile data with first_name, last_name, and email from Account model
+            user_profiles_with_account_data = user_profiles.select_related('user').values(
+                'user__first_name', 
+                'user__last_name', 
+                'user__email',
+                'scenarios_attempted', 
+                'scenarios_attempted_score', 
+                'user_powerwords', 
+                'user_weakwords', 
+                'competency_score', 
+                'current_level'
+            )
+
+            return Response(user_profiles_with_account_data, status=status.HTTP_200_OK)
+
+        except Account.DoesNotExist:
+            return Response({"error": "Account not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class UserDetailView(APIView):
