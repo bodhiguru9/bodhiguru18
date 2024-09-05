@@ -105,20 +105,17 @@ class Account(AbstractBaseUser):
         return True   
 
         
-    
 class UserProfile(models.Model):
+    user = models.OneToOneField(Account, on_delete=models.CASCADE)
+    scenarios_attempted = models.IntegerField(default=0)
+    scenarios_attempted_score = models.TextField(null=True, blank=True, default="")
+    user_powerwords = models.TextField(blank=True, null=True)
+    user_weakwords = models.TextField(blank=True, null=True)
+    competency_score = models.TextField(blank=True, null=True)  # Ensure this is a valid field
+    current_level = models.IntegerField(default=1)
 
     def __str__(self):
-        return self.user.email   
-
-    user = models.OneToOneField(Account, on_delete=models.CASCADE)
-    scenarios_attempted = models.IntegerField(default=1)
-    scenarios_attempted_score = models.TextField(null=True, blank=True, default="")
-    gender = models.CharField(blank=True, null=True, max_length=10)
-    user_powerwords = models.TextField(default= "")
-    user_weakwords = models.TextField(default = "")
-    competency_score = models.TextField(null=True, blank=True)
-    current_level = models.IntegerField(default=1)
+        return f'{self.user.email} Profile'    
 
 
 @receiver(post_save,sender=Account)

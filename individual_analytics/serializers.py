@@ -6,7 +6,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = UserProfile
         fields = ['scenarios_attempted', 'scenarios_attempted_score',
                     'user_powerwords', 'user_weakwords', 'competency_score', 'current_level']
-        
 
 class AccountSerializer(serializers.ModelSerializer):
     profile = UserProfileSerializer()
