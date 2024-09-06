@@ -39,7 +39,7 @@ class SubOrgListSerializer(serializers.ModelSerializer):
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role
-        fields = ['id', 'name', 'suborg']
+        fields = ['id', 'role_type', 'suborg']
         
 class RoleListSerializer(serializers.ModelSerializer):
     suborg = serializers.SerializerMethodField()
@@ -50,4 +50,4 @@ class RoleListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Role
-        fields = ['id', 'name', 'suborg']
+        fields = ['id', 'role_type', 'suborg']
