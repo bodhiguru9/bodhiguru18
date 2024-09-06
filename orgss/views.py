@@ -223,7 +223,7 @@ class RoleViewSet(LoggingMixin, ViewSet):
     def create(self, request):
         request_data = self.request.data
         data = {
-            'name': request_data.get('name'),
+            'role_type': request_data.get('role_type'),
             'suborg': request_data.get('suborg'),
         }
         

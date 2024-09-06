@@ -46,7 +46,7 @@ urlpatterns = [
     #path('scenarios/', include('scenarios.urls')),
     #path('seanscenarios/', include('sean_scenarios.urls')),
     path('assessments/', include('assessments.urls')),
-    path('orgs/', include('orgss.urls')),
+    path('orgss/', include('orgss.urls')),
     path('learningcourse/', include('learningcourse.urls')),
     path('series/', include('series.urls')),
     path('assign/', include('assign.urls')),
