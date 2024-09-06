@@ -12,7 +12,7 @@ from orgss.models import Org, Role1, SubOrg1
 from uuid import uuid4
 
 class MyAccountManager(BaseUserManager):
-    def create_user(self, email, username, first_name, last_name, password=None):
+    def create_user(self, email, username, first_name, org, contact_number, last_name, password=None):
         if not email:
             raise ValueError('Users must have an email address')
         
@@ -23,7 +23,7 @@ class MyAccountManager(BaseUserManager):
         user.save(using=self._db)
         return user    
 
-    def create_superuser(self, email, username, first_name, last_name, password):
+    def create_superuser(self, email, username, first_name, org, contact_number, last_name, password):
         user = self.create_user(
             email = self.normalize_email(email),
             first_name = first_name,
@@ -85,7 +85,7 @@ class Account(AbstractBaseUser):
     is_email_confirmed = models.BooleanField(default=False)
     active = models.BooleanField(default=True)
     
-    #role = models.ForeignKey(Role1, on_delete=models.CASCADE, null=True, blank=True)
+    role = models.ForeignKey(Role1, on_delete=models.CASCADE, null=True, blank=True)
     org = models.ForeignKey(Org, on_delete=models.CASCADE, null=False, blank=False, default = 1)
     sub_org = models.ForeignKey(SubOrg1, on_delete=models.CASCADE, null=True, blank=True)
 
