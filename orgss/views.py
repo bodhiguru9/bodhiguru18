@@ -104,11 +104,11 @@ class SubOrgViewSet(LoggingMixin, ViewSet):
     
     @staticmethod
     def get_object(pk=None):
-        return get_object_or_404(SubOrg, id=pk)
+        return get_object_or_404(SubOrg1, id=pk)
 
     @staticmethod
     def get_queryset():
-        return SubOrg.objects.all()
+        return SubOrg1.objects.all()
 
     def list(self, request):
         queryset = self.get_queryset().filter(org=request.user.org)
@@ -194,11 +194,11 @@ class RoleViewSet(LoggingMixin, ViewSet):
     
     @staticmethod
     def get_object(pk=None):
-        return get_object_or_404(Role, id=pk)
+        return get_object_or_404(Role1, id=pk)
 
     @staticmethod
     def get_queryset():
-        return Role.objects.all()
+        return Role1.objects.all()
 
     def list(self, request):
         roles_data = self.get_queryset().filter(suborg__org=request.user.org)

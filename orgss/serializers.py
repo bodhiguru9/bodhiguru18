@@ -26,12 +26,13 @@ class SubOrgSerializer(serializers.ModelSerializer):
         fields = ['id', 'name1', 'description', 'org']
         
 class SubOrgListSerializer(serializers.ModelSerializer):
+    """
     org = serializers.SerializerMethodField()
     
     def get_org(self, obj):
         instance = Org.objects.get(id=obj.org.id)
         return OrgListSerializer(instance).data
-    
+    """
     class Meta:
         model = SubOrg1
         fields = ['id', 'name1', 'description', 'org']
