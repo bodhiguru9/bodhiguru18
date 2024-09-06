@@ -1,7 +1,6 @@
 from django.urls import path
-from org_analytics.views import SubOrgAnalyticsAPIView
+from org_analytics.views import OrgAnalyticsView
 
 urlpatterns = [
-    path('suborg-analytics/', SubOrgAnalyticsAPIView.as_view(), name='suborg-analytics'),
-    # Add more URLs as needed
+    path('analytics/', OrgAnalyticsView.as_view(), name='org-analytics'),
 ]

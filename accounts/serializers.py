@@ -39,7 +39,7 @@ class SignUpSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     class Meta:
         model = Account
-        fields = ['email', 'first_name', 'last_name', 'password', 'contact_number', 'org', 'username']
+        fields = ['email', 'first_name', 'last_name', 'password', 'username']
         
     def create(self, validated_data):
         user = Account.objects.create(
@@ -47,8 +47,8 @@ class SignUpSerializer(serializers.ModelSerializer):
                 email=validated_data['email'],
                 first_name=validated_data['first_name'],
                 last_name=validated_data['last_name'],
-                contact_number=validated_data['contact_number'],
-                org=validated_data.get('org'),
+                #contact_number=validated_data['contact_number'],
+                #org=validated_data.get('org'),
                 )
         user.set_password(validated_data['password'])
         user.save()
@@ -100,7 +100,7 @@ class BulkUserUploadSerializer(serializers.Serializer):
     last_name = serializers.CharField(max_length=50)
     username = serializers.CharField(max_length=150)
     password = serializers.CharField(write_only=True)
-    contact_number = serializers.CharField(max_length=15)
+    #contact_number = serializers.CharField(max_length=15)
 
     def create(self, validated_data):
         # Ensure the email is unique
@@ -113,7 +113,7 @@ class BulkUserUploadSerializer(serializers.Serializer):
             last_name=validated_data['last_name'],
             username=validated_data['username'],
             password=validated_data['password'],
-            contact_number=validated_data['contact_number']
+            #contact_number=validated_data['contact_number']
         )
         return user
 

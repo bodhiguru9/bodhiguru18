@@ -88,7 +88,7 @@ class Account(AbstractBaseUser):
     
     role = models.ForeignKey(Role, on_delete=models.CASCADE, null=True, blank=True)
     org = models.ForeignKey(Org, on_delete=models.CASCADE, null=False, blank=False, default = 1)
-    sub_org = models.ForeignKey(SubOrg, on_delete=models.CASCADE, null=False, blank=False)
+    sub_org = models.ForeignKey(SubOrg, on_delete=models.CASCADE, null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
