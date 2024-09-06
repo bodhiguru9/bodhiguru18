@@ -56,8 +56,8 @@ class Role(models.Model):
 
     suborg = models.ForeignKey(SubOrg, on_delete=models.CASCADE, related_name='suborgrole', null=True, blank=True)
     role_type = models.CharField(max_length=20, choices=ROLE_CHOICES, default = 'admin')
-"""
 
+"""
 class Role1(models.Model):
     def __str__(self):
         return f"{self.role_type} - {self.suborg.name} - {self.suborg.org.name}"
@@ -71,6 +71,7 @@ class Role1(models.Model):
 
     suborg = models.ForeignKey(SubOrg1, on_delete=models.CASCADE, related_name='suborgrole', null=True, blank=True)
     role_type = models.CharField(max_length=20, choices=ROLE_CHOICES, default = 'admin')    
+
 
 class Weightage(models.Model):
     suborg = models.ForeignKey(SubOrg1, on_delete=models.CASCADE, related_name='suborg', null=True, blank=True)
