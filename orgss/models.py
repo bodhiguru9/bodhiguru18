@@ -36,8 +36,8 @@ class SubOrg(models.Model):
 
 class Role(models.Model):
     def __str__(self):
-        #return f"{self.role_type} - {self.suborg.name} - {self.suborg.org.name}"
-        return self.role_type
+        return f"{self.role_type} - {self.suborg.name} - {self.suborg.org.name}"
+        #return self.role_type
 
     ROLE_CHOICES = [
         ('employee', 'Employee'),

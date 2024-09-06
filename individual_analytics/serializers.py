@@ -1,20 +1,20 @@
 from rest_framework import serializers
 from accounts.models import UserProfile, Account
 
-
-class UserProfileSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = UserProfile
-        fields = ['scenarios_attempted', 'scenarios_attempted_score', 'user_powerwords', 'user_weakwords', 'competency_score', 'current_level']
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        print(representation)  # Debugging line to check what is included in the representation
-        return representation        
-
 class AccountSerializer(serializers.ModelSerializer):
-    profile = UserProfileSerializer()
-
     class Meta:
         model = Account
-        fields = ['email', 'first_name', 'last_name', 'org', 'role','profile']
+        fields = ['email', 'first_name', 'last_name', 'org', 'sub_org', 'role']  # Adjust according to actual fields
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    account_data = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserProfile
+        fields = ['account_data', 'scenarios_attempted', 
+                  'user_powerwords', 'user_weakwords', 'competency_score', 'current_level']
+
+    def get_account_data(self, obj):
+        # Get the related Account instance via email or user_id
+        account = Account.objects.filter(email=obj.user.email).first()  # Adjust to match how you relate profiles to accounts
+        return AccountSerializer(account).data if account else None

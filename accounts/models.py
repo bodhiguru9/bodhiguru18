@@ -7,7 +7,7 @@ from django.core.validators import RegexValidator
 
 from datetime import timedelta
 
-from orgss.models import Org, Role
+from orgss.models import Org, Role, SubOrg
 
 from uuid import uuid4
 
@@ -88,6 +88,7 @@ class Account(AbstractBaseUser):
     
     role = models.ForeignKey(Role, on_delete=models.CASCADE, null=True, blank=True)
     org = models.ForeignKey(Org, on_delete=models.CASCADE, null=False, blank=False, default = 1)
+    sub_org = models.ForeignKey(SubOrg, on_delete=models.CASCADE, null=False, blank=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
