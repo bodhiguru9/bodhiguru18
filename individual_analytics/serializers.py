@@ -4,7 +4,7 @@ from accounts.models import UserProfile, Account
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ['email', 'first_name', 'last_name', 'org', 'sub_org', 'role']  # Adjust according to actual fields
+        fields = ['email', 'id','first_name', 'last_name', 'org', 'sub_org', 'role']  # Adjust according to actual fields
 
 class UserProfileSerializer(serializers.ModelSerializer):
     account_data = serializers.SerializerMethodField()
