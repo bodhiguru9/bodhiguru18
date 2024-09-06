@@ -38,7 +38,7 @@ class SubOrg1(models.Model):
     def __str__(self):
         return f"{self.name} - {self.org.name}"
 
-    name1 = models.CharField(max_length=250)
+    name = models.CharField(max_length=250)
     description = models.CharField(max_length=500, blank=True, null=True)
     org = models.ForeignKey(Org, on_delete=models.CASCADE, related_name='org', null=False, blank=False, default= 7)    
 
