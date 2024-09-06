@@ -4,7 +4,7 @@ from django.db import models
 from django.db import models
 
 from accounts.models import Account
-from orgss.models import SubOrg
+from orgss.models import SubOrg1
 
 from datetime import date
 
@@ -37,7 +37,7 @@ class AssessmentType(models.Model):
     )
     
     name = models.CharField(max_length=100)
-    suborg = models.ForeignKey(SubOrg, on_delete=models.CASCADE)
+    suborg = models.ForeignKey(SubOrg1, on_delete=models.CASCADE)
     passing_criteria = models.IntegerField(default=60)
     positive_marks = models.IntegerField(null=True, blank=True)
     negative_marks = models.IntegerField(null=True, blank=True)

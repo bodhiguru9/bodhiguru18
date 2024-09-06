@@ -13,7 +13,7 @@ from assign.serializers import AssessmentProgressSerializer, ItemProgressSeriali
 
 from series.models import Seasons, AssessmentSeason, ItemSeason, Series
 
-from orgss.models import Role
+from orgss.models import Role1
 from accounts.models import Account
 
 class SeriesAssignUserViewSet(ViewSet):

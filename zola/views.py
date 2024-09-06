@@ -19,7 +19,7 @@ from zola.serializers import (ItemListSerializer1, ItemEmotionSerializer, ItemRe
 
 from zola.models import Item, ItemResult
 from accounts.models import Account, UserProfile
-from orgss.models import Role, Weightage
+from orgss.models import Role1, Weightage
 from assessments.models import AssessmentResult
 from assign.models import SeriesAssignUser
 

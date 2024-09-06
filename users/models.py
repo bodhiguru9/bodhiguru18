@@ -4,11 +4,11 @@ from django.db import models
 from django.db import models
 
 from accounts.models import Account
-from orgss.models import SubOrg
+from orgss.models import SubOrg1
 
 class UserSubOrgs(models.Model):
     user = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, related_name='user_suborgs')
-    suborg = models.ForeignKey(SubOrg, on_delete=models.CASCADE, null=True, related_name='suborg_users')
+    suborg = models.ForeignKey(SubOrg1, on_delete=models.CASCADE, null=True, related_name='suborg_users')
     
     def __str__(self):
         return self.user.username + ' - ' + self.suborg.name + ' - ' + self.user.role.name

@@ -25,7 +25,7 @@ class Org(models.Model):
         # Disable org after validity expires
         self.is_active = False
         self.save()    
-
+"""
 class SubOrg(models.Model):
     def __str__(self):
         return f"{self.name} - {self.org.name}"
@@ -33,7 +33,16 @@ class SubOrg(models.Model):
     name = models.CharField(max_length=250)
     description = models.CharField(max_length=500, blank=True, null=True)
     org = models.ForeignKey(Org, on_delete=models.CASCADE, related_name='org', null=True, blank=True)
+"""
+class SubOrg1(models.Model):
+    def __str__(self):
+        return f"{self.name} - {self.org.name}"
 
+    name = models.CharField(max_length=250)
+    description = models.CharField(max_length=500, blank=True, null=True)
+    org = models.ForeignKey(Org, on_delete=models.CASCADE, related_name='org', null=True, blank=True)    
+
+"""
 class Role(models.Model):
     def __str__(self):
         return f"{self.role_type} - {self.suborg.name} - {self.suborg.org.name}"
@@ -47,9 +56,24 @@ class Role(models.Model):
 
     suborg = models.ForeignKey(SubOrg, on_delete=models.CASCADE, related_name='suborgrole', null=True, blank=True)
     role_type = models.CharField(max_length=20, choices=ROLE_CHOICES, default = 'admin')
+"""
+
+class Role1(models.Model):
+    def __str__(self):
+        return f"{self.role_type} - {self.suborg.name} - {self.suborg.org.name}"
+        #return self.role_type
+
+    ROLE_CHOICES = [
+        ('employee', 'Employee'),
+        ('sub-admin', 'Sub-Admin'),
+        ('admin', 'Admin'),
+    ]    
+
+    suborg = models.ForeignKey(SubOrg1, on_delete=models.CASCADE, related_name='suborgrole', null=True, blank=True)
+    role_type = models.CharField(max_length=20, choices=ROLE_CHOICES, default = 'admin')    
 
 class Weightage(models.Model):
-    suborg = models.ForeignKey(SubOrg, on_delete=models.CASCADE, related_name='suborg', null=True, blank=True)
+    suborg = models.ForeignKey(SubOrg1, on_delete=models.CASCADE, related_name='suborg', null=True, blank=True)
     competency = models.ForeignKey(Competency, on_delete=models.CASCADE, default=1, related_name= 'rolecompetency')
     weightage = models.IntegerField(default=1)
     

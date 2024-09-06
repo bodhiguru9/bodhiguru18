@@ -1,7 +1,7 @@
 from django.db import models
 
 from competency.models import Competency
-from orgss.models import Role
+from orgss.models import Role1
 from accounts.models import Account
 
 class Item(models.Model):
@@ -41,7 +41,7 @@ class Item(models.Model):
     coming_across_as = models.CharField(max_length=250, null=True, blank=True)
     competencys = models.ManyToManyField(Competency, blank=True)
     words = models.TextField(default = "words")
-    role = models.ForeignKey(Role, on_delete=models.CASCADE, related_name='seanrole', null=True, blank=True)
+    role = models.ForeignKey(Role1, on_delete=models.CASCADE, related_name='seanrole', null=True, blank=True)
     level = models.IntegerField(default=1)
     expert = models.URLField(blank = True, null=True)
     is_approved = models.BooleanField(default=False)

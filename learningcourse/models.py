@@ -1,12 +1,12 @@
 from django.db import models
 
-from orgss.models import SubOrg
+from orgss.models import SubOrg1
 
 class LearningCourse(models.Model):
     name = models.CharField(max_length=300)
     description = models.TextField(null=True, blank=True)
     thumbnail = models.FileField(upload_to="media/learningcourse/thumbnail", null=True, blank=True)
-    sub_org = models.ForeignKey(SubOrg, on_delete=models.CASCADE)
+    sub_org = models.ForeignKey(SubOrg1, on_delete=models.CASCADE)
     
     def __str__(self):
         return self.name
