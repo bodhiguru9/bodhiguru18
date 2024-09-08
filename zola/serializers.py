@@ -10,7 +10,8 @@ class ItemLiSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = ['id','item_name', 'thumbnail', 'category', 'scenario_type', 'item_gender', 
-                  'role', 'item_type', 'level', 'suborg', 'tags', 'item_answercount','item_video', 'expert', 'item_background', 'item_description']
+                  'role', 'item_type', 'level', 'suborg', 'tags', 'words','item_answercount',
+                  'item_video', 'expert', 'item_background', 'item_description']
 
 class ItemListSerializer1(serializers.ModelSerializer):
     class Meta:

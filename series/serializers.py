@@ -91,7 +91,7 @@ class LearningCourseListAssignSerializer(serializers.ModelSerializer):
 class SeasonsListAssignSerializer(serializers.ModelSerializer):
     series = serializers.SerializerMethodField()
     assessments = serializers.SerializerMethodField()
-    #item = serializers.SerializerMethodField()
+    item = serializers.SerializerMethodField()
     learning_course = serializers.SerializerMethodField()
     
     seasonlota = serializers.SerializerMethodField()
@@ -119,4 +119,4 @@ class SeasonsListAssignSerializer(serializers.ModelSerializer):
     class Meta:
         model = Seasons
         fields = ["id", "name", "description", "thumbnail", "series",
-                  "assessments", "item", "learning_course", "seasonlota", "quadgame"]
+                  "assessments", "item", "learning_course", "seasonlota"]
