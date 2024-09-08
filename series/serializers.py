@@ -6,13 +6,22 @@ from series.models import AssessmentSeason, LearningCourseSeason, ItemSeason
 from assessments.serializers import AssessmentListSerializer
 from zola.serializers import ItemUserSerializer
 from learningcourse.serializers import LearningCourseListSerializer
+from rest_framework import viewsets
+
 
 
 class SeriesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Series
         fields = ["name", "description", "thumbnail", "sub_org"]
-        
+
+"""
+class SeriesSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Series
+        fields = ["name", "description", "thumbnail", "sub_org"]
+
+"""
 class SeriesListSerializer(serializers.ModelSerializer):
     sub_org = serializers.SerializerMethodField()
     seasons = serializers.SerializerMethodField()
@@ -29,20 +38,13 @@ class SeriesListSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "description", "thumbnail", "sub_org",
                   "seasons"]
 
-class SeasonsSerializer(serializers.ModelSerializer):
+
+
+class SeasonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Seasons
         fields = ["name", "description", "thumbnail", "series"]
-        
-class SeasonsListSerializer(serializers.ModelSerializer):
-    series = serializers.SerializerMethodField()
-    
-    def get_series(self, obj):
-        return obj.series.name
-    
-    class Meta:
-        model = Seasons
-        fields = ["id", "name", "description", "thumbnail", "series"]
+
 
 class SeasonLotaSerializer(serializers.ModelSerializer):
     class Meta:

@@ -7,11 +7,25 @@ from rest_framework.permissions import IsAuthenticated
 
 from series.models import Series, Seasons, SeasonLota
 from assign.models import SeriesAssignUser
-from series.serializers import SeriesSerializer, SeriesListSerializer
-from series.serializers import SeasonsSerializer, SeasonsListSerializer
+from series.serializers import SeriesSerializer, SeasonSerializer
+
 from series.serializers import SeasonsListAssignSerializer
 from series.serializers import SeasonLotaSerializer, SeasonLotaListSerializer
 
+from rest_framework import viewsets
+
+
+
+class SeriesViewSet(viewsets.ModelViewSet):
+    queryset = Series.objects.all()
+    serializer_class = SeriesSerializer
+
+
+class SeasonViewSet(viewsets.ModelViewSet):
+    queryset = Seasons.objects.all()
+    serializer_class = SeasonSerializer
+
+"""
 class SeriesViewSet(ViewSet):
     permission_classes = [IsAuthenticated]
     
@@ -97,79 +111,7 @@ class SeriesViewSet(ViewSet):
         }
         return Response(response, status=status.HTTP_200_OK)
 
-class SeasonsViewSet(ViewSet):
-    @staticmethod
-    def get_object(pk=None):
-        return get_object_or_404(Seasons, pk=pk)
-    
-    @staticmethod
-    def get_queryset():
-        return Seasons.objects.all()
-    
-    def list(self, request):
-        queryset = self.get_queryset()
-        serializer = SeasonsListAssignSerializer(queryset, many=True)
-        response = {
-            "status": "success",
-            "message": "Seasons list",
-            "data": serializer.data
-        }
-        return Response(response, status=status.HTTP_200_OK)
-    
-    def retrieve(self, request, pk=None):
-        instance = self.get_object(pk)
-        serializer = SeasonsListAssignSerializer(instance)
-        response = {
-            "status": "success",
-            "message": "Seasons detail",
-            "data": serializer.data
-        }
-        return Response(response, status=status.HTTP_200_OK)
-    
-    def create(self, request):
-        serializer = SeasonsSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            response = {
-                "status": "success",
-                "message": "Seasons created",
-                "data": serializer.data
-            }
-            return Response(response, status=status.HTTP_201_CREATED)
-        response = {
-            "status": "error",
-            "message": "Seasons not created",
-            "data": serializer.errors
-        }
-        return Response(response, status=status.HTTP_400_BAD_REQUEST)
-    
-    def update(self, request, pk=None):
-        instance = self.get_object(pk)
-        serializer = SeasonsSerializer(instance, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            response = {
-                "status": "success",
-                "message": "Seasons updated",
-                "data": serializer.data
-            }
-            return Response(response, status=status.HTTP_200_OK)
-        response = {
-            "status": "error",
-            "message": "Seasons not updated",
-            "data": serializer.errors
-        }
-        return Response(response, status=status.HTTP_400_BAD_REQUEST)
-    
-    def destroy(self, request, pk=None):
-        instance = self.get_object(pk)
-        instance.delete()
-        response = {
-            "status": "success",
-            "message": "Seasons deleted",
-            "data": {}
-        }
-        return Response(response, status=status.HTTP_200_OK)
+"""
 
 class SeasonLotaViewSet(ViewSet):
     @staticmethod

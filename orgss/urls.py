@@ -3,16 +3,12 @@ from rest_framework.routers import DefaultRouter
 
 from orgss.views import OrgViewSet, SubOrgViewSet, RoleViewSet
 
-OrgViewSetRouter = DefaultRouter()
-SubOrgViewSetRouter = DefaultRouter()
-RoleViewSetRouter = DefaultRouter()
 
-OrgViewSetRouter.register('', OrgViewSet, basename='org')
-SubOrgViewSetRouter.register('', SubOrgViewSet, basename='suborg')
-RoleViewSetRouter.register('', RoleViewSet, basename='role')
+router = DefaultRouter()
+router.register(r'org', OrgViewSet)
+router.register(r'suborg', SubOrgViewSet)
+router.register(r'role', RoleViewSet)
 
 urlpatterns = [
-    path('org/', include(OrgViewSetRouter.urls)),
-    path('suborg/', include(SubOrgViewSetRouter.urls)),
-    path('role/', include(RoleViewSetRouter.urls)),
+    path('', include(router.urls)),
 ]
