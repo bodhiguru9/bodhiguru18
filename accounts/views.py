@@ -485,19 +485,33 @@ class EnableUserView(generics.UpdateAPIView):
     permission_classes = [IsAdminOrSubAdminOfOrg]  # Apply custom permission
 
     def update(self, request, *args, **kwargs):
-        account = self.get_object()
-        org = account.org
-        active_users_count = Account.objects.filter(org=org, is_active=True).count()
+        # Get the user instance to be updated
+        user = self.get_object()
 
-        if active_users_count < org.number_of_logins:
-            # Increase validity and re-enable user
-            extra_days = request.data.get('extended_days', 30)
-            account.validity += extra_days  # Extend the validity by extra_days
-            account.is_active = True
-            account.save()
-            user_profile = UserProfile.objects.get(user=account)
-            user_profile.is_active = True
-            user_profile.save()
-            return Response({"message": "User validity extended and enabled"}, status=status.HTTP_200_OK)
-        else:
-            return Response({"message": "Cannot enable more users than allowed logins"}, status=status.HTTP_400_BAD_REQUEST)
+        # Extract the extended_days from request data
+        extended_days = request.data.get('extended_days', None)
+
+        # Validate the extended_days field
+        if extended_days is None:
+            return Response({"error": "Extended days field is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            extended_days = int(extended_days)
+        except ValueError:
+            return Response({"error": "Extended days must be an integer."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if extended_days is a multiple of 30
+        if extended_days % 30 != 0:
+            return Response({"error": "Extended days must be a multiple of 30."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # If valid, proceed with updating the user's validity
+        user.validity += extended_days
+        user.is_active = True  # Set user as active
+        user.save()
+
+        # Update the related UserProfile model
+        user_profile = user.userprofile
+        user_profile.is_active = True
+        user_profile.save()
+
+        return Response({"success": "User enabled successfully."}, status=status.HTTP_200_OK)
