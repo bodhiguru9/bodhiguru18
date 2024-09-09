@@ -2,7 +2,7 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from accounts.serializers import (SignUpSerializer, UserSerializer, LoginSerializer, UserSerializer,
-                                    profileSerializer, WelcomeEmailSerializer, RegisterSerializer)
+                                    profileSerializer, WelcomeEmailSerializer, RegisterSerializer, UserProfileSerializer)
 from accounts.models import Account, Profile, EmailConfirmationToken, UserProfile
 from django.contrib.auth.hashers import make_password
 from rest_framework import status, generics
@@ -455,3 +455,46 @@ class OrgUserListView(APIView):
 
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
+
+
+class UpdateUserValidityView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, user_email):
+        # Get the admin's organization and user data
+        try:
+            account = Account.objects.get(email=user_email)
+        except Account.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        org = account.org
+
+        # Check the current active users in the organization
+        active_users_count = Account.objects.filter(org=org, is_active=True).count()
+
+        if active_users_count >= org.number_of_logins:
+            return Response({"error": "Cannot exceed the number of allowed logins"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Increase the validity and set the user as active
+        account.validity = timezone.now() + timedelta(days=30)
+        account.is_active = True
+        account.save()
+
+        user_profile = UserProfile.objects.get(account=account)
+        user_profile.is_active = True
+        user_profile.save()
+
+        return Response({"message": "User's validity has been extended and activated"}, status=status.HTTP_200_OK)
+
+
+class UserListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Get the admin's org and sub-org
+        admin_org = request.user.org
+
+        # Filter users by org
+        users = UserProfile.objects.filter(account__org=admin_org)
+        serializer = UserProfileSerializer(users, many=True)
+        return Response(serializer.data)        

@@ -14,6 +14,7 @@ class Org(models.Model):
     validity = models.IntegerField(default=30)  # Default validity is 30 days
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(default=datetime.now)
+    number_of_logins = models.IntegerField(default=9)
 
     
     def __str__(self):
