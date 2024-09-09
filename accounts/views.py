@@ -1,9 +1,8 @@
 from django.shortcuts import render, get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from accounts.serializers import (SignUpSerializer, UserSerializer, LoginSerializer,
-                                    profileSerializer, WelcomeEmailSerializer, RegisterSerializer,
-                                    AccountSerializer)
+from accounts.serializers import (SignUpSerializer, UserSerializer, LoginSerializer, UserSerializer,
+                                    profileSerializer, WelcomeEmailSerializer, RegisterSerializer)
 from accounts.models import Account, Profile, EmailConfirmationToken, UserProfile
 from django.contrib.auth.hashers import make_password
 from rest_framework import status, generics
@@ -18,8 +17,9 @@ from django.utils import timezone
 
 from rest_framework.views import APIView
 from accounts.utils import send_confirmation_email
+from rest_framework.exceptions import PermissionDenied
 
-from orgss.models import Org
+from orgss.models import Org, SubOrg1
 from django.conf import settings
 
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -436,17 +436,22 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer  
 
-class UserListView(generics.ListAPIView):
-    serializer_class = AccountSerializer
+class OrgUserListView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        user = self.request.user  # Get the authenticated user (admin or sub-admin)
+    def get(self, request):
+        # Fetch the admin's org or sub-org
+        user_org = request.user.org
+        user_sub_org = request.user.sub_org
 
-        # Check if the user has an admin or sub-admin role
-        if user.role in ['admin', 'sub-admin']:
-            # Admin or sub-admin can view users in their org and sub-org
-            return Account.objects.filter(org=user.org, sub_org=user.sub_org)
+        if not user_org:
+            raise PermissionDenied("You do not have permission to view this data.")
+
+        # Filter the users based on the org and sub-org
+        if user_sub_org:
+            users = Account.objects.filter(sub_org=user_sub_org)
         else:
-            # Return empty queryset for non-admin or non-sub-admin users
-            return Account.objects.none()
+            users = Account.objects.filter(org=user_org)
+
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)

@@ -2,7 +2,7 @@ from django.urls import path, include
 from . import views
 from accounts.views import ( SendEmailConfirmationTokenAPIView,
                              UserInformationAPIVIew, confirm_email_view,
-                             SendWelcomeEmailView, CustomTokenObtainPairView, UserListView,
+                             SendWelcomeEmailView, CustomTokenObtainPairView, OrgUserListView,
                              DownloadSampleCSV, BulkUserUploadView, RegisterView)
 
 
@@ -22,7 +22,6 @@ urlpatterns = [
     #path('bulk-upload/', BulkUserUploadAPIView.as_view(), name='bulk-user-upload'),
     path('download-sample-csv/', DownloadSampleCSV.as_view(), name='download-sample-csv'),
     path('upload-users/', BulkUserUploadView.as_view(), name='bulk-user-upload'),
-    path('users/', UserListView.as_view(), name='user-list'),
-    
+   path('org-users/', OrgUserListView.as_view(), name='org-user-list'),
 
 ] 
