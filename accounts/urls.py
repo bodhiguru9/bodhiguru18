@@ -4,7 +4,7 @@ from accounts.views import ( SendEmailConfirmationTokenAPIView,
                              UserInformationAPIVIew, confirm_email_view,
                              SendWelcomeEmailView, CustomTokenObtainPairView, OrgUserListView,
                              DownloadSampleCSV, BulkUserUploadView, RegisterView,
-                             UpdateUserValidityView, UserListView)
+                             DisableUserView, EnableUserView)
 
 
 urlpatterns = [
@@ -24,7 +24,7 @@ urlpatterns = [
     path('download-sample-csv/', DownloadSampleCSV.as_view(), name='download-sample-csv'),
     path('upload-users/', BulkUserUploadView.as_view(), name='bulk-user-upload'),
     path('org-users/', OrgUserListView.as_view(), name='org-user-list'),
-    path('users/', UserListView.as_view(), name='user-list'),
-    path('users/<str:user_email>/update-validity/', UpdateUserValidityView.as_view(), name='update-user-validity'),
+    path('disable-user/<int:pk>/', DisableUserView.as_view(), name='disable-user'),
+    path('enable-user/<int:pk>/', EnableUserView.as_view(), name='enable-user'),
 
 ] 

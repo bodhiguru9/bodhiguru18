@@ -156,3 +156,10 @@ class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
         fields = '__all__'      
+
+class UserProfileSerializer1(serializers.ModelSerializer):
+    user = AccountSerializer()
+
+    class Meta:
+        model = UserProfile
+        fields = ['user', 'is_active']        

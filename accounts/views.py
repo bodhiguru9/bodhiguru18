@@ -2,12 +2,13 @@ from django.shortcuts import render, get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from accounts.serializers import (SignUpSerializer, UserSerializer, LoginSerializer, UserSerializer,
-                                    profileSerializer, WelcomeEmailSerializer, RegisterSerializer, UserProfileSerializer)
+                                    profileSerializer, WelcomeEmailSerializer, RegisterSerializer,
+                                    UserProfileSerializer1, UserProfileSerializer, AccountSerializer)
 from accounts.models import Account, Profile, EmailConfirmationToken, UserProfile
 from django.contrib.auth.hashers import make_password
 from rest_framework import status, generics
 from django.contrib.auth.models import User
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.utils.crypto import get_random_string
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -36,6 +37,7 @@ import csv
 
 from django.contrib.sites.shortcuts import get_current_site
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
+from django.utils.timezone import now
 
 
 
@@ -457,44 +459,44 @@ class OrgUserListView(APIView):
         return Response(serializer.data)
 
 
-class UpdateUserValidityView(APIView):
-    permission_classes = [IsAuthenticated]
+class DisableUserView(generics.UpdateAPIView):
+    queryset = Account.objects.all()
+    serializer_class = AccountSerializer
+    permission_classes = [IsAdminUser]
 
-    def post(self, request, user_email):
-        # Get the admin's organization and user data
-        try:
-            account = Account.objects.get(email=user_email)
-        except Account.DoesNotExist:
-            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+    def update(self, request, *args, **kwargs):
+        account = self.get_object()
+        if account.validity <= 0:  # Validity expires when it hits 0 or negative
+            # Disable user and user profile
+            account.is_active = False
+            account.save()
+            user_profile = UserProfile.objects.get(user=account)
+            user_profile.is_active = False
+            user_profile.save()
+            return Response({"message": "User disabled after validity expired"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "User validity is still valid"}, status=status.HTTP_400_BAD_REQUEST)
 
+
+class EnableUserView(generics.UpdateAPIView):
+    queryset = Account.objects.all()
+    serializer_class = AccountSerializer
+    permission_classes = [IsAdminUser]
+
+    def update(self, request, *args, **kwargs):
+        account = self.get_object()
         org = account.org
-
-        # Check the current active users in the organization
         active_users_count = Account.objects.filter(org=org, is_active=True).count()
 
-        if active_users_count >= org.number_of_logins:
-            return Response({"error": "Cannot exceed the number of allowed logins"}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Increase the validity and set the user as active
-        account.validity = timezone.now() + timedelta(days=30)
-        account.is_active = True
-        account.save()
-
-        user_profile = UserProfile.objects.get(account=account)
-        user_profile.is_active = True
-        user_profile.save()
-
-        return Response({"message": "User's validity has been extended and activated"}, status=status.HTTP_200_OK)
-
-
-class UserListView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        # Get the admin's org and sub-org
-        admin_org = request.user.org
-
-        # Filter users by org
-        users = UserProfile.objects.filter(account__org=admin_org)
-        serializer = UserProfileSerializer(users, many=True)
-        return Response(serializer.data)        
+        if active_users_count < org.number_of_logins:
+            # Increase validity and re-enable user
+            extra_days = request.data.get('extended_days', 30)
+            account.validity += extra_days  # Extend the validity by extra_days
+            account.is_active = True
+            account.save()
+            user_profile = UserProfile.objects.get(user=account)
+            user_profile.is_active = True
+            user_profile.save()
+            return Response({"message": "User validity extended and enabled"}, status=status.HTTP_200_OK)
+        else:
+            return Response({"message": "Cannot enable more users than allowed logins"}, status=status.HTTP_400_BAD_REQUEST)

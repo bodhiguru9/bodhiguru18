@@ -71,7 +71,8 @@ class Account(AbstractBaseUser):
         blank=False, default = '1234567890',
         null=False
     )
-    validity = models.DateTimeField(default=timezone.now() + timedelta(days=30))
+    
+    validity = models.IntegerField(default=30)  # Validity in days as integer
 
 
     date_joined = models.DateTimeField(auto_now_add = True)
