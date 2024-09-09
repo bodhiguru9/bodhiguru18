@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from series.models import Series, Seasons, SeasonLota
+from series.models import Series, Seasons, SeasonLota, ItemSeason
 #from series.models import AssessmentSeason, ItemSeason, LearningCourseSeason, QuadGameSeason
 from series.models import AssessmentSeason, LearningCourseSeason, ItemSeason
 from assessments.serializers import AssessmentListSerializer
@@ -8,6 +8,7 @@ from zola.serializers import ItemUserSerializer
 from learningcourse.serializers import LearningCourseListSerializer
 from rest_framework import viewsets
 
+from zola.models import Item
 
 
 class SeriesSerializer(serializers.ModelSerializer):
@@ -120,3 +121,23 @@ class SeasonsListAssignSerializer(serializers.ModelSerializer):
         model = Seasons
         fields = ["id", "name", "description", "thumbnail", "series",
                   "assessments", "item", "learning_course", "seasonlota"]
+
+
+class ItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Item
+        fields = '__all__'
+
+class ItemSeasonSerializer(serializers.ModelSerializer):
+    item = ItemSerializer()
+    season = SeasonSerializer()
+
+    class Meta:
+        model = ItemSeason
+        fields = ['id', 'item', 'season']
+
+
+class ItemSeasonCreateUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ItemSeason
+        fields = ['id', 'item', 'season']

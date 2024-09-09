@@ -22,6 +22,6 @@ urlpatterns = [
     #path('bulk-upload/', BulkUserUploadAPIView.as_view(), name='bulk-user-upload'),
     path('download-sample-csv/', DownloadSampleCSV.as_view(), name='download-sample-csv'),
     path('upload-users/', BulkUserUploadView.as_view(), name='bulk-user-upload'),
-    #path('api/token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    
 
 ] 
