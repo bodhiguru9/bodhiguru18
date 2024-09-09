@@ -3,7 +3,8 @@ from django.db import models
 from industry.models import Industry
 from competency.models import Competency
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime
+
 
 class Org(models.Model):
     name = models.CharField(max_length=250, null=True, blank=True)
@@ -12,6 +13,7 @@ class Org(models.Model):
     logo = models.FileField(upload_to='media/logo', blank=True, null=True)
     validity = models.IntegerField(default=30)  # Default validity is 30 days
     is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=datetime.now)
 
     
     def __str__(self):
@@ -32,6 +34,7 @@ class SubOrg1(models.Model):
 
     name = models.CharField(max_length=250)
     description = models.CharField(max_length=500, blank=True, null=True)
+    created_at = models.DateTimeField(default=datetime.now)
     org = models.ForeignKey(Org, on_delete=models.CASCADE, related_name='org', null=False, blank=False, default= 7)    
 
 

@@ -104,6 +104,10 @@ class Account(AbstractBaseUser):
     def has_module_perms(self, add_label):
         return True   
 
+    """
+    def is_valid(self):
+        return self.is_active and self.active and timezone.now() < (self.date_joined + timedelta(days=self.validity))    
+    """
         
 class UserProfile(models.Model):
     user = models.OneToOneField(Account, on_delete=models.CASCADE)

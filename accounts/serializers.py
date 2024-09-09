@@ -5,6 +5,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from orgss.models import Org
 
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
 
 class LoginSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField()
@@ -144,3 +146,4 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields ="__all__"
+

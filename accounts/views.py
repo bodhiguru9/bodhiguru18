@@ -36,6 +36,8 @@ from django.contrib.sites.shortcuts import get_current_site
 from .serializers import RegisterSerializer
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
+
+
 @api_view(['POST'])
 def register(request):
     request_data = {
@@ -386,3 +388,49 @@ class RegisterView(generics.CreateAPIView):
                 'message': 'User registered successfully.'
             }, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        user = self.user
+
+        # Check if the user's organization is valid
+        if not user.org.is_active:
+            raise ValidationError("Your organization is disabled. Contact your administrator.")
+        
+        org_expiration_date = user.org.created_at + timedelta(days=user.org.validity)
+        if timezone.now() > org_expiration_date:
+            user.org.is_active = False
+            user.org.save()
+            raise ValidationError("Your organization's validity has expired.")
+
+        # Check if the user's validity is still active
+        user_expiration_date = user.date_joined + timedelta(days=user.validity)
+        if timezone.now() > user_expiration_date:
+            raise ValidationError("Your account validity has expired. Contact your administrator.")
+
+        # Add additional data to the response
+        data.update({
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'username': user.username,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'is_active': user.is_active,
+                #'user_role': user.role,
+                'org': {
+                    'name': user.org.name,
+                    'validity': user.org.validity,
+                    'is_active': user.org.is_active,
+                },
+                'validity': user.validity,
+            },
+            'status': 'success',
+            'message': 'User logged in successfully.'
+        })
+
+        return data
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer        
