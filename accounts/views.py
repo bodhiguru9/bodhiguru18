@@ -1,8 +1,10 @@
 from django.shortcuts import render, get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from accounts.serializers import SignUpSerializer, UserSerializer, profileSerializer, WelcomeEmailSerializer
-from accounts.models import Account, Profile, EmailConfirmationToken
+from accounts.serializers import (SignUpSerializer, UserSerializer, LoginSerializer,
+                                    profileSerializer, WelcomeEmailSerializer, RegisterSerializer,
+                                    AccountSerializer)
+from accounts.models import Account, Profile, EmailConfirmationToken, UserProfile
 from django.contrib.auth.hashers import make_password
 from rest_framework import status, generics
 from django.contrib.auth.models import User
@@ -16,7 +18,7 @@ from django.utils import timezone
 
 from rest_framework.views import APIView
 from accounts.utils import send_confirmation_email
-from accounts.serializers import LoginSerializer
+
 from orgss.models import Org
 from django.conf import settings
 
@@ -33,7 +35,6 @@ from .serializers import BulkUserUploadSerializer
 import csv
 
 from django.contrib.sites.shortcuts import get_current_site
-from .serializers import RegisterSerializer
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 
 
@@ -433,4 +434,19 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return data
 
 class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer        
+    serializer_class = CustomTokenObtainPairSerializer  
+
+class UserListView(generics.ListAPIView):
+    serializer_class = AccountSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user  # Get the authenticated user (admin or sub-admin)
+
+        # Check if the user has an admin or sub-admin role
+        if user.role in ['admin', 'sub-admin']:
+            # Admin or sub-admin can view users in their org and sub-org
+            return Account.objects.filter(org=user.org, sub_org=user.sub_org)
+        else:
+            # Return empty queryset for non-admin or non-sub-admin users
+            return Account.objects.none()

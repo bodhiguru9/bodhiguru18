@@ -16,7 +16,7 @@ class SeriesAssignUser(models.Model):
         unique_together = ["user", "series"]
 
     def __str__(self):
-        return f"{self.user.username} - {self.series.name}"
+        return f"{self.user.email} - {self.series.name}"
 
 class AssessmentProgress(models.Model):
     user = models.ForeignKey(Account, on_delete=models.CASCADE)
