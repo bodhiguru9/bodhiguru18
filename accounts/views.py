@@ -34,6 +34,7 @@ from rest_framework.parsers import MultiPartParser
 from .serializers import BulkUserUploadSerializer
 
 import csv
+from .permissions import IsAdminOrSubAdminOfOrg
 
 from django.contrib.sites.shortcuts import get_current_site
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
@@ -462,7 +463,7 @@ class OrgUserListView(APIView):
 class DisableUserView(generics.UpdateAPIView):
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminOrSubAdminOfOrg]  # Apply custom permission
 
     def update(self, request, *args, **kwargs):
         account = self.get_object()
@@ -481,7 +482,7 @@ class DisableUserView(generics.UpdateAPIView):
 class EnableUserView(generics.UpdateAPIView):
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminOrSubAdminOfOrg]  # Apply custom permission
 
     def update(self, request, *args, **kwargs):
         account = self.get_object()
