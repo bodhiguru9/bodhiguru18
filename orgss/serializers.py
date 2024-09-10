@@ -21,6 +21,9 @@ class OrgListSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'industry', 'validity', 'is_active', 'number_of_logins']
 
 class SubOrgSerializer(serializers.ModelSerializer):
+    org = serializers.SlugRelatedField(queryset=Org.objects.all(), slug_field='name')
+
+
     class Meta:
         model = SubOrg1
         fields = ['id', 'name', 'description', 'org']
@@ -32,6 +35,8 @@ class SubOrgListSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'org']
 
 class RoleSerializer(serializers.ModelSerializer):
+    suborg = serializers.SlugRelatedField(queryset=SubOrg1.objects.all(), slug_field='name')
+
     class Meta:
         model = Role1
         fields = ['id', 'role_type', 'suborg']

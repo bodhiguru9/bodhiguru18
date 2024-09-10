@@ -15,6 +15,10 @@ from series.models import Seasons, AssessmentSeason, ItemSeason, Series
 
 from orgss.models import Role1
 from accounts.models import Account
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+
+from series.permissions import IsAdminOrSubAdmin
 
 class SeriesAssignUserViewSet(ViewSet):
     permission_classes = [IsAuthenticated]
@@ -346,3 +350,18 @@ class AssignSeriesByRoleViewSet(ViewSet):
             "message": "No users found with this role"
         }
         return Response(response, status=status.HTTP_200_OK)
+
+class AssignSeriesUserViewSet(viewsets.ModelViewSet):
+    queryset = SeriesAssignUser.objects.all()
+    serializer_class = SeriesAssignUserSerializer
+    permission_classes = [IsAuthenticated, IsAdminOrSubAdmin]
+
+    def get_queryset(self):
+        user_role = self.request.user.role
+        if user_role.role_type == 'admin':
+            # Admins can see all assignments in their org
+            return SeriesAssignUser.objects.filter(series__sub_org__org=user_role.suborg.org)
+        elif user_role.role_type == 'sub-admin':
+            # Sub-admins can see assignments linked to their sub-org only
+            return SeriesAssignUser.objects.filter(series__sub_org=user_role.suborg)
+        return SeriesAssignUser.objects.none()        

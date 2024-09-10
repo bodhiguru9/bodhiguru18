@@ -2,8 +2,8 @@ from django.urls import path, include
 
 from rest_framework.routers import DefaultRouter
 
-from assign.views import SeriesAssignUserViewSet, ProgressCheckViewSet
-from assign.views import AssessmentProgressViewSet, ItemProgressViewSet
+from assign.views import (AssessmentProgressViewSet, ItemProgressViewSet,
+                            AssignSeriesUserViewSet, SeriesAssignUserViewSet, ProgressCheckViewSet)
 
 from assign.views import AssignSeriesByRoleViewSet
 
@@ -19,10 +19,14 @@ ItemProgressViewSetRouter.register("", ItemProgressViewSet, basename="item-progr
 ProgressCheckViewSetRouter.register("", ProgressCheckViewSet, basename="progress-check")
 AssignSeriesByRoleViewSetRouter.register("", AssignSeriesByRoleViewSet, basename="assign-series-by-role")
 
+router = DefaultRouter()
+router.register(r'assign', AssignSeriesUserViewSet, basename='assign')
+
 urlpatterns = [
     path("series/", include(SeriesAssignUserViewSetRouter.urls)),
     path("assessmentprogress/", include(AssessmentProgressViewSetRouter.urls)),
     path("itemprogress/", include(ItemProgressViewSetRouter.urls)),
     path("progresscheck/", include(ProgressCheckViewSetRouter.urls)),
     path("assignseriesbyrole/", include(AssignSeriesByRoleViewSetRouter.urls)),
+    path('', include(router.urls)),
 ]

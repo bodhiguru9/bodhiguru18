@@ -4,15 +4,16 @@ from rest_framework.routers import DefaultRouter
 
 from series.views import (SeriesViewSet, SeasonViewSet, SeasonLotaViewSet,
                             ItemSeasonListCreateView, ItemSeasonRetrieveUpdateView,
-                            SeriesAdminViewSet, SeasonAdminViewSet)
+                            SeriesAdminViewSet, SeasonAdminViewSet, ItemSeasonViewSet)
 
 
 
 router = DefaultRouter()
 router.register(r'series', SeriesViewSet)
 router.register(r'seasons', SeasonViewSet)
-router.register(r'seriesadmin', SeriesViewSet, basename='series_admin')
-router.register(r'seasonsadmin', SeasonViewSet, basename='seasons_admin')
+router.register(r'item-seasons', ItemSeasonViewSet, basename='itemseason')
+#router.register(r'seriesadmin', SeriesViewSet, basename='series_admin')
+#router.register(r'seasonsadmin', SeasonViewSet, basename='seasons_admin')
 
 urlpatterns = [
     path('', include(router.urls)),

@@ -14,20 +14,41 @@ from rest_framework import viewsets
 from .permissions import IsAdminOrReadOnly, IsSubAdminOrReadOnly
 
 from rest_framework import viewsets
+from rest_framework.decorators import action
 
 
 class OrgViewSet(viewsets.ModelViewSet):
     queryset = Org.objects.all()
     serializer_class = OrgSerializer
+    permission_classes = [IsAuthenticated]
 
 class SubOrgViewSet(viewsets.ModelViewSet):
     queryset = SubOrg1.objects.all()
     serializer_class = SubOrgSerializer
+    permission_classes = [IsAuthenticated]
+
+    # Admin or sub-admin can only access sub-orgs linked to their org/sub-org
+    def get_queryset(self):
+        user_role = self.request.user.role
+        if user_role.role_type == 'admin':
+            return SubOrg1.objects.filter(org=user_role.suborg.org)
+        elif user_role.role_type == 'sub-admin':
+            return SubOrg1.objects.filter(id=user_role.suborg.id)
+        return SubOrg1.objects.none()
 
 class RoleViewSet(viewsets.ModelViewSet):
     queryset = Role1.objects.all()
-    serializer_class = RoleSerializer
+    spermission_classes = [IsAuthenticated]
 
+    # Admin or sub-admin can only access roles linked to their org/sub-org
+    def get_queryset(self):
+        user_role = self.request.user.role
+        if user_role.role_type == 'admin':
+            return Role.objects.filter(suborg__org=user_role.suborg.org)
+        elif user_role.role_type == 'sub-admin':
+            return Role.objects.filter(suborg=user_role.suborg)
+        return Role.objects.none()
+"""
 class OrgAdminViewSet(viewsets.ModelViewSet):
     queryset = Org.objects.all()
     serializer_class = OrgAdminSerializer
@@ -54,3 +75,4 @@ class SubOrgAdminViewSet(viewsets.ModelViewSet):
             elif role.role_type == 'sub-admin':
                 return SubOrg1.objects.filter(id=role.suborg.id)
         return SubOrg1.objects.none()    
+"""        

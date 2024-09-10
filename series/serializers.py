@@ -9,20 +9,17 @@ from learningcourse.serializers import LearningCourseListSerializer
 from rest_framework import viewsets
 
 from zola.models import Item
+from orgss.models import SubOrg1
 
 
 class SeriesSerializer(serializers.ModelSerializer):
+    sub_org = serializers.SlugRelatedField(queryset=SubOrg1.objects.all(), slug_field='name')
+
     class Meta:
         model = Series
         fields = ["name", "description", "thumbnail", "sub_org"]
 
-"""
-class SeriesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Series
-        fields = ["name", "description", "thumbnail", "sub_org"]
 
-"""
 class SeriesListSerializer(serializers.ModelSerializer):
     sub_org = serializers.SerializerMethodField()
     seasons = serializers.SerializerMethodField()
@@ -42,6 +39,8 @@ class SeriesListSerializer(serializers.ModelSerializer):
 
 
 class SeasonSerializer(serializers.ModelSerializer):
+    series = serializers.SlugRelatedField(queryset=Series.objects.all(), slug_field='name')
+
     class Meta:
         model = Seasons
         fields = ["name", "description", "thumbnail", "series"]
@@ -129,8 +128,8 @@ class ItemSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ItemSeasonSerializer(serializers.ModelSerializer):
-    item = ItemSerializer()
-    season = SeasonSerializer()
+    item = serializers.SlugRelatedField(queryset=Item.objects.all(), slug_field='item_name')
+    season = serializers.SlugRelatedField(queryset=Seasons.objects.all(), slug_field='name')
 
     class Meta:
         model = ItemSeason
@@ -153,3 +152,4 @@ class SeriesAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = Series
         fields = ['id', 'name', 'sub_org', 'seasons']        
+

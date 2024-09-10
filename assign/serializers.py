@@ -4,8 +4,13 @@ from assign.models import SeriesAssignUser
 from assign.models import AssessmentProgress, ItemProgress
 
 from series.serializers import SeriesListSerializer
+from accounts.models import Account
+from series.models import Series
 
 class SeriesAssignUserSerializer(serializers.ModelSerializer):
+    user = serializers.SlugRelatedField(queryset=Account.objects.all(), slug_field='email')
+    series = serializers.SlugRelatedField(queryset=Series.objects.all(), slug_field='name')
+
     class Meta:
         model = SeriesAssignUser
         fields = ["user", "series", "is_completed", "progress"]
