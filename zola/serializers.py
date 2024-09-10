@@ -76,4 +76,12 @@ class ItemResultSerializer(serializers.ModelSerializer):
 class ItemSearchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
-        fields = ['id', 'item_name', 'tags']        
+        fields = ['id', 'item_name', 'tags']   
+
+class ItemLibrarySerializer(serializers.ModelSerializer):
+    competencys = CompetencySerializer(many=True)
+
+    class Meta:
+        model = Item
+        depth = 1
+        fields = '__all__'                

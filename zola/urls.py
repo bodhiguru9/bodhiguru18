@@ -6,7 +6,7 @@ from zola.views import ItemList, item_result, item_rec
 from zola.views import ItemViewSet, ItemHandleViewSet
 from zola.views import ItemProcessingViewSet, ItemAnalysticsViewSet
 from zola.views import (LeaderBoardViewSet, CompetencyBoardViewSet, CompetencyAttemptAnalyticsViewSet,
-                        SubmitScoreView, CheckLevelProgressionView, ItemSearchAPIView)
+                        SubmitScoreView, CheckLevelProgressionView, ItemSearchAPIView, ItemLibraryAPIView)
 
 ItemViewSetRouter = DefaultRouter()
 ItemHandleViewSetRouter = DefaultRouter()
@@ -39,5 +39,6 @@ urlpatterns = [
     path('submit-score/', SubmitScoreView.as_view(), name='submit-score'),
     path('check-level-progression/', CheckLevelProgressionView.as_view(), name='check-level-progression'),
     path('items/search/', ItemSearchAPIView.as_view(), name='item-search'),
+    path('item_library/', ItemLibraryAPIView.as_view(), name='item-list')
 
 ]

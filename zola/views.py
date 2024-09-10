@@ -15,7 +15,7 @@ from rest_framework_tracking.mixins import LoggingMixin
 
 from zola.serializers import (ItemListSerializer1, ItemEmotionSerializer, ItemRecommendSerializer,
                                 ItemLiSerializer, ItemUserSerializer, ItemCreateSerializer,
-                                ItemResultSerializer, ItemSerializer, ItemSearchSerializer)
+                                ItemResultSerializer, ItemSerializer, ItemSearchSerializer, ItemLibrarySerializer)
 
 from zola.models import Item, ItemResult
 from accounts.models import Account, UserProfile
@@ -37,6 +37,7 @@ import threading
 nlp = spacy.load('en_core_web_sm')
 
 from django.db.models import Sum
+from rest_framework import filters
 
 
 class ItemViewSet(LoggingMixin, ViewSet):
@@ -64,10 +65,10 @@ class ItemViewSet(LoggingMixin, ViewSet):
         if user_role == 'admin':
             suborg = user.role.suborg
             users = Account.objects.filter(role__suborg=suborg)
-            roles = Role.objects.filter(suborg=suborg)
+            roles = Role1.objects.filter(suborg=suborg)
         elif user_role == 'super_admin' and suborg_id:
             users = Account.objects.filter(role__suborg__id=suborg_id)
-            roles = Role.objects.filter(suborg__id=suborg_id)
+            roles = Role1.objects.filter(suborg__id=suborg_id)
         elif user_role == 'super_admin':
             org = user.org
             users = Account.objects.filter(org=org)
@@ -819,3 +820,9 @@ class ItemSearchAPIView(generics.ListAPIView):
             for tag in tags_list[1:]:
                 queryset = queryset.filter(tags__icontains=tag.strip())
         return queryset
+
+class ItemLibraryAPIView(generics.ListAPIView):
+    queryset = Item.objects.all()  # Fetch all items from the database
+    serializer_class = ItemLibrarySerializer
+    filter_backends = [filters.SearchFilter]  # Enable searching
+    search_fields = ['name', 'description', 'tags']         
