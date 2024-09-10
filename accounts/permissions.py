@@ -25,3 +25,11 @@ class IsAdminOrSubAdminOfOrg(permissions.BasePermission):
             return False
 
         return False
+
+    def has_permission1(self, request, view):
+        # Assuming you have a field is_admin on the user model
+        return request.user.is_authenticated and request.user.is_admin
+
+    def has_object_permission(self, request, view, obj):
+        # Allow access only if the user is an admin of the org/sub-org
+        return obj.org == request.user.org or obj.sub_org == request.user.sub_org    

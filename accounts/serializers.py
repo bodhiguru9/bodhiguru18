@@ -155,7 +155,7 @@ class UserSerializer(serializers.ModelSerializer):
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = '__all__'      
+        fields = ['id', 'first_name', 'last_name', 'email', 'org', 'sub_org', 'role']    
 
 class UserProfileSerializer1(serializers.ModelSerializer):
     user = AccountSerializer()

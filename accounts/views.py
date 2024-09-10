@@ -6,7 +6,7 @@ from accounts.serializers import (SignUpSerializer, UserSerializer, LoginSeriali
                                     UserProfileSerializer1, UserProfileSerializer, AccountSerializer)
 from accounts.models import Account, Profile, EmailConfirmationToken, UserProfile
 from django.contrib.auth.hashers import make_password
-from rest_framework import status, generics
+from rest_framework import status, generics, permissions
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.utils.crypto import get_random_string
@@ -39,6 +39,7 @@ from .permissions import IsAdminOrSubAdminOfOrg
 from django.contrib.sites.shortcuts import get_current_site
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 from django.utils.timezone import now
+
 
 
 
@@ -438,7 +439,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer  
-
+"""
 class OrgUserListView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -458,7 +459,43 @@ class OrgUserListView(APIView):
 
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
+"""
 
+class IsAdminOfOrgOrSubOrg(permissions.BasePermission):
+    """
+    Custom permission to check if the user is an admin of the org or sub-org.
+    """
+    def has_permission(self, request, view):
+        # Assuming you have a way to determine if a user is an admin
+        return request.user.is_authenticated and request.user.is_admin
+
+    def has_object_permission(self, request, view, obj):
+        # Only allow if the admin belongs to the same org/sub-org as the user being viewed
+        return obj.org == request.user.org or obj.sub_org == request.user.sub_org
+
+
+class UserListView(generics.ListAPIView):
+    """
+    Admin can view the list of users within their org/sub-org.
+    """
+    serializer_class = AccountSerializer
+    permission_classes = [permissions.IsAuthenticated, IsAdminOfOrgOrSubOrg]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Account.objects.filter(org=user.org, sub_org=user.sub_org)
+
+
+class UserUpdateView(generics.RetrieveUpdateAPIView):
+    """
+    Admin can update user details in their org/sub-org.
+    """
+    serializer_class = AccountSerializer
+    permission_classes = [permissions.IsAuthenticated, IsAdminOfOrgOrSubOrg]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Account.objects.filter(org=user.org, sub_org=user.sub_org)
 
 class DisableUserView(generics.UpdateAPIView):
     queryset = Account.objects.all()
