@@ -3,6 +3,7 @@ from django.db import models
 class Resource(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
+    thumbnail = models.FileField(upload_to='media/item/thumbnail', null=True, blank=True)  
     youtube_link = models.URLField(max_length=200, blank=True, null=True)
 
     def __str__(self):
