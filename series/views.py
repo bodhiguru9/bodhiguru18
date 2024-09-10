@@ -7,13 +7,13 @@ from rest_framework.permissions import IsAuthenticated
 
 from series.models import Series, Seasons, SeasonLota, ItemSeason
 from assign.models import SeriesAssignUser
-from series.serializers import SeriesSerializer, SeasonSerializer, ItemSeasonSerializer, ItemSeasonCreateUpdateSerializer
-
-from series.serializers import SeasonsListAssignSerializer
-from series.serializers import SeasonLotaSerializer, SeasonLotaListSerializer
+from series.serializers import (SeriesSerializer, SeasonSerializer, ItemSeasonSerializer,
+                                ItemSeasonCreateUpdateSerializer, SeasonsListAssignSerializer,
+                                SeasonLotaSerializer, SeasonLotaListSerializer, SeriesAdminSerializer,
+                                SeasonAdminSerializer)
 
 from rest_framework import viewsets
-
+from .permissions import IsAdminOrSubAdmin
 
 
 class SeriesViewSet(viewsets.ModelViewSet):
@@ -154,3 +154,35 @@ class ItemSeasonRetrieveUpdateView(generics.RetrieveUpdateAPIView):
             'message': 'Item-Season mapping updated successfully',
             'data': serializer.data
         }, status=status.HTTP_200_OK)
+
+class SeriesAdminViewSet(viewsets.ModelViewSet):
+    serializer_class = SeriesAdminSerializer
+    permission_classes = [IsAuthenticated, IsAdminOrSubAdmin]
+
+    def get_queryset(self):
+        # Filter Series by the sub-org linked to the user
+        role = getattr(self.request.user, 'role', None)
+        if role:
+            if role.role_type == 'admin':
+                # Admin can see all series in their org's sub-orgs
+                return Series.objects.filter(sub_org__org=role.sub_org.org)
+            elif role.role_type == 'sub-admin':
+                # Sub-admin can only see series in their sub-org
+                return Series.objects.filter(sub_org=role.sub_org)
+        return Series.objects.none()
+
+class SeasonAdminViewSet(viewsets.ModelViewSet):
+    serializer_class = SeasonAdminSerializer
+    permission_classes = [IsAuthenticated, IsAdminOrSubAdmin]
+
+    def get_queryset(self):
+        # Filter Seasons by the series that belongs to the sub-org of the user
+        role = getattr(self.request.user, 'role', None)
+        if role:
+            if role.role_type == 'admin':
+                # Admin can see all seasons in their org's sub-org series
+                return Season.objects.filter(series__sub_org__org=role.sub_org.org)
+            elif role.role_type == 'sub-admin':
+                # Sub-admin can only see seasons in their sub-org's series
+                return Season.objects.filter(series__sub_org=role.sub_org)
+        return Season.objects.none()

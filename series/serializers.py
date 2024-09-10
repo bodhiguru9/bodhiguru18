@@ -141,3 +141,15 @@ class ItemSeasonCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ItemSeason
         fields = ['id', 'item', 'season']
+
+class SeasonAdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Seasons
+        fields = ['id', 'name', 'series']
+
+class SeriesAdminSerializer(serializers.ModelSerializer):
+    seasons = SeasonSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Series
+        fields = ['id', 'name', 'sub_org', 'seasons']        
