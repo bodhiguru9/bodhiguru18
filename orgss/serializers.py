@@ -46,3 +46,15 @@ class RoleListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role1
         fields = ['id', 'role_type', 'suborg']
+
+class OrgAdminSerializer(serializers.ModelSerializer):
+    suborgs = serializers.StringRelatedField(many=True, read_only=True)
+
+    class Meta:
+        model = Org
+        fields = ['id', 'name', 'suborgs']
+
+class SubOrgAdminSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubOrg1
+        fields = ['id', 'name', 'org']
