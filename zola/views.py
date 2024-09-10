@@ -38,6 +38,8 @@ nlp = spacy.load('en_core_web_sm')
 
 from django.db.models import Sum
 from rest_framework import filters
+from rest_framework.filters import SearchFilter
+from django.db.models import Q
 
 
 class ItemViewSet(LoggingMixin, ViewSet):
@@ -808,17 +810,27 @@ class CheckLevelProgressionView(APIView):
             return Response({"message": "Your total score for this level is not enough to move to the next level. Your score needs to be more than 180"}, status=status.HTTP_200_OK)
 
 
-class ItemSearchAPIView(generics.ListAPIView):
+class ItemSearchView(generics.ListAPIView):
     serializer_class = ItemSearchSerializer
 
     def get_queryset(self):
         queryset = Item.objects.all()
-        tags_query = self.request.query_params.get('tags', None)
-        if tags_query:
-            tags_list = tags_query.split(',')
-            queryset = queryset.filter(tags__icontains=tags_list[0].strip())
-            for tag in tags_list[1:]:
-                queryset = queryset.filter(tags__icontains=tag.strip())
+        tags = self.request.query_params.get('tags', None)
+        competency_id = self.request.query_params.get('competency', None)
+
+        if tags:
+            tag_list = tags.split(',')
+            queryset = queryset.filter(
+                Q(tags__icontains=tag_list[0])
+            )
+            for tag in tag_list[1:]:
+                queryset = queryset.filter(
+                Q(tags__icontains=tag)
+                )
+
+        if competency_id:
+            queryset = queryset.filter(competency__id=competency_id)
+
         return queryset
 
 class ItemLibraryAPIView(generics.ListAPIView):
