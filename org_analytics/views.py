@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from accounts.models import UserProfile, Account
 from rest_framework.exceptions import PermissionDenied
 
+
 class OrgAnalyticsView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
@@ -32,27 +33,74 @@ class OrgAnalyticsView(generics.GenericAPIView):
             # Calculate leaderboard based on percentile score
             users_profiles = UserProfile.objects.filter(user__sub_org=sub_org).exclude(competency_score__isnull=True)
             leaderboard = []
-            """
+
+            # Check if there are any valid scores available in the sub-org
+            if not users_profiles.exists():
+                return Response({
+                    'total_users': total_users,
+                    'total_scenarios_attempted': total_scenarios_attempted,
+                    'scenarios_per_user': scenarios_per_user_dict,
+                    'leaderboard': "No scores available."
+                })
+
+            all_scores = []
+
             # Process leaderboard based on competency scores
             for profile in users_profiles:
                 competency_scores = profile.competency_score.split(',')  # Split on comma to retrieve scores
-                scores = [int(score.split(':')[-1]) for score in competency_scores]  # Assuming format 'competency:score'
-                average_score = sum(scores) / len(scores) if scores else 0
 
-                leaderboard.append({
-                    'email': profile.user.email,  # Access the email via the linked Account model
-                    'average_score': average_score
-                })
+                scores = []
+                for score in competency_scores:
+                    try:
+                        score_value = score.split(':')[-1].strip()
+                        if score_value:  # Ensure non-empty score
+                            scores.append(int(score_value))
+                    except ValueError:
+                        continue  # Skip invalid scores
 
-            # Sort leaderboard by average score in descending order
-            leaderboard = sorted(leaderboard, key=lambda x: x['average_score'], reverse=True)
-            """
+                # If no valid scores for a user, mark as 'No score'
+                if not scores:
+                    leaderboard.append({
+                        'email': profile.user.email,
+                        'average_score': 'No score',
+                        'percentile': 'No percentile'
+                    })
+                else:
+                    # Calculate the average score
+                    average_score = sum(scores) / len(scores)
+                    all_scores.append(average_score)
+
+                    leaderboard.append({
+                        'email': profile.user.email,
+                        'average_score': average_score
+                    })
+
+            # Calculate percentiles for users with valid scores
+            if all_scores:
+                all_scores_sorted = sorted(all_scores)
+                total_users_with_scores = len(all_scores_sorted)
+
+                for entry in leaderboard:
+                    if entry['average_score'] != 'No score':
+                        rank = all_scores_sorted.index(entry['average_score']) + 1
+                        percentile = (rank / total_users_with_scores) * 100
+                        entry['percentile'] = percentile
+                    else:
+                        entry['percentile'] = 'No percentile'
+
+            # Sort leaderboard by percentile in descending order
+            leaderboard = sorted(
+                [user for user in leaderboard if user['average_score'] != 'No score'],
+                key=lambda x: x['percentile'],
+                reverse=True
+            )
+
             # Prepare response data
             data = {
                 'total_users': total_users,
                 'total_scenarios_attempted': total_scenarios_attempted,
                 'scenarios_per_user': scenarios_per_user_dict,
-                #'leaderboard': leaderboard
+                'leaderboard': leaderboard
             }
 
             return Response(data)
