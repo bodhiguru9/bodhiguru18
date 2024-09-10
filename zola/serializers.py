@@ -72,3 +72,8 @@ class ItemResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = ItemResult
         fields = ['id', 'user', 'item', 'score', 'created_at']
+
+class ItemSearchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Item
+        fields = ['id', 'item_name', 'tags']        

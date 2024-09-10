@@ -15,7 +15,7 @@ from rest_framework_tracking.mixins import LoggingMixin
 
 from zola.serializers import (ItemListSerializer1, ItemEmotionSerializer, ItemRecommendSerializer,
                                 ItemLiSerializer, ItemUserSerializer, ItemCreateSerializer,
-                                ItemResultSerializer, ItemSerializer)
+                                ItemResultSerializer, ItemSerializer, ItemSearchSerializer)
 
 from zola.models import Item, ItemResult
 from accounts.models import Account, UserProfile
@@ -805,3 +805,17 @@ class CheckLevelProgressionView(APIView):
                 return Response({"message": "You have already reached the highest level."}, status=status.HTTP_200_OK)
         else:
             return Response({"message": "Your total score for this level is not enough to move to the next level. Your score needs to be more than 180"}, status=status.HTTP_200_OK)
+
+
+class ItemSearchAPIView(generics.ListAPIView):
+    serializer_class = ItemSearchSerializer
+
+    def get_queryset(self):
+        queryset = Item.objects.all()
+        tags_query = self.request.query_params.get('tags', None)
+        if tags_query:
+            tags_list = tags_query.split(',')
+            queryset = queryset.filter(tags__icontains=tags_list[0].strip())
+            for tag in tags_list[1:]:
+                queryset = queryset.filter(tags__icontains=tag.strip())
+        return queryset

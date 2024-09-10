@@ -7,7 +7,7 @@ from datetime import timedelta, datetime
 
 
 class Org(models.Model):
-    name = models.CharField(max_length=250, null=True, blank=True)
+    name = models.CharField(max_length=250, null=True, blank=True, unique=True)
     description = models.CharField(max_length=500, blank=True, null=True)
     industry = models.ForeignKey(Industry, on_delete=models.CASCADE, related_name='industry', null=True, blank=True)
     logo = models.FileField(upload_to='media/logo', blank=True, null=True)
