@@ -3,4 +3,5 @@ from org_analytics.views import OrgAnalyticsView
 
 urlpatterns = [
     path('analytics/', OrgAnalyticsView.as_view(), name='org-analytics'),
+    path('analytics/<int:suborg_id>/', OrgAnalyticsView.as_view(), name='org-analytics'),
 ]

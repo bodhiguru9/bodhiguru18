@@ -32,7 +32,7 @@ class OrgAnalyticsView(generics.GenericAPIView):
             # Calculate leaderboard based on percentile score
             users_profiles = UserProfile.objects.filter(user__sub_org=sub_org).exclude(competency_score__isnull=True)
             leaderboard = []
-
+            """
             # Process leaderboard based on competency scores
             for profile in users_profiles:
                 competency_scores = profile.competency_score.split(',')  # Split on comma to retrieve scores
@@ -46,13 +46,13 @@ class OrgAnalyticsView(generics.GenericAPIView):
 
             # Sort leaderboard by average score in descending order
             leaderboard = sorted(leaderboard, key=lambda x: x['average_score'], reverse=True)
-
+            """
             # Prepare response data
             data = {
                 'total_users': total_users,
                 'total_scenarios_attempted': total_scenarios_attempted,
                 'scenarios_per_user': scenarios_per_user_dict,
-                'leaderboard': leaderboard
+                #'leaderboard': leaderboard
             }
 
             return Response(data)
