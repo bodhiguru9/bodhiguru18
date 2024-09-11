@@ -17,7 +17,7 @@ class SeriesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Series
-        fields = ["name", "description", "thumbnail", "sub_org"]
+        fields = ["id", "name", "description", "thumbnail", "sub_org"]
 
 
 class SeriesListSerializer(serializers.ModelSerializer):
@@ -43,7 +43,7 @@ class SeasonSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Seasons
-        fields = ["name", "description", "thumbnail", "series"]
+        fields = ["id", "name", "description", "thumbnail", "series"]
 
 
 class SeasonLotaSerializer(serializers.ModelSerializer):
