@@ -44,10 +44,10 @@ class RoleViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user_role = self.request.user.role
         if user_role.role_type == 'admin':
-            return Role.objects.filter(suborg__org=user_role.suborg.org)
+            return Role1.objects.filter(suborg__org=user_role.suborg.org)
         elif user_role.role_type == 'sub-admin':
-            return Role.objects.filter(suborg=user_role.suborg)
-        return Role.objects.none()
+            return Role1.objects.filter(suborg=user_role.suborg)
+        return Role1.objects.none()
 """
 class OrgAdminViewSet(viewsets.ModelViewSet):
     queryset = Org.objects.all()
