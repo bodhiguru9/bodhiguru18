@@ -16,23 +16,20 @@ class UserListView(generics.ListAPIView):
         sub_org = user.userprofile.user.sub_org
         return UserProfile.objects.filter(user__sub_org=sub_org)
 
+
 class UserDetailView(generics.RetrieveAPIView):
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated, IsAdminOrSubAdmin]
-
+    
     def get_object(self):
-        # Get the UserProfile instance based on the pk provided
-        try:
-            user_profile = UserProfile.objects.get(pk=self.kwargs['pk'])
-        except UserProfile.DoesNotExist:
-            raise NotFound("UserProfile not found.")
-        
-        # Retrieve the related Account based on email or user_id from the profile's user
-        account = Account.objects.filter(email=user_profile.user.email).first()  # Adjust this if user_id is used
-        
-        # Check the account role permissions
-        request_user_account = Account.objects.filter(email=self.request.user.email).first()
-        if request_user_account and request_user_account.role.role_type in ['admin', 'sub-admin']:
-            return user_profile  # Return the profile if the user has permission
-        
-        raise PermissionDenied("You don't have permission to view this user's details.")
+        email = self.kwargs['email']  # Get the email from the URL
+        account = Account.objects.filter(email=email).first()
+
+        if account and account.role.role_type in ['admin', 'sub-admin']:
+            # Assuming UserProfile is linked via OneToOneField with the Account model through email
+            try:
+                return UserProfile.objects.get(user=account)
+            except UserProfile.DoesNotExist:
+                raise NotFound("UserProfile does not exist for this account.")
+        else:
+            raise PermissionDenied("You don't have permission to view this user's details.")
