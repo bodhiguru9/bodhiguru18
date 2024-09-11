@@ -38,7 +38,8 @@ class SubOrgViewSet(viewsets.ModelViewSet):
 
 class RoleViewSet(viewsets.ModelViewSet):
     queryset = Role1.objects.all()
-    spermission_classes = [IsAuthenticated]
+    serializer_class = RoleSerializer
+    permission_classes = [IsAuthenticated]
 
     # Admin or sub-admin can only access roles linked to their org/sub-org
     def get_queryset(self):
