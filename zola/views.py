@@ -429,7 +429,7 @@ class ItemProcessingViewSet(LoggingMixin, ViewSet):
             power_word_list,
             negative_word_list
         )
-        
+        """
         detected_power_words = [word for word in words if 'power' in detect_words(word).lower()]
         detected_weak_words = [word for word in words if 'weak' in detect_words(word).lower()]
 
@@ -439,7 +439,7 @@ class ItemProcessingViewSet(LoggingMixin, ViewSet):
             args=(words,)
         )
         word_save_thread.start()
-        
+        """
         data = {
             'id': instance.id,
             'item_name': instance.item_name,
@@ -456,8 +456,8 @@ class ItemProcessingViewSet(LoggingMixin, ViewSet):
             'weekword_detected': user_weak_words,
             'power_word_list': power_word_list,
             'negative_word_list': negative_word_list,
-            'power_word_learned': detected_power_words,
-            'negative_word_learned': detected_weak_words
+            #'power_word_learned': detected_power_words,
+            #'negative_word_learned': detected_weak_words
         }
         
         itemresult = ItemResult.objects.create(
