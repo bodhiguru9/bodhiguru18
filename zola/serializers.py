@@ -68,42 +68,12 @@ class ItemRecommendSerializer(serializers.ModelSerializer):
         depth = 1
         fields = ['coming_across_as','competencys']   
 
-class CompetencySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Competency
-        fields = ['name']
 
-
-class ItemResultCompetencySerializer(serializers.ModelSerializer):
-    competencies = CompetencySerializer(many=True)
-
-    class Meta:
-        model = Item
-        fields = ['item_name', 'competencies']
-
-class ItemResultSerializer(serializers.ModelSerializer):
-    user_email = serializers.EmailField(source='user.email', read_only=True)
-    item = ItemResultCompetencySerializer
-
-    class Meta:
-        model = ItemResult
-        fields = ['user_email', 'item', 'score']
-
-    def create(self, validated_data):
-        item_data = validated_data.pop('item')
-        item = Item.objects.get(name=item_data['item_name'])  # assuming item exists
-        user = validated_data['user']  # assuming user is passed
-        score = validated_data['score']
-        
-        # Create the ItemResult instance
-        item_result = ItemResult.objects.create(user=user, item=item, score=score)
-        return item_result        
-"""
 class ItemResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = ItemResult
         fields = ['id', 'user', 'item', 'score', 'created_at']
-"""
+
 
 class ItemSearchSerializer(serializers.ModelSerializer):
     class Meta:
@@ -116,4 +86,11 @@ class ItemLibrarySerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         depth = 1
-        fields = '__all__'                
+        fields = '__all__'    
+
+class LeaderboardSerializer(serializers.Serializer):
+    user = serializers.CharField(source='user.email')
+    percentile = serializers.FloatField()
+
+    class Meta:
+        fields = ('user', 'percentile')                    

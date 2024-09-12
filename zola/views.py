@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from django.db.models import F
+from django.db.models import F, Q, Sum, FloatField, Count
 from django.http import JsonResponse
 from django.http import FileResponse, Http404
 
@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from rest_framework import status, generics
+from rest_framework import status, generics, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import JSONParser
 from rest_framework.viewsets import ViewSet
@@ -15,7 +15,8 @@ from rest_framework_tracking.mixins import LoggingMixin
 
 from zola.serializers import (ItemListSerializer1, ItemEmotionSerializer, ItemRecommendSerializer,
                                 ItemLiSerializer, ItemUserSerializer, ItemCreateSerializer,
-                                ItemResultSerializer, ItemSerializer, ItemSearchSerializer, ItemLibrarySerializer)
+                                ItemResultSerializer, ItemSerializer, ItemSearchSerializer,
+                                ItemLibrarySerializer, LeaderboardSerializer )
 
 from zola.models import Item, ItemResult
 from accounts.models import Account, UserProfile
@@ -36,10 +37,13 @@ import spacy
 import threading
 nlp = spacy.load('en_core_web_sm')
 
-from django.db.models import Sum
+
 from rest_framework import filters
 from rest_framework.filters import SearchFilter
-from django.db.models import Q
+
+from django.db.models.functions import PercentRank
+
+
 
 
 class ItemViewSet(LoggingMixin, ViewSet):
@@ -837,4 +841,67 @@ class ItemLibraryAPIView(generics.ListAPIView):
     queryset = Item.objects.all()  # Fetch all items from the database
     serializer_class = ItemLibrarySerializer
     filter_backends = [filters.SearchFilter]  # Enable searching
-    search_fields = ['name', 'description', 'tags']         
+    search_fields = ['name', 'description', 'tags']  
+
+class LeaderboardPercentileAPIView(generics.ListAPIView):
+    serializer_class = LeaderboardSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        # Get query parameters
+        competency_id = self.request.query_params.get('competency_id')
+        suborg_id = self.request.query_params.get('suborg_id')
+
+        # Validate query parameters
+        if not competency_id or not suborg_id:
+            return None
+
+        # Get the current user's org
+        user = self.request.user
+        org_id = user.userprofile.org_id
+
+        # Filter ItemResult by org, sub-org, and competency
+        queryset = ItemResult.objects.filter(
+            user__userprofile__org_id=org_id,
+            user__userprofile__suborg_id=suborg_id,
+            item__competency__id=competency_id
+        ).order_by('score')
+
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        # If queryset is None, return validation error
+        if queryset is None:
+            return Response(
+                {"status": "Failed", "message": "Competency ID and Suborg ID are required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        total_users = queryset.count()
+        if total_users == 0:
+            return Response({"detail": "No users found for the selected competency."})
+
+        # List of scores sorted in ascending order
+        scores = list(queryset.values_list('score', flat=True))
+
+        def calculate_percentile(score, scores):
+            below_count = len([s for s in scores if s < score])
+            return (below_count / len(scores)) * 100
+
+        # Attach percentile to each user's score
+        leaderboard_data = []
+        for item_result in queryset:
+            user_email = item_result.user.email
+            score = item_result.score
+            percentile = calculate_percentile(score, scores)
+            leaderboard_data.append({
+                'user': user_email,
+                'percentile': percentile
+            })
+
+        # Sort by percentile in descending order
+        sorted_leaderboard = sorted(leaderboard_data, key=lambda x: x['percentile'], reverse=True)
+
+        return Response(sorted_leaderboard)
