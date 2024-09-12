@@ -162,4 +162,12 @@ class UserProfileSerializer1(serializers.ModelSerializer):
 
     class Meta:
         model = UserProfile
-        fields = ['user', 'is_active']        
+        fields = ['user', 'is_active']  
+
+class CSVUploadSerializer(serializers.Serializer):
+    file = serializers.FileField()
+
+class CSVDownloadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = ['first_name', 'last_name', 'email', 'username', 'password']              

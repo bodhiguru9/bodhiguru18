@@ -3,9 +3,12 @@ from . import views
 from accounts.views import ( SendEmailConfirmationTokenAPIView,
                              UserInformationAPIVIew, confirm_email_view,
                              SendWelcomeEmailView, CustomTokenObtainPairView, UserUpdateView, UserListView,
-                             DownloadSampleCSV, BulkUserUploadView, RegisterView,
+                             DownloadSampleCSV, BulkUserUploadView, RegisterView, AccountViewSet,
                              DisableUserView, EnableUserView)
+from rest_framework.routers import DefaultRouter 
 
+router = DefaultRouter()
+router.register(r'accounts', AccountViewSet, basename='account')
 
 urlpatterns = [
     #path('register/', views.register, name='register'),
@@ -27,5 +30,6 @@ urlpatterns = [
     path('org-users/<int:pk>/', UserUpdateView.as_view(), name='user-update'),
     path('disable-user/<int:pk>/', DisableUserView.as_view(), name='disable-user'),
     path('enable-user/<int:pk>/', EnableUserView.as_view(), name='enable-user'),
+    path('', include(router.urls)),
 
 ] 

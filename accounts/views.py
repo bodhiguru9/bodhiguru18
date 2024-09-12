@@ -3,10 +3,11 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from accounts.serializers import (SignUpSerializer, UserSerializer, LoginSerializer, UserSerializer,
                                     profileSerializer, WelcomeEmailSerializer, RegisterSerializer,
-                                    UserProfileSerializer1, UserProfileSerializer, AccountSerializer)
+                                    UserProfileSerializer1, UserProfileSerializer, AccountSerializer,
+                                    CSVUploadSerializer, CSVDownloadSerializer)
 from accounts.models import Account, Profile, EmailConfirmationToken, UserProfile
 from django.contrib.auth.hashers import make_password
-from rest_framework import status, generics, permissions
+from rest_framework import status, generics, permissions, viewsets
 from django.contrib.auth.models import User
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.utils.crypto import get_random_string
@@ -40,7 +41,8 @@ from django.contrib.sites.shortcuts import get_current_site
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
 from django.utils.timezone import now
 
-
+from rest_framework.decorators import action
+from io import StringIO
 
 
 @api_view(['POST'])
@@ -552,3 +554,81 @@ class EnableUserView(generics.UpdateAPIView):
         user_profile.save()
 
         return Response({"success": "User enabled successfully."}, status=status.HTTP_200_OK)
+
+#csv for bulk upload
+
+class AccountViewSet(viewsets.ViewSet):
+    queryset = Account.objects.all()
+    serializer_class = AccountSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Only allow admin or sub-admin users to manage users of their org/sub-org
+        user = self.request.user
+        if user.role.role_type in ['admin', 'sub-admin']:
+            return Account.objects.filter(org=user.org, sub_org=user.sub_org)
+        return Account.objects.none()
+        
+
+    @action(detail=False, methods=['get'], url_path='download-csv')
+    def download_csv(self, request):
+        # Get the admin/sub-admin's org and prepare CSV template
+        user = request.user
+        if not user.role.role_type in ['admin', 'sub-admin']:
+            return Response({"error": "You are not authorized"}, status=status.HTTP_403_FORBIDDEN)
+        
+        org_name = user.org.name
+        sub_org_name = user.sub_org.name if user.sub_org else "N/A"
+        
+        # Define the CSV headers
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="{org_name}_{sub_org_name}_users.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['first_name', 'last_name', 'email', 'username', 'password'])  # Headers
+        
+        return response
+
+    @action(detail=False, methods=['post'], url_path='upload-csv')
+    def upload_csv(self, request):
+        # Get the admin/sub-admin's org/sub-org
+        user = request.user
+        if not user.role.role_type in ['admin', 'sub-admin']:
+            return Response({"error": "You are not authorized"}, status=status.HTTP_403_FORBIDDEN)
+
+        org = user.org
+        sub_org = user.sub_org
+
+        serializer = CSVUploadSerializer(data=request.data)
+        if serializer.is_valid():
+            csv_file = serializer.validated_data['file']
+            csv_data = csv_file.read().decode('utf-8').splitlines()
+            csv_reader = csv.DictReader(csv_data)
+
+            accounts_created = []
+            errors = []
+
+            for row in csv_reader:
+                try:
+                    account = Account(
+                        first_name=row['first_name'],
+                        last_name=row['last_name'],
+                        email=row['email'],
+                        username=row['username'],
+                        org=org,  # Assign org of admin/sub-admin
+                        sub_org=sub_org,  # Assign sub-org of admin/sub-admin
+                        contact_number='9999999999',  # Default contact number
+                    )
+                    account.set_password(row['password'])  # Hash password
+                    account.save()
+                    accounts_created.append(account.email)
+                except Exception as e:
+                    errors.append({"email": row['email'], "error": str(e)})
+
+            if errors:
+                return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response({"created": accounts_created}, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
