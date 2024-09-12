@@ -40,6 +40,6 @@ urlpatterns = [
     path('check-level-progression/', CheckLevelProgressionView.as_view(), name='check-level-progression'),
     path('items/search/', ItemSearchView.as_view(), name='item-search'),
     path('item_library/', ItemLibraryAPIView.as_view(), name='item-list'),
-    path('leaderboard/', LeaderboardPercentileAPIView.as_view(), name='leaderboard'),
+    path('leaderboardpercentile/', LeaderboardPercentileAPIView.as_view(), name='leaderboard'),
 
 ]

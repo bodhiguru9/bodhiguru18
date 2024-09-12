@@ -843,8 +843,98 @@ class ItemLibraryAPIView(generics.ListAPIView):
     filter_backends = [filters.SearchFilter]  # Enable searching
     search_fields = ['name', 'description', 'tags']  
 
+"""
 class LeaderboardPercentileAPIView(generics.ListAPIView):
+    permission_classes = [permissions.IsAuthenticated]
     serializer_class = LeaderboardSerializer
+
+    def get_queryset(self):
+        # Get query parameters
+        competency_id = self.request.query_params.get('competency_id')
+        suborg_id = self.request.query_params.get('suborg_id')
+
+        # Debug print statements
+        print("Competency ID:", competency_id)
+        print("Suborg ID:", suborg_id)
+
+        # Validate query parameters
+        if not competency_id or not suborg_id:
+            return []
+
+        try:
+            # Get the current user's Account via the email
+            user = self.request.user
+            user_account = Account.objects.get(email=user.email)
+            org_id = user_account.org.id
+            suborg_id = user_account.sub_org.id
+        except Account.DoesNotExist:
+            print("Account does not exist for user:", user.email)
+            return []
+        except AttributeError as e:
+            print("Error retrieving user account information:", e)
+            return []
+
+        # Debug print statements for org and suborg
+        print("Org ID:", org_id)
+        print("Suborg ID:", suborg_id)
+
+        # Filter ItemResults based on competency and suborg
+        item_results = ItemResult.objects.filter(
+            item__competencys__id=competency_id,
+            user__org_id=org_id,
+            user__sub_org_id=suborg_id
+        ).select_related('user', 'item')
+
+        print("Item Results QuerySet:", item_results)
+
+
+        if not item_results.exists():
+            return []
+        
+        if not item_results:
+            return []
+         
+
+        # Calculate percentile scores
+        scores = list(item_results.values_list('score', flat=True))
+        scores.sort()
+
+        def calculate_percentile(score):
+            below_count = len([s for s in scores if s < score])
+            percentile = (below_count / len(scores)) * 100
+            return percentile
+
+        # Attach percentile to each result
+        leaderboard_data = []
+        for result in item_results:
+            percentile = calculate_percentile(result.score)
+            leaderboard_data.append({
+                'user_email': result.user.email,
+                'percentile': percentile
+            })
+
+        # Sort by percentile in descending order
+        sorted_leaderboard = sorted(leaderboard_data, key=lambda x: x['percentile'], reverse=True)
+
+        return sorted_leaderboard
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        if not queryset:
+            return Response(
+                {"status": "Failed", "message": "Competency ID and Suborg ID are required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        return Response({
+            "status": "Success",
+            "message": "Retrieved Successfully",
+            "data": queryset
+        })
+
+"""
+
+class LeaderboardPercentileAPIView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
@@ -854,54 +944,69 @@ class LeaderboardPercentileAPIView(generics.ListAPIView):
 
         # Validate query parameters
         if not competency_id or not suborg_id:
-            return None
+            return []
 
-        # Get the current user's org
+        # Retrieve the user's account
         user = self.request.user
-        org_id = user.userprofile.org_id
+        try:
+            user_account = Account.objects.get(email=user.email)
+        except Account.DoesNotExist:
+            return []
 
-        # Filter ItemResult by org, sub-org, and competency
-        queryset = ItemResult.objects.filter(
-            user__userprofile__org_id=org_id,
-            user__userprofile__suborg_id=suborg_id,
-            item__competency__id=competency_id
-        ).order_by('score')
+        org_id = user_account.org.id
+        suborg_id = user_account.sub_org.id
 
-        return queryset
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-
-        # If queryset is None, return validation error
-        if queryset is None:
-            return Response(
-                {"status": "Failed", "message": "Competency ID and Suborg ID are required"},
-                status=status.HTTP_400_BAD_REQUEST
+        # Get summed scores for each user filtered by competency and suborg
+        item_results = (
+            ItemResult.objects.filter(
+                item__competencys__id=competency_id,
+                user__org_id=org_id,
+                user__sub_org_id=suborg_id
             )
+            .values('user__email')
+            .annotate(total_score=Sum('score'))  # Sum scores for each user
+            .order_by('-total_score')  # Order by total score in descending order
+        )
 
-        total_users = queryset.count()
-        if total_users == 0:
-            return Response({"detail": "No users found for the selected competency."})
+        if not item_results.exists():
+            return []
 
-        # List of scores sorted in ascending order
-        scores = list(queryset.values_list('score', flat=True))
+        # Get scores and calculate percentiles
+        scores = [result['total_score'] for result in item_results]
+        scores.sort(reverse=True)  # Sort scores in descending order
 
         def calculate_percentile(score, scores):
-            below_count = len([s for s in scores if s < score])
-            return (below_count / len(scores)) * 100
+            total_scores = len(scores)
+            lower_scores = len([s for s in scores if s <= score])  # Include scores equal to the current score
+            percentile = (lower_scores / total_scores) * 100
+            return percentile
 
-        # Attach percentile to each user's score
         leaderboard_data = []
-        for item_result in queryset:
-            user_email = item_result.user.email
-            score = item_result.score
-            percentile = calculate_percentile(score, scores)
+        for result in item_results:
+            user_email = result['user__email']
+            total_score = result['total_score']
+            percentile = calculate_percentile(total_score, scores)
             leaderboard_data.append({
-                'user': user_email,
+                'user_email': user_email,
+                'total_score': total_score,
                 'percentile': percentile
             })
 
         # Sort by percentile in descending order
         sorted_leaderboard = sorted(leaderboard_data, key=lambda x: x['percentile'], reverse=True)
 
-        return Response(sorted_leaderboard)
+        return sorted_leaderboard
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        if not queryset:
+            return Response(
+                {"status": "Failed", "message": "Competency ID and Suborg ID are required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        return Response({
+            "status": "Success",
+            "message": "Retrieved Successfully",
+            "data": queryset
+        })

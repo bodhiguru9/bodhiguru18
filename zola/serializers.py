@@ -89,8 +89,5 @@ class ItemLibrarySerializer(serializers.ModelSerializer):
         fields = '__all__'    
 
 class LeaderboardSerializer(serializers.Serializer):
-    user = serializers.CharField(source='user.email')
-    percentile = serializers.FloatField()
-
-    class Meta:
-        fields = ('user', 'percentile')                    
+    user_email = serializers.CharField()
+    percentile = serializers.FloatField()                   
