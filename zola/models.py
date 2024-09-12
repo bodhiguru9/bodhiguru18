@@ -57,8 +57,7 @@ class ItemResult(models.Model):
     score = models.IntegerField(default=0)
     
     def __str__(self):
-        def __str__(self):
-            return f'{self.user.email} - {self.item.name} - {self.score}'
+        return f'{self.user.email} - {self.item.name} - {self.score}'
   
 
 class Suggestion(models.Model):
