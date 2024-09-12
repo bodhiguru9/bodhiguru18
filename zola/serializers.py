@@ -79,7 +79,7 @@ class ItemResultCompetencySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Item
-        fields = ['name', 'competencies']
+        fields = ['item_name', 'competencies']
 
 class ItemResultSerializer(serializers.ModelSerializer):
     user_email = serializers.EmailField(source='user.email', read_only=True)
@@ -91,7 +91,7 @@ class ItemResultSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         item_data = validated_data.pop('item')
-        item = Item.objects.get(name=item_data['name'])  # assuming item exists
+        item = Item.objects.get(name=item_data['item_name'])  # assuming item exists
         user = validated_data['user']  # assuming user is passed
         score = validated_data['score']
         
