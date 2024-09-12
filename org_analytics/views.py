@@ -1,108 +1,53 @@
 
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Count
 from rest_framework.response import Response
-from accounts.models import UserProfile, Account
+
 from rest_framework.exceptions import PermissionDenied
+from django.db import models
+
+from accounts.models import UserProfile, Account
+from orgss.models import Org, SubOrg1, Role1
+from .serializers import UserProfileSerializer, UserAnalyticsSerializer, UserScenarioDetailSerializer
 
 
 class OrgAnalyticsView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, *args, **kwargs):
-        user = request.user
+    def get(self, request, org_id=None, suborg_id=None):
+        # Get the current user's role
+        current_user_profile = UserProfile.objects.get(user=request.user)
+        user_role = current_user_profile.user.role.role_type
 
-        # Get the account linked to the user
-        account = Account.objects.filter(email=user.email).first()
+        # Allow access only to admin or sub-admin
+        if user_role not in ['admin', 'sub-admin']:
+            raise PermissionDenied(detail="You do not have permission to view this data.")
 
-        # Check if the user is an admin or sub-admin
-        if account and account.role.role_type in ['admin', 'sub-admin']:
-            sub_org = account.sub_org  # Assuming sub-org is accessed via Account
+        # Get the org and suborg
+        org = Org.objects.get(id=org_id)
+        suborg = SubOrg1.objects.get(id=suborg_id) if suborg_id else None
 
-            # Fetch total number of users in the sub-org by matching via the UserProfile -> Account relationship
-            total_users = UserProfile.objects.filter(user__sub_org=sub_org).count()
+        # Filter users based on the org and sub-org
+        if suborg:
+            users = UserProfile.objects.filter(user__role__suborg=suborg)
+        else:
+            users = UserProfile.objects.filter(user__role__suborg__org=org)
 
-            # Fetch total scenarios attempted in the sub-org
-            total_scenarios_attempted = UserProfile.objects.filter(user__sub_org=sub_org).aggregate(total_attempts=Count('scenarios_attempted'))['total_attempts']
+        # Total number of users
+        total_users = users.count()
 
-            # Fetch scenarios attempted per user
-            scenarios_per_user = UserProfile.objects.filter(user__sub_org=sub_org).values('user__email').annotate(total_attempts=Count('scenarios_attempted'))
-            scenarios_per_user_dict = {user['user__email']: user['total_attempts'] for user in scenarios_per_user}
+        # Sum total of scenarios attempted by all users
+        total_scenarios_attempted = users.aggregate(total_attempts=models.Sum('scenarios_attempted'))['total_attempts'] or 0
 
-            # Calculate leaderboard based on percentile score
-            users_profiles = UserProfile.objects.filter(user__sub_org=sub_org).exclude(competency_score__isnull=True)
-            leaderboard = []
+        # Individual user details (scenarios attempted per user)
+        user_data = UserScenarioDetailSerializer(users, many=True).data
 
-            # Check if there are any valid scores available in the sub-org
-            if not users_profiles.exists():
-                return Response({
-                    'total_users': total_users,
-                    'total_scenarios_attempted': total_scenarios_attempted,
-                    'scenarios_per_user': scenarios_per_user_dict,
-                    'leaderboard': "No scores available."
-                })
+        response_data = {
+            'total_users': total_users,
+            'total_scenarios_attempted': total_scenarios_attempted,
+            'users': user_data
+        }
 
-            all_scores = []
+        return Response(response_data)
 
-            # Process leaderboard based on competency scores
-            for profile in users_profiles:
-                competency_scores = profile.competency_score.split(',')  # Split on comma to retrieve scores
-
-                scores = []
-                for score in competency_scores:
-                    try:
-                        score_value = score.split(':')[-1].strip()
-                        if score_value:  # Ensure non-empty score
-                            scores.append(int(score_value))
-                    except ValueError:
-                        continue  # Skip invalid scores
-
-                # If no valid scores for a user, mark as 'No score'
-                if not scores:
-                    leaderboard.append({
-                        'email': profile.user.email,
-                        'average_score': 'No score',
-                        'percentile': 'No percentile'
-                    })
-                else:
-                    # Calculate the average score
-                    average_score = sum(scores) / len(scores)
-                    all_scores.append(average_score)
-
-                    leaderboard.append({
-                        'email': profile.user.email,
-                        'average_score': average_score
-                    })
-
-            # Calculate percentiles for users with valid scores
-            if all_scores:
-                all_scores_sorted = sorted(all_scores)
-                total_users_with_scores = len(all_scores_sorted)
-
-                for entry in leaderboard:
-                    if entry['average_score'] != 'No score':
-                        rank = all_scores_sorted.index(entry['average_score']) + 1
-                        percentile = (rank / total_users_with_scores) * 100
-                        entry['percentile'] = percentile
-                    else:
-                        entry['percentile'] = 'No percentile'
-
-            # Sort leaderboard by percentile in descending order
-            leaderboard = sorted(
-                [user for user in leaderboard if user['average_score'] != 'No score'],
-                key=lambda x: x['percentile'],
-                reverse=True
-            )
-
-            # Prepare response data
-            data = {
-                'total_users': total_users,
-                'total_scenarios_attempted': total_scenarios_attempted,
-                'scenarios_per_user': scenarios_per_user_dict,
-                'leaderboard': leaderboard
-            }
-
-            return Response(data)
-
-        raise PermissionDenied("You don't have permission to access this data.")
