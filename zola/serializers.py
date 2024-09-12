@@ -88,7 +88,7 @@ class ItemResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = ItemResult
         fields = ['user_email', 'item', 'score']
-
+"""
     def create(self, validated_data):
         item_data = validated_data.pop('item')
         item = Item.objects.get(name=item_data['name'])  # assuming item exists
@@ -99,7 +99,6 @@ class ItemResultSerializer(serializers.ModelSerializer):
         item_result = ItemResult.objects.create(user=user, item=item, score=score)
         return item_result        
 
-"""
 class ItemResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = ItemResult
