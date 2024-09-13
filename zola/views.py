@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from django.db.models import F, Q, Sum, FloatField, Count
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.http import FileResponse, Http404
 
 from rest_framework.views import APIView
@@ -42,6 +42,8 @@ from rest_framework import filters
 from rest_framework.filters import SearchFilter
 
 from django.db.models.functions import PercentRank
+
+import csv
 
 
 
@@ -843,96 +845,7 @@ class ItemLibraryAPIView(generics.ListAPIView):
     filter_backends = [filters.SearchFilter]  # Enable searching
     search_fields = ['name', 'description', 'tags']  
 
-"""
-class LeaderboardPercentileAPIView(generics.ListAPIView):
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = LeaderboardSerializer
 
-    def get_queryset(self):
-        # Get query parameters
-        competency_id = self.request.query_params.get('competency_id')
-        suborg_id = self.request.query_params.get('suborg_id')
-
-        # Debug print statements
-        print("Competency ID:", competency_id)
-        print("Suborg ID:", suborg_id)
-
-        # Validate query parameters
-        if not competency_id or not suborg_id:
-            return []
-
-        try:
-            # Get the current user's Account via the email
-            user = self.request.user
-            user_account = Account.objects.get(email=user.email)
-            org_id = user_account.org.id
-            suborg_id = user_account.sub_org.id
-        except Account.DoesNotExist:
-            print("Account does not exist for user:", user.email)
-            return []
-        except AttributeError as e:
-            print("Error retrieving user account information:", e)
-            return []
-
-        # Debug print statements for org and suborg
-        print("Org ID:", org_id)
-        print("Suborg ID:", suborg_id)
-
-        # Filter ItemResults based on competency and suborg
-        item_results = ItemResult.objects.filter(
-            item__competencys__id=competency_id,
-            user__org_id=org_id,
-            user__sub_org_id=suborg_id
-        ).select_related('user', 'item')
-
-        print("Item Results QuerySet:", item_results)
-
-
-        if not item_results.exists():
-            return []
-        
-        if not item_results:
-            return []
-         
-
-        # Calculate percentile scores
-        scores = list(item_results.values_list('score', flat=True))
-        scores.sort()
-
-        def calculate_percentile(score):
-            below_count = len([s for s in scores if s < score])
-            percentile = (below_count / len(scores)) * 100
-            return percentile
-
-        # Attach percentile to each result
-        leaderboard_data = []
-        for result in item_results:
-            percentile = calculate_percentile(result.score)
-            leaderboard_data.append({
-                'user_email': result.user.email,
-                'percentile': percentile
-            })
-
-        # Sort by percentile in descending order
-        sorted_leaderboard = sorted(leaderboard_data, key=lambda x: x['percentile'], reverse=True)
-
-        return sorted_leaderboard
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        if not queryset:
-            return Response(
-                {"status": "Failed", "message": "Competency ID and Suborg ID are required"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        return Response({
-            "status": "Success",
-            "message": "Retrieved Successfully",
-            "data": queryset
-        })
-
-"""
 
 class LeaderboardPercentileAPIView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -1010,3 +923,24 @@ class LeaderboardPercentileAPIView(generics.ListAPIView):
             "message": "Retrieved Successfully",
             "data": queryset
         })
+
+class DownloadCSV(APIView):
+    permission_classes = [IsAuthenticated]  # Optional: add this if you want authentication
+
+    def get(self, request, *args, **kwargs):
+        # Create the HttpResponse object with the appropriate CSV header
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="item_emotions.csv"'
+
+        # Create a CSV writer
+        writer = csv.writer(response)
+        
+        # Write header
+        writer.writerow(['Item Name', 'Item Emotion'])
+        
+        # Fetch all items and write their `item_emotion` to the CSV
+        items = Item.objects.all().values_list('item_name', 'item_emotion')
+        for item in items:
+            writer.writerow(item)
+
+        return response        

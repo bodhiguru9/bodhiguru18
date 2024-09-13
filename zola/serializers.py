@@ -90,4 +90,9 @@ class ItemLibrarySerializer(serializers.ModelSerializer):
 
 class LeaderboardSerializer(serializers.Serializer):
     user_email = serializers.CharField()
-    percentile = serializers.FloatField()                   
+    percentile = serializers.FloatField()   
+
+class ItemEmotionDownloadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Item
+        fields = ['item_emotion']                    

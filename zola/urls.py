@@ -3,7 +3,8 @@ from django.urls import path, include, re_path
 from rest_framework.routers import DefaultRouter
 
 from zola.views import ItemList, item_result, item_rec
-from zola.views import ItemViewSet, ItemHandleViewSet
+
+from zola.views import ItemViewSet, ItemHandleViewSet, DownloadCSV
 from zola.views import ItemProcessingViewSet, ItemAnalysticsViewSet
 from zola.views import (LeaderBoardViewSet, CompetencyBoardViewSet, CompetencyAttemptAnalyticsViewSet,
                         SubmitScoreView, CheckLevelProgressionView, ItemSearchView, ItemLibraryAPIView, LeaderboardPercentileAPIView)
@@ -33,7 +34,7 @@ urlpatterns = [
     path('itemprocessing/', include(ItemProcessingViewSetRouter.urls)),
     path('itemanalystics/', include(ItemAnalysticsViewSetRouter.urls)),
     path('itemli/', ItemList.as_view(), name="Item_List"),
-    path('leaderboard/', include(LeaderBoardViewSetRouter.urls)),
+    #path('leaderboard/', include(LeaderBoardViewSetRouter.urls)),
     path('competency/', include(CompetencyBoardViewSetRouter.urls)),
     path('lastitemanalytics/', include(CompetencyAttemptAnalyticsViewSetRouter.urls)),
     path('submit-score/', SubmitScoreView.as_view(), name='submit-score'),
@@ -41,5 +42,6 @@ urlpatterns = [
     path('items/search/', ItemSearchView.as_view(), name='item-search'),
     path('item_library/', ItemLibraryAPIView.as_view(), name='item-list'),
     path('leaderboardpercentile/', LeaderboardPercentileAPIView.as_view(), name='leaderboard'),
+    path('download-item-emotions/', DownloadCSV.as_view(), name='download_item_emotions'),
 
 ]
