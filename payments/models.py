@@ -9,6 +9,7 @@ class Package(models.Model):
 
     name = models.CharField(max_length = 100, null=True, blank=True)
     description = models.CharField(max_length = 500, blank=True, null=True)
+    cost = models.IntegerField(default=0)
 
 class PackageDetails(models.Model):
     def __str__(self):
