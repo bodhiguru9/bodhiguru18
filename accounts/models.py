@@ -79,12 +79,12 @@ class Account(AbstractBaseUser):
     last_login = models.DateTimeField(auto_now_add = True)
     is_admin = models.BooleanField(default = False)
     is_staff = models.BooleanField(default = False)
-    is_active = models.BooleanField(default = True)
+    is_active = models.BooleanField(default = False)
     is_superadmin = models.BooleanField(default = False)
     user_role = models.CharField(max_length=20, choices=USER_ROLES, default='user')
 
     is_email_confirmed = models.BooleanField(default=False)
-    active = models.BooleanField(default=True)
+    active = models.BooleanField(default=False)
     
     role = models.ForeignKey(Role1, on_delete=models.CASCADE, null=True, blank=True)
     org = models.ForeignKey(Org, on_delete=models.CASCADE, null=False, blank=False, default = 1)
