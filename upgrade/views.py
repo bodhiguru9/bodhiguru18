@@ -100,7 +100,7 @@ class UpgradeViewSet(viewsets.ViewSet):
             # Send an email to confirm the transaction
             send_mail(
                 subject='Payment Confirmation',
-                message=f'Your payment for {upgrade.name} has been confirmed. An invoice will be sent within 48 hours.',
+                message=f'{org.name} has paid for {upgrade.name}. An invoice will be sent within 48 hours.',
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=['arindam@bodhiguru.com'],  # Add org's email if available
             )
