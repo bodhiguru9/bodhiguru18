@@ -59,7 +59,7 @@ urlpatterns = [
     path('individual_analytics/', include('individual_analytics.urls')),
     #path('payments/<int:pk>/', payment_page, name='payment-page'),
     #path('payments/', include('payments.urls'))
-    path('upgrades/', include('upgrade.urls'))
+    path('upgrade/', include('upgrade.urls'))
     
     
 
