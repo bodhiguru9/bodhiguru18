@@ -173,15 +173,15 @@ class CSVDownloadSerializer(serializers.ModelSerializer):
         fields = ['first_name', 'last_name', 'email', 'username', 'password']   
 
 class AccountORgSerializer(serializers.ModelSerializer):
-    org = serializers.CharField(required=True)  # Expecting the org as a string (name of the org)
+    org_name = serializers.CharField(required=True)  # Expecting the org as a string (name of the org)
 
     class Meta:
         model = Account
-        fields = ['email', 'username', 'first_name', 'last_name', 'contact_number', 'password', 'org']
+        fields = ['email', 'username', 'first_name', 'last_name', 'contact_number', 'password', 'org_name']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
-        org_name = validated_data.pop('org')  # Extract the organization name from the validated data
+        org_name = validated_data.pop('org_name')  # Extract the organization name from the validated data
         # Fetch or create the Org object based on the org_name
         org, created = Org.objects.get_or_create(name=org_name)  # Create the Org if it doesn't exist
         
