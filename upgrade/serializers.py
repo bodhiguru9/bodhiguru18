@@ -5,12 +5,12 @@ from orgss.models import Org
 class UpgradeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Upgrade
-        fields = ['id', 'name', 'description','cost']
+        fields = '__all__'
 
 class UpgradedetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Upgradedetail
-        fields = ['id', 'org', 'package', 'created_at', 'transaction_details']
+        fields = '__all__'
 
 class OrgSerializer(serializers.ModelSerializer):
     class Meta:

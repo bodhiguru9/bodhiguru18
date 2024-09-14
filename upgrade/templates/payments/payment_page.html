@@ -1,55 +1,59 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Payment Page</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Razorpay Test Payment</title>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
-    <h1>Choose a Package</h1>
-    <form id="payment-form">
-        <button id="pay-button" type="button">Pay Now</button>
-    </form>
+    <h1>Razorpay Test Payment</h1>
+    <button id="rzp-button1">Pay Now</button>
 
-    <!-- Include Razorpay Checkout Script -->
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script>
-        document.getElementById('pay-button').onclick = function() {
-            var options = {
-                "key": "{{  razorpay_key_id }}", // Your Razorpay Test Key ID
-                "amount": "{{ 10908 }}", // Amount in paise
-                "currency": "INR",
-                "name": "Bodhiguru",
-                "description": "Package Payment",
-                "handler": function (response){
-                    // Call your backend to save the payment details
-                    fetch('/upgrade/payment_confirmation/', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': '{{ csrf_token }}'
-                        },
-                        body: JSON.stringify({
-                            razorpay_order_id: response.razorpay_order_id,
-                            razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature
-                        })
-                    }).then(response => response.json())
-                    .then(data => {
-                        alert('Payment successful');
-                    });
-                },
-                "prefill": {
-                    "name": "Customer Name",
-                    "email": "customer@example.com",
-                    "contact": "9999999999"
-                },
-                "theme": {
-                    "color": "#3399cc"
-                }
-            };
-            
-            var paymentObject = new Razorpay(options);
-            paymentObject.open();
+        var options = {
+            "key": "rzp_test_JpQLet8sMjVN0g", // Replace with your Razorpay Test Key from dashboard
+            "amount": "1234", // Amount in paise (100 paise = 1 INR, 1234 = 12.34 INR)
+            "currency": "INR",
+            "name": "Test Company",
+            "description": "Test Transaction",
+            "order_id": "order_Ox6HJuenAHbTv6", // Replace with a valid Razorpay Order ID
+            "handler": function (response){
+                alert("Payment ID: " + response.razorpay_payment_id);
+                alert("Order ID: " + response.razorpay_order_id);
+                alert("Signature: " + response.razorpay_signature);
+
+                // Send these details to your backend for payment confirmation
+                fetch('http://127.0.0.1:8000/upgrade/payment_confirmation/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_signature: response.razorpay_signature
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Success:', data);
+                    alert('Payment Verified Successfully: ' + data.status);
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+            },
+            "theme": {
+                "color": "#3399cc"
+            }
         };
+        var rzp1 = new Razorpay(options);
+
+        document.getElementById('rzp-button1').onclick = function(e){
+            rzp1.open();
+            e.preventDefault();
+        }
     </script>
 </body>
 </html>

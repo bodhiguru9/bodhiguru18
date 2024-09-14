@@ -12,6 +12,8 @@ from django.core.mail import send_mail
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+import json
 
 
 # Razorpay client initialization
@@ -54,6 +56,7 @@ class UpgradeViewSet(viewsets.ViewSet):
         })
 
     # Handle payment confirmation from Razorpay
+    @csrf_exempt
     @action(detail=False, methods=['post'])
     def payment_confirmation(self, request):
         razorpay_payment_id = request.data.get('razorpay_payment_id')
@@ -69,17 +72,18 @@ class UpgradeViewSet(viewsets.ViewSet):
                 'razorpay_payment_id': razorpay_payment_id,
                 'razorpay_signature': razorpay_signature
             })
+            print(razorpay_client.utility.verify_payment_signature)
 
             # Get Org and Package details
             org = get_object_or_404(Org, pk=org_id)
-            upgrade = get_object_or_404(Upgrade, pk=package_id)
+            upgrade = get_object_or_404(Upgrade, pk=upgrade_id)
 
             # Update Org's validity and number of logins based on the package purchased
-            if package.name == 'bronze':
+            if upgrade.name == 'bronze':
                 org.validity = 365
                 org.number_of_logins = 18
                 org.package_purchased = 'Bronze'
-            elif package.name == 'silver':
+            elif upgrade.name == 'silver':
                 org.validity = 365
                 org.number_of_logins = 24
                 org.package_purchased = 'Silver'
@@ -89,16 +93,16 @@ class UpgradeViewSet(viewsets.ViewSet):
             # Create a new PackageDetail entry
             Upgradedetail.objects.create(
                 org=org,
-                package=package,
+                upgrade=upgrade,
                 transaction_details=f'Order ID: {razorpay_order_id}, Payment ID: {razorpay_payment_id}'
             )
 
             # Send an email to confirm the transaction
             send_mail(
                 subject='Payment Confirmation',
-                message=f'Your payment for {package.name} has been confirmed. An invoice will be sent within 48 hours.',
+                message=f'Your payment for {upgrade.name} has been confirmed. An invoice will be sent within 48 hours.',
                 from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=['arindam@bodhiguru.com', org.email],  # Add org's email if available
+                recipient_list=['arindam@bodhiguru.com'],  # Add org's email if available
             )
 
             # Return success response to the front-end
@@ -116,15 +120,39 @@ def payment_page(request):
     upgrade = Upgrade.objects.get(pk=upgrade_id)
     amount = upgrade.cost + (upgrade.cost * 0.01)  # Adding 1% tax
 
-    return render(request, 'upgrades/payment_page.html', {
+    return render(request, 'payments/payment_page.html', {
         'razorpay_key_id': settings.RAZORPAY_KEY_ID,
         'amount': amount * 100,  # Convert to paise
     })
 
+"""
+@csrf_exempt
 def payment_confirmation(request):
     if request.method == 'POST':
-        data = request.json()
-        # Validate payment details here
-        # Save payment details to the database
-        return JsonResponse({'status': 'success', 'message': 'Payment successful. Invoice will be shared in 48 hours.'})
-    return JsonResponse({'status': 'error', 'message': 'Invalid request'})            
+        try:
+            # Parse JSON data from the request body
+            data = json.loads(request.body)
+            
+            razorpay_order_id = data.get('razorpay_order_id')
+            razorpay_payment_id = data.get('razorpay_payment_id')
+            razorpay_signature = data.get('razorpay_signature')
+
+            # Verify the signature
+            params_dict = {
+                'razorpay_order_id': razorpay_order_id,
+                'razorpay_payment_id': razorpay_payment_id,
+                'razorpay_signature': razorpay_signature
+            }
+            print(params_dict)
+            try:
+                razorpay_client.utility.verify_payment_signature(params_dict)
+                # Payment is verified successfully
+                # You can save payment details to the database here
+                return JsonResponse({'status': 'success', 'message': 'Payment successful. Invoice will be shared in 48 hours.'})
+            except razorpay.errors.SignatureVerificationError:
+                return JsonResponse({'status': 'error', 'message': 'Payment verification failed.'})
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON data'})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+             
+"""             

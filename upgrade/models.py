@@ -22,4 +22,4 @@ class Upgradedetail(models.Model):
     transaction_details = models.TextField()
 
     def __str__(self):
-        return f"{self.org} - {self.package}"
+        return f"{self.org} - {self.upgrade}"
