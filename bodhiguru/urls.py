@@ -24,10 +24,13 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from accounts.views import LoginViewSet
-#from sean.views import DownloadFiles
+
 
 def health_check(request):
     return HttpResponse('HEALTHY')
+
+def payment_page(request, pk):
+    return HttpResponse(f'You are on the payments page for package ID {pk}. Process the payment here.')    
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -43,20 +46,19 @@ urlpatterns = [
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('words/', include('words.urls')),
     
-    #path('scenarios/', include('scenarios.urls')),
-    #path('seanscenarios/', include('sean_scenarios.urls')),
     path('assessments/', include('assessments.urls')),
     path('orgss/', include('orgss.urls')),
     path('learningcourse/', include('learningcourse.urls')),
     path('series/', include('series.urls')),
     path('assign/', include('assign.urls')),
-    #path('saas/', include('SaaS.urls')),
+    
     path('competency/', include('competency.urls')),
     path('api/', include('resources.urls')),  # Include resources app URLs
     path('api/record/', include('record.urls')),  # Include Record app URLs
     path('org_analytics/', include('org_analytics.urls')),
     path('individual_analytics/', include('individual_analytics.urls')),
+    path('payments/<int:pk>/', payment_page, name='payment-page'),
     
-    #path('downloadfile/', DownloadFiles.as_view(), name='download-file')
+    
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
