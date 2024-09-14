@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     'org_analytics',
     'individual_analytics',
     'payments',
+    'upgrade',
     
 ]
 
@@ -94,6 +95,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    
 ]
 
 # Razorpay settings

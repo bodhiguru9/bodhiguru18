@@ -1,15 +1,15 @@
 from rest_framework import serializers
-from .models import Package, Packagedetail
+from .models import Upgrade, Upgradedetail
 from orgss.models import Org
 
-class PackageSerializer(serializers.ModelSerializer):
+class UpgradeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Package
+        model = Upgrade
         fields = ['id', 'name', 'description','cost']
 
-class PackageDetailSerializer(serializers.ModelSerializer):
+class UpgradedetailSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Packagedetail
+        model = Upgradedetail
         fields = ['id', 'org', 'package', 'created_at', 'transaction_details']
 
 class OrgSerializer(serializers.ModelSerializer):
