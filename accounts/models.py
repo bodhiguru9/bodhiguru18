@@ -87,7 +87,7 @@ class Account(AbstractBaseUser):
     active = models.BooleanField(default=False)
     
     role = models.ForeignKey(Role1, on_delete=models.CASCADE, null=True, blank=True)
-    org = models.ForeignKey(Org, on_delete=models.CASCADE, null=False, blank=False, default = "Bodhiguru")
+    org = models.ForeignKey(Org, on_delete=models.CASCADE, null=False, blank=False, default = 1)
     sub_org = models.ForeignKey(SubOrg1, on_delete=models.CASCADE, null=True, blank=True)
 
     USERNAME_FIELD = 'email'
