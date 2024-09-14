@@ -28,10 +28,10 @@ from accounts.views import LoginViewSet
 
 def health_check(request):
     return HttpResponse('HEALTHY')
-
+"""
 def payment_page(request, pk):
     return HttpResponse(f'You are on the payments page for package ID {pk}. Process the payment here.')    
-
+"""
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', health_check),
@@ -57,8 +57,8 @@ urlpatterns = [
     path('api/record/', include('record.urls')),  # Include Record app URLs
     path('org_analytics/', include('org_analytics.urls')),
     path('individual_analytics/', include('individual_analytics.urls')),
-    path('payments/<int:pk>/', payment_page, name='payment-page'),
-    path('paymentsrzp/', include('payments.urls'))
+    #path('payments/<int:pk>/', payment_page, name='payment-page'),
+    #path('paymentsrzp/', include('payments.urls'))
     
     
 
