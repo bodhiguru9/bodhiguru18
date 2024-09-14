@@ -7,7 +7,7 @@ from orgss.models import Org, SubOrg1, Role1
 class OrgSerializer(serializers.ModelSerializer):
     class Meta:
         model = Org
-        fields = ['id', 'name', 'description', 'logo', 'industry', 'validity', 'is_active', 'number_of_logins']
+        fields = ['id', 'name', 'description', 'logo', 'industry', 'validity', 'is_active', 'number_of_logins', 'package_purchased']
 
 class OrgListSerializer(serializers.ModelSerializer):
     industry = serializers.SerializerMethodField()
@@ -63,3 +63,4 @@ class SubOrgAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubOrg1
         fields = ['id', 'name', 'org']
+

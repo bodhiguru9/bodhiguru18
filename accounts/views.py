@@ -4,7 +4,8 @@ from rest_framework.response import Response
 from accounts.serializers import (SignUpSerializer, UserSerializer, LoginSerializer, UserSerializer,
                                     profileSerializer, WelcomeEmailSerializer, RegisterSerializer,
                                     UserProfileSerializer1, UserProfileSerializer, AccountSerializer,
-                                    CSVUploadSerializer, CSVDownloadSerializer, AccountORgSerializer)
+                                    CSVUploadSerializer, CSVDownloadSerializer, AccountORgSerializer,
+                                    AccountAdminSerializer)
 from accounts.models import Account, Profile, EmailConfirmationToken, UserProfile
 from django.contrib.auth.hashers import make_password
 from rest_framework import status, generics, permissions, viewsets
@@ -406,7 +407,7 @@ class RegisterView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response({'message': 'User registered successfully'}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)       
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)   
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
@@ -643,4 +644,16 @@ class AccountViewSet(viewsets.ViewSet):
             return Response({"created": accounts_created}, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AccountAdminViewSet(viewsets.ModelViewSet):
+    queryset = Account.objects.all()
+    serializer_class = AccountAdminSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role.role_type in [Role.ADMIN, Role.SUB_ADMIN]:
+            return Account.objects.filter(org=user.org)
+        return Account.objects.none()
     

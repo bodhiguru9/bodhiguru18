@@ -6,6 +6,8 @@ from django.contrib.auth.password_validation import validate_password
 from orgss.models import Org
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from orgss.serializers import OrgSerializer
+
 
 
 class LoginSerializer(serializers.ModelSerializer):
@@ -173,18 +175,29 @@ class CSVDownloadSerializer(serializers.ModelSerializer):
         fields = ['first_name', 'last_name', 'email', 'username', 'password']   
 
 class AccountORgSerializer(serializers.ModelSerializer):
-    org_name = serializers.CharField(required=True)  # Expecting the org as a string (name of the org)
+    org = serializers.CharField(required=True)  # Expect the org name as input
 
     class Meta:
         model = Account
-        fields = ['email', 'username', 'first_name', 'last_name', 'contact_number', 'password', 'org_name']
+        fields = ['email', 'username', 'first_name', 'last_name', 'contact_number', 'password', 'org']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
-        org_name = validated_data.pop('org_name')  # Extract the organization name from the validated data
-        # Fetch or create the Org object based on the org_name
-        org, created = Org.objects.get_or_create(name=org_name)  # Create the Org if it doesn't exist
-        
-        # Now create the Account with the fetched or created Org
-        account = Account.objects.create_user(org=org, **validated_data)
-        return account
+        # Get the org name from the validated data
+        org_name = validated_data.pop('org')
+
+        # Fetch or create the organization by name
+        org, created = Org.objects.get_or_create(name=org_name)
+
+        # Pass the org to the user creation method
+        user = Account.objects.create_user(org=org, **validated_data)
+
+        return user
+
+
+class AccountAdminSerializer(serializers.ModelSerializer):
+    org = serializers.PrimaryKeyRelatedField(read_only=True)
+    
+    class Meta:
+        model = Account
+        fields = ['id', 'email', 'org', 'role']

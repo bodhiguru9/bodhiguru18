@@ -8,13 +8,22 @@ from rest_framework_tracking.mixins import LoggingMixin
 
 from orgss.models import Org, SubOrg1, Role1
 from orgss.serializers import (OrgSerializer, OrgListSerializer, OrgAdminSerializer, SubOrgAdminSerializer,
-                                SubOrgSerializer, SubOrgListSerializer, RoleSerializer, RoleListSerializer)
+                                SubOrgSerializer, SubOrgListSerializer, RoleSerializer, RoleListSerializer
+                               )
 
 from rest_framework import viewsets
 from .permissions import IsAdminOrReadOnly, IsSubAdminOrReadOnly
 
 from rest_framework import viewsets
 from rest_framework.decorators import action
+
+from rest_framework import generics, permissions
+
+from rest_framework.views import APIView
+
+from accounts.models import Account
+
+from rest_framework.parsers import MultiPartParser, FormParser
 
 
 class OrgViewSet(viewsets.ModelViewSet):
@@ -76,4 +85,23 @@ class SubOrgAdminViewSet(viewsets.ModelViewSet):
             elif role.role_type == 'sub-admin':
                 return SubOrg1.objects.filter(id=role.suborg.id)
         return SubOrg1.objects.none()    
-"""        
+"""
+class OrgAdminViewSet(viewsets.ModelViewSet):
+    serializer_class = OrgSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user_email = self.request.user.email  # Assuming the user’s email is available in the request
+        try:
+            user_account = Account.objects.get(email=user_email)
+            return Org.objects.filter(id=user_account.org.id)
+        except Account.DoesNotExist:
+            return Org.objects.none()
+
+    def get_object(self):
+        user_email = self.request.user.email
+        try:
+            user_account = Account.objects.get(email=user_email)
+            return Org.objects.get(id=user_account.org.id)
+        except (Account.DoesNotExist, Org.DoesNotExist):
+            return None

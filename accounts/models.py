@@ -17,8 +17,11 @@ class MyAccountManager(BaseUserManager):
             raise ValueError('Users must have an email address')
         
         email = self.normalize_email(email)
+        if org is None:
+            raise ValueError('Organization is required')
         user = self.model(email=email, username=username,
-                            first_name=first_name, last_name=last_name)
+                            first_name=first_name, last_name=last_name, contact_number=contact_number,
+                            org=org)
         user.set_password(password)
         user.save(using=self._db)
         return user    

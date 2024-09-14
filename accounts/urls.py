@@ -10,6 +10,8 @@ from rest_framework.routers import DefaultRouter
 router = DefaultRouter()
 router.register(r'accounts', AccountViewSet, basename='account')
 
+
+
 urlpatterns = [
     #path('register/', views.register, name='register'),
     path('register/', RegisterView.as_view(), name='register'),
