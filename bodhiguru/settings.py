@@ -99,6 +99,9 @@ MIDDLEWARE = [
 RAZORPAY_KEY_ID = get_env_variable('RAZORPAY_KEY_ID')
 RAZORPAY_KEY_SECRET = get_env_variable('RAZORPAY_KEY_SECRET')
 
+# Razorpay URLs
+RAZORPAY_API_URL = 'https://api.razorpay.com/v1/'
+
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
