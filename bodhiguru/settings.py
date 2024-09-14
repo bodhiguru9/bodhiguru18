@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     'record',
     'org_analytics',
     'individual_analytics',
+    'payments',
     
 ]
 
