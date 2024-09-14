@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from accounts.serializers import (SignUpSerializer, UserSerializer, LoginSerializer, UserSerializer,
                                     profileSerializer, WelcomeEmailSerializer, RegisterSerializer,
                                     UserProfileSerializer1, UserProfileSerializer, AccountSerializer,
-                                    CSVUploadSerializer, CSVDownloadSerializer)
+                                    CSVUploadSerializer, CSVDownloadSerializer, AccountORgSerializer)
 from accounts.models import Account, Profile, EmailConfirmationToken, UserProfile
 from django.contrib.auth.hashers import make_password
 from rest_framework import status, generics, permissions, viewsets
@@ -43,6 +43,7 @@ from django.utils.timezone import now
 
 from rest_framework.decorators import action
 from io import StringIO
+from rest_framework.permissions import AllowAny
 
 
 @api_view(['POST'])
@@ -382,6 +383,7 @@ class BulkUserUploadView(APIView):
 
         return Response({"detail": f"All {users_created} users created successfully."}, status=status.HTTP_201_CREATED)
 
+"""
 class RegisterView(generics.CreateAPIView):
     queryset = Account.objects.all()
     serializer_class = RegisterSerializer
@@ -395,6 +397,16 @@ class RegisterView(generics.CreateAPIView):
                 'message': 'User registered successfully.'
             }, status=HTTP_201_CREATED)
         return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+"""
+class RegisterView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = AccountORgSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'User registered successfully'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)        
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):

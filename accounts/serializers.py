@@ -170,4 +170,20 @@ class CSVUploadSerializer(serializers.Serializer):
 class CSVDownloadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ['first_name', 'last_name', 'email', 'username', 'password']              
+        fields = ['first_name', 'last_name', 'email', 'username', 'password']   
+
+class AccountORgSerializer(serializers.ModelSerializer):
+    org = serializers.CharField(required=True)  # The org field is mandatory
+
+    class Meta:
+        model = Account
+        fields = ['email', 'username', 'first_name', 'last_name', 'contact_number', 'password', 'org']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        org_name = validated_data.pop('org')
+        org, created = Org.objects.get_or_create(name=org_name)  # Create or get the Org provided by the user
+        
+        # Now create the user and set the new org
+        user = Account.objects.create_user(org=org, **validated_data)
+        return user
