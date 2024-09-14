@@ -95,6 +95,11 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
 ]
 
+# Razorpay settings
+RAZORPAY_KEY_ID = get_env_variable('RAZORPAY_KEY_ID')
+RAZORPAY_KEY_SECRET = get_env_variable('RAZORPAY_KEY_SECRET')
+
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True

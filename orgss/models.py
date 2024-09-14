@@ -15,6 +15,7 @@ class Org(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(default=datetime.now)
     number_of_logins = models.IntegerField(default=9)
+    package_purchased = models.CharField(max_length=50, blank=True, null=True)
 
     
     def __str__(self):
