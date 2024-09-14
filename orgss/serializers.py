@@ -18,7 +18,7 @@ class OrgListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Org
-        fields = ['id', 'name', 'description', 'logo', 'industry', 'validity', 'is_active', 'number_of_logins']
+        fields = ['id', 'name', 'description', 'logo', 'industry', 'validity', 'is_active', 'number_of_logins', 'package_purchased']
 
 class SubOrgSerializer(serializers.ModelSerializer):
     org = serializers.SlugRelatedField(queryset=Org.objects.all(), slug_field='name')
