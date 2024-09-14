@@ -58,6 +58,7 @@ urlpatterns = [
     path('org_analytics/', include('org_analytics.urls')),
     path('individual_analytics/', include('individual_analytics.urls')),
     path('payments/<int:pk>/', payment_page, name='payment-page'),
+    path('paymentsrzp/', include('payments.urls'))
     
     
 

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Package, PackageDetail
+from .models import Package, PackageDetails
 
 from orgss.models import Org
 
@@ -10,7 +10,7 @@ class PackageSerializer(serializers.ModelSerializer):
 
 class PackageDetailSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PackageDetail
+        model = PackageDetails
         fields = ['id', 'org', 'package', 'created_at', 'transaction_details']
 
 class OrgSerializer(serializers.ModelSerializer):
