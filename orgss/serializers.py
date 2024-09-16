@@ -22,11 +22,12 @@ class OrgListSerializer(serializers.ModelSerializer):
 
 class SubOrgSerializer(serializers.ModelSerializer):
     org = serializers.SlugRelatedField(queryset=Org.objects.all(), slug_field='name')
+    org_id = serializers.IntegerField(source='org.id', read_only=True)
 
 
     class Meta:
         model = SubOrg1
-        fields = ['id', 'name', 'description', 'org']
+        fields = ['id', 'name', 'description', 'org_id', 'org']
         
 class SubOrgListSerializer(serializers.ModelSerializer):
    
