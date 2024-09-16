@@ -3,7 +3,7 @@ from . import views
 from accounts.views import ( SendEmailConfirmationTokenAPIView,
                              UserInformationAPIVIew, confirm_email_view,
                              SendWelcomeEmailView, CustomTokenObtainPairView, UserUpdateView, UserListView,
-                             DownloadSampleCSV, BulkUserUploadView, RegisterView, AccountViewSet,
+                            RegisterView, AccountViewSet,
                              DisableUserView, EnableUserView)
 from rest_framework.routers import DefaultRouter 
 
