@@ -25,9 +25,7 @@ urlpatterns = [
     path('send-welcome-email/', SendWelcomeEmailView.as_view(), name='send-welcome-email'),
     path('check-org-validity/', views.check_org_validity, name='check-org-validity'),
     path('login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    #path('bulk-upload/', BulkUserUploadAPIView.as_view(), name='bulk-user-upload'),
-    path('download-sample-csv/', DownloadSampleCSV.as_view(), name='download-sample-csv'),
-    path('upload-users/', BulkUserUploadView.as_view(), name='bulk-user-upload'),
+    
     path('org-users/', UserListView.as_view(), name='user-list'),
     path('org-users/<int:pk>/', UserUpdateView.as_view(), name='user-update'),
     path('disable-user/<int:pk>/', DisableUserView.as_view(), name='disable-user'),

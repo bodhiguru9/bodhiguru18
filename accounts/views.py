@@ -345,46 +345,6 @@ class LoginViewSet(APIView):
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
 
-class DownloadSampleCSV(APIView):
-    def get(self, request, *args, **kwargs):
-        # Create the HttpResponse object with the CSV header.
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = 'attachment; filename="sample_users.csv"'
-
-        # Write the header and sample data to CSV
-        writer = csv.writer(response)
-        writer.writerow(['email', 'first_name', 'last_name', 'username', 'password', 'contact_number'])
-        writer.writerow(['sample@example.com', 'John', 'Doe', 'johndoe', 'password123', '1234567890'])
-
-        return response
-
-
-class BulkUserUploadView(APIView):
-    parser_classes = [MultiPartParser]  # Supports file upload
-
-    def post(self, request, *args, **kwargs):
-        file = request.FILES.get('file')
-        if not file:
-            return Response({"detail": "No file uploaded."}, status=status.HTTP_400_BAD_REQUEST)
-
-        decoded_file = file.read().decode('utf-8').splitlines()
-        reader = csv.DictReader(decoded_file)
-        errors = []
-        users_created = 0
-
-        for row in reader:
-            serializer = BulkUserUploadSerializer(data=row)
-            if serializer.is_valid():
-                serializer.save()
-                users_created += 1
-            else:
-                errors.append({"row": row, "errors": serializer.errors})
-
-        if errors:
-            return Response({"detail": f"{users_created} users created successfully", "errors": errors}, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response({"detail": f"All {users_created} users created successfully."}, status=status.HTTP_201_CREATED)
-
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
@@ -460,27 +420,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer  
-"""
-class OrgUserListView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        # Fetch the admin's org or sub-org
-        user_org = request.user.org
-        user_sub_org = request.user.sub_org
-
-        if not user_org:
-            raise PermissionDenied("You do not have permission to view this data.")
-
-        # Filter the users based on the org and sub-org
-        if user_sub_org:
-            users = Account.objects.filter(sub_org=user_sub_org)
-        else:
-            users = Account.objects.filter(org=user_org)
-
-        serializer = UserSerializer(users, many=True)
-        return Response(serializer.data)
-"""
 
 class IsAdminOfOrgOrSubOrg(permissions.BasePermission):
     """
@@ -615,7 +554,6 @@ class AccountViewSet(viewsets.ViewSet):
         
         return response
 
-    @action(detail=False, methods=['post'], url_path='upload-csv')
     def upload_csv(self, request):
         # Get the admin/sub-admin's org/sub-org
         user = request.user
@@ -645,7 +583,7 @@ class AccountViewSet(viewsets.ViewSet):
                         sub_org=sub_org,  # Assign sub-org of admin/sub-admin
                         contact_number='9999999999',  # Default contact number
                     )
-                    account.set_password(row['password'])  # Hash password
+                    account.set_password('123Zola$$Ts')  # Set the default password
                     account.save()
                     accounts_created.append(account.email)
                 except Exception as e:
@@ -655,7 +593,7 @@ class AccountViewSet(viewsets.ViewSet):
                 return Response({"errors": errors}, status=status.HTTP_400_BAD_REQUEST)
 
             return Response({"created": accounts_created}, status=status.HTTP_201_CREATED)
-        
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
