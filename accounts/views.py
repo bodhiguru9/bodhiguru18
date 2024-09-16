@@ -45,6 +45,7 @@ from django.utils.timezone import now
 from rest_framework.decorators import action
 from io import StringIO
 from rest_framework.permissions import AllowAny
+from django.db.models import Q
 
 
 @api_view(['POST'])
@@ -494,6 +495,8 @@ class IsAdminOfOrgOrSubOrg(permissions.BasePermission):
         return obj.org == request.user.org or obj.sub_org == request.user.sub_org
 
 
+
+
 class UserListView(generics.ListAPIView):
     """
     Admin can view the list of users within their org/sub-org.
@@ -503,7 +506,12 @@ class UserListView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return Account.objects.filter(org=user.org, sub_org=user.sub_org)
+        # Filter by both org and sub_org
+        return Account.objects.filter(Q(org=user.org) & Q(sub_org=user.sub_org))
+
+
+
+
 
 
 class UserUpdateView(generics.RetrieveUpdateAPIView):
