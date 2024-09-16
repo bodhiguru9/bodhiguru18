@@ -384,21 +384,7 @@ class BulkUserUploadView(APIView):
 
         return Response({"detail": f"All {users_created} users created successfully."}, status=status.HTTP_201_CREATED)
 
-"""
-class RegisterView(generics.CreateAPIView):
-    queryset = Account.objects.all()
-    serializer_class = RegisterSerializer
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            return Response({
-                'user': serializer.data,
-                'message': 'User registered successfully.'
-            }, status=HTTP_201_CREATED)
-        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
-"""
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
@@ -407,7 +393,26 @@ class RegisterView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response({'message': 'User registered successfully'}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)   
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+
+    def send_welcome_email(self, user_email, org_name):
+        # Compose the email content
+        subject = 'Welcome to Our Platform'
+        message = f"""
+        Dear User,
+
+        Welcome to {org_name}!
+
+        Your organization has been registered successfully and is valid for 30 days. 
+        If you wish to continue using the service after 30 days, please consider upgrading your plan.
+
+        Best regards,
+        Your Company Name
+        """
+        from_email = settings.DEFAULT_FROM_EMAIL
+
+        # Send the email
+        send_mail(subject, message, from_email, [user_email], fail_silently=False)      
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
