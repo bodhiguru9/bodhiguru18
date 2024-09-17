@@ -6,18 +6,16 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 from rest_framework_tracking.mixins import LoggingMixin
 
-from orgss.models import Org, SubOrg1, Role1
+from orgss.models import Org, SubOrg1, Role1, Weightage
 from orgss.serializers import (OrgSerializer, OrgListSerializer, OrgAdminSerializer, SubOrgAdminSerializer,
-                                SubOrgSerializer, SubOrgListSerializer, RoleSerializer, RoleListSerializer
-                               )
+                                SubOrgSerializer, SubOrgListSerializer, RoleSerializer, RoleListSerializer, 
+                               WeightageSerializer)
 
 from rest_framework import viewsets
 from .permissions import IsAdminOrReadOnly, IsSubAdminOrReadOnly
 
-from rest_framework import viewsets
+from rest_framework import viewsets, generics, permissions
 from rest_framework.decorators import action
-
-from rest_framework import generics, permissions
 
 from rest_framework.views import APIView
 
@@ -27,6 +25,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from django.core.mail import send_mail
 from django.utils import timezone
 from datetime import timedelta
+ 
 
 
 class OrgViewSet(viewsets.ModelViewSet):
@@ -62,27 +61,7 @@ class RoleViewSet(viewsets.ModelViewSet):
             return Role1.objects.filter(suborg=user_role.suborg)
         return Role1.objects.none()
 
-"""
-class OrgAdminViewSet(viewsets.ModelViewSet):
-    serializer_class = OrgSerializer
-    permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        user_email = self.request.user.email  # Assuming the user’s email is available in the request
-        try:
-            user_account = Account.objects.get(email=user_email)
-            return Org.objects.filter(id=user_account.org.id)
-        except Account.DoesNotExist:
-            return Org.objects.none()
-
-    def get_object(self):
-        user_email = self.request.user.email
-        try:
-            user_account = Account.objects.get(email=user_email)
-            return Org.objects.get(id=user_account.org.id)
-        except (Account.DoesNotExist, Org.DoesNotExist):
-            return None
-"""
 
 class OrgAdminViewSet(viewsets.ModelViewSet):
     serializer_class = OrgSerializer
@@ -134,3 +113,31 @@ class OrgAdminViewSet(viewsets.ModelViewSet):
         # Send email to the user and the admin
         recipient_list = [user_email, 'arindam@bodhiguru.com']
         send_mail(subject, message, from_email='hello@bodhiguru.com', recipient_list=recipient_list, fail_silently=False)
+
+class IsAdminOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True  # Allow read-only permissions for everyone
+
+        user = request.user
+        if user.is_authenticated:
+            try:
+                # Retrieve the user's profile and check the role from the related Account model
+                user_profile = user.userprofile  # Assuming the userprofile is linked via OneToOneField
+                account = user_profile.user  # Access the Account model via the `user` field
+                role = account.role  # Assuming `role` is a ForeignKey on the Account model
+                
+                # Check if the role is admin or sub-admin for the relevant suborg
+                suborg_id = request.data.get('suborg')
+                if role.suborg.id == int(suborg_id) and role.role_type in ['admin', 'sub-admin']:
+                    return True
+            except AttributeError:
+                # If there is no profile, account, or role, deny permission
+                return False
+
+        return False
+
+class WeightageViewSet(viewsets.ModelViewSet):
+    queryset = Weightage.objects.all()
+    serializer_class = WeightageSerializer
+    permission_classes = [IsAdminOrReadOnly]

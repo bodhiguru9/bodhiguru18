@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from industry.models import Industry
 from industry.serializers import IndustrySerializer
-from orgss.models import Org, SubOrg1, Role1
+from orgss.models import Org, SubOrg1, Role1, Weightage
 
 class OrgSerializer(serializers.ModelSerializer):
     class Meta:
@@ -64,4 +64,10 @@ class SubOrgAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubOrg1
         fields = ['id', 'name', 'org']
+
+class WeightageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Weightage
+        fields = ['id', 'suborg', 'competency', 'weightage']
+        read_only_fields = ['suborg', 'competency']        
 
