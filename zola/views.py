@@ -926,7 +926,7 @@ class LeaderboardPercentileAPIView(generics.ListAPIView):
         })
 
 class DownloadCSV(APIView):
-    permission_classes = [IsAuthenticated]  # Optional: add this if you want authentication
+    #permission_classes = [IsAuthenticated]  # Optional: add this if you want authentication
 
     def get(self, request, *args, **kwargs):
         # Create the HttpResponse object with the appropriate CSV header

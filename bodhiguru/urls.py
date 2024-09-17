@@ -60,6 +60,7 @@ urlpatterns = [
     #path('payments/<int:pk>/', payment_page, name='payment-page'),
     #path('payments/', include('payments.urls')),
     path('upgrade/', include('upgrade.urls')),
+    path('api/feedback/', include('feedback.urls')),
     
     
 

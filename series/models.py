@@ -7,7 +7,7 @@ from learningcourse.models import LearningCourse
 
 
 class Series(models.Model):
-    name = models.CharField(max_length=300)
+    name = models.CharField(max_length=300, unique=True)
     description = models.TextField(null=True, blank=True)
     thumbnail = models.FileField(upload_to="media/series/thumbnail", null=True, blank=True)
     sub_org = models.ForeignKey(SubOrg1, on_delete=models.CASCADE)
@@ -16,7 +16,7 @@ class Series(models.Model):
         return self.name
     
 class Seasons(models.Model):
-    name = models.CharField(max_length=300)
+    name = models.CharField(max_length=300, unique=True)
     description = models.TextField(null=True, blank=True)
     thumbnail = models.FileField(upload_to="media/series/seasons/thumbnail", null=True, blank=True)
     series = models.ForeignKey(Series, on_delete=models.CASCADE)

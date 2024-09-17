@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     'org_analytics',
     'individual_analytics',
     'upgrade',
+    'feedback',
     
 ]
 
