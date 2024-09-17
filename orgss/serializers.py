@@ -66,8 +66,17 @@ class SubOrgAdminSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'org']
 
 class WeightageSerializer(serializers.ModelSerializer):
+    suborg_name = serializers.SerializerMethodField()
+    competency_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Weightage
-        fields = ['id', 'suborg', 'competency', 'weightage']
-        read_only_fields = ['suborg', 'competency']        
+        fields = ['id','suborg', 'suborg_name', 'competency', 'competency_name', 'weightage']
+        read_only_fields = ['suborg', 'suborg_name', 'competency', 'competency_name']  # suborg and competency should be read-only in PUT/PATCH requests
+
+    def get_suborg_name(self, obj):
+        return obj.suborg.name if obj.suborg else None
+
+    def get_competency_name(self, obj):
+        return obj.competency.competency_name if obj.competency else None
 
