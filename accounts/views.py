@@ -550,7 +550,7 @@ class AccountViewSet(viewsets.ViewSet):
         response['Content-Disposition'] = f'attachment; filename="{org_name}_{sub_org_name}_users.csv"'
         
         writer = csv.writer(response)
-        writer.writerow(['first_name', 'last_name', 'email', 'username', 'password'])  # Headers
+        writer.writerow(['first_name', 'last_name', 'email', 'username'])  # Headers
         
         return response
 
