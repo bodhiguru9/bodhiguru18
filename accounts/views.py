@@ -554,6 +554,7 @@ class AccountViewSet(viewsets.ViewSet):
         
         return response
 
+    @action(detail=False, methods=['post'], url_path='upload-csv')
     def upload_csv(self, request):
         # Get the admin/sub-admin's org/sub-org
         user = request.user

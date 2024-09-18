@@ -173,7 +173,7 @@ class CSVUploadSerializer(serializers.Serializer):
 class CSVDownloadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ['first_name', 'last_name', 'email', 'username', 'password']   
+        fields = ['first_name', 'last_name', 'email', 'username']   
 
 class AccountORgSerializer(serializers.ModelSerializer):
     org = serializers.CharField(required=True)  # Expect the org name as input
