@@ -1,6 +1,13 @@
-from rest_framework import generics
-from .models import Resource
+from rest_framework import generics, viewsets, status
+from .models import Resource, TextResouce
 from .serializers import ResourceSerializer
+
+from rest_framework.response import Response
+from .serializers import TextResourceSerializer
+
+class TextResourceViewSet(viewsets.ModelViewSet):
+    queryset = TextResouce.objects.all()
+    serializer_class = TextResourceSerializer
 
 class ResourceListAPIView(generics.ListAPIView):
     queryset = Resource.objects.all()
