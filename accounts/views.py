@@ -407,6 +407,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                 #'user_role': user.role,
                 'org': {
                     'name': user.org.name,
+                    'id': user.org.id,
                     'validity': user.org.validity,
                     'is_active': user.org.is_active,
                 },
