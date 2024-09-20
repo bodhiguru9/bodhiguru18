@@ -4,6 +4,19 @@ from competency.models import Competency
 from orgss.models import Role1
 from accounts.models import Account
 
+Library_Filter_CHOICES = [
+        ("team player", "Team Player"),
+        ("sales", "Sales"),
+        ("will stick or not", "Will Stick or Not"),
+        ("intrapreneurial", "Intrapreneurial"),
+        ("handling pressure", "Handling Pressure"),
+        ("managing conflicts", "Managing Conflicts"),
+        ("handling customers", "Handling Customers"),
+        ("interpersonal skills", "Interpersonal Skills"),
+        ("managing people", "Managing People"),
+        
+    ]
+
 class Item(models.Model):
     def __str__(self):
         return self.item_name
@@ -25,18 +38,7 @@ class Item(models.Model):
         ("interview", "Interview"),
     ]
 
-    Library_Filter_CHOICES = [
-        ("team player", "Team Player"),
-        ("sales", "Sales"),
-        ("will stick or not", "Will Stick or Not"),
-        ("intrapreneurial", "Intrapreneurial"),
-        ("handling pressure", "Handling Pressure"),
-        ("managing conflicts", "Managing Conflicts"),
-        ("handling customers", "Handling Customers"),
-        ("interpersonal skills", "Interpersonal Skills"),
-        ("managing people", "Managing People"),
-        
-    ]
+    
 
     item_name = models.CharField(max_length=700)
     item_description = models.CharField(max_length=300, blank=True, null = True)

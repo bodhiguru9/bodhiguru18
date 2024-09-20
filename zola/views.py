@@ -18,7 +18,7 @@ from zola.serializers import (ItemListSerializer1, ItemEmotionSerializer, ItemRe
                                 ItemResultSerializer, ItemSerializer, ItemSearchSerializer,
                                 ItemLibrarySerializer, LeaderboardSerializer, ItemFilterSerializer )
 
-from zola.models import Item, ItemResult
+from zola.models import Item, ItemResult, Library_Filter_CHOICES
 from accounts.models import Account, UserProfile
 from orgss.models import Role1, Weightage
 from assessments.models import AssessmentResult
@@ -944,6 +944,17 @@ class DownloadCSV(APIView):
             writer.writerow(item)
 
         return response     
+
+
+class LibraryFilterChoicesView(APIView):
+    """
+    API View to return the available choices for library_filter.
+    """
+    def get(self, request):
+        # Convert the choices into a list of dictionaries
+        choices = [{"value": key, "label": label} for key, label in Library_Filter_CHOICES]
+        return Response(choices, status=status.HTTP_200_OK)
+
 
 class ItemFilterView(generics.ListAPIView):
     serializer_class = ItemFilterSerializer
