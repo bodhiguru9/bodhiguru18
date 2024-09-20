@@ -98,4 +98,12 @@ class LeaderboardSerializer(serializers.Serializer):
 class ItemEmotionDownloadSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
-        fields = ['item_emotion']                    
+        fields = ['item_emotion']        
+
+class ItemFilterSerializer(serializers.ModelSerializer):
+    competencys = CompetencySerializer(many=True)  # Nested serializer to show competency details
+    category = serializers.CharField()  # Show category as a string
+
+    class Meta:
+        model = Item
+        fields = ['id', 'item_name', 'tags', 'competencys', 'library_filter', 'category']                    

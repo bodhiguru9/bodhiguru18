@@ -16,7 +16,7 @@ from rest_framework_tracking.mixins import LoggingMixin
 from zola.serializers import (ItemListSerializer1, ItemEmotionSerializer, ItemRecommendSerializer,
                                 ItemLiSerializer, ItemUserSerializer, ItemCreateSerializer,
                                 ItemResultSerializer, ItemSerializer, ItemSearchSerializer,
-                                ItemLibrarySerializer, LeaderboardSerializer )
+                                ItemLibrarySerializer, LeaderboardSerializer, ItemFilterSerializer )
 
 from zola.models import Item, ItemResult
 from accounts.models import Account, UserProfile
@@ -44,7 +44,6 @@ from rest_framework.filters import SearchFilter
 from django.db.models.functions import PercentRank
 
 import csv
-
 
 
 
@@ -944,4 +943,30 @@ class DownloadCSV(APIView):
         for item in items:
             writer.writerow(item)
 
-        return response        
+        return response     
+
+class ItemFilterView(generics.ListAPIView):
+    serializer_class = ItemFilterSerializer
+
+    def get_queryset(self):
+        queryset = Item.objects.all()
+        # Get query parameters
+        library_filter = self.request.query_params.get('library_filter', None)
+        tags = self.request.query_params.get('tags', None)
+        competency_id = self.request.query_params.get('competency', None)
+
+        # Filter by library_filter (case-insensitive)
+        if library_filter:
+            queryset = queryset.filter(library_filter__iexact=library_filter)
+
+        # Filter by tags (comma-separated values, case-insensitive)
+        if tags:
+            tag_list = tags.split(',')
+            for tag in tag_list:
+                queryset = queryset.filter(tags__icontains=tag.strip())
+
+        # Filter by competency
+        if competency_id:
+            queryset = queryset.filter(competency__id=competency_id)
+
+        return queryset

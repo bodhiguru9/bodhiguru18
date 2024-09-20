@@ -25,6 +25,19 @@ class Item(models.Model):
         ("interview", "Interview"),
     ]
 
+    Library_Filter_CHOICES = [
+        ("team player", "Team Player"),
+        ("sales", "Sales"),
+        ("will stick or not", "Will Stick or Not"),
+        ("intrapreneurial", "Intrapreneurial"),
+        ("handling pressure", "Handling Pressure"),
+        ("managing conflicts", "Managing Conflicts"),
+        ("handling customers", "Handling Customers"),
+        ("interpersonal skills", "Interpersonal Skills"),
+        ("managing people", "Managing People"),
+        
+    ]
+
     item_name = models.CharField(max_length=700)
     item_description = models.CharField(max_length=300, blank=True, null = True)
     item_video = models.URLField(null=True, blank=True)
@@ -41,7 +54,7 @@ class Item(models.Model):
     coming_across_as = models.CharField(max_length=250, null=True, blank=True)
     competencys = models.ManyToManyField(Competency, blank=True)
     words = models.TextField(default = "words")
-    library_filter = models.CharField(max_length=700, default="filter")
+    library_filter = models.CharField(max_length= 30, choices=Library_Filter_CHOICES, default="sales")
     role = models.ForeignKey(Role1, on_delete=models.CASCADE, related_name='seanrole', null=True, blank=True)
     level = models.IntegerField(default=1)
     expert = models.URLField(blank = True, null=True)
