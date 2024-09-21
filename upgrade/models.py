@@ -5,7 +5,7 @@ class Upgrade(models.Model):
     PACKAGE_CHOICES = [
         ('bronze', 'Bronze'),
         ('silver', 'Silver'),
-        ('package9', 'Package 9'),
+        ('gold', 'Gold'),
     ]
     
     name = models.CharField(max_length=50, choices=PACKAGE_CHOICES)
