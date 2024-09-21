@@ -8,7 +8,12 @@ from orgss.models import Org
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from orgss.serializers import OrgSerializer
 
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
 class LoginSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField()
@@ -71,12 +76,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = Account
         fields = ['id', 'email', 'first_name', 'contact_number', 'last_name', 'validity', 'username', 'role', 'org', 'is_email_confirmed', 'is_active', 'active', 'user_role']
 
-class ChangePasswordSerializer(serializers.Serializer):
-    old_password = serializers.CharField(required=True)
-    new_password = serializers.CharField(required=True)
 
-class ResetPasswordEmailSerializer(serializers.Serializer):
-    email = serializers.EmailField(required=True)
 
 class profileSerializer(serializers.ModelSerializer):
     class Meta:
@@ -202,3 +202,38 @@ class AccountAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
         fields = ['id', 'email', 'org', 'role']
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        try:
+            user = User.objects.get(email=value)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("There is no user registered with this email address.")
+        return value
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uidb64 = serializers.CharField()
+    token = serializers.CharField()
+    new_password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        try:
+            uid = force_str(urlsafe_base64_decode(data['uidb64']))
+            user = User.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            raise serializers.ValidationError("Invalid token or user ID")
+        
+        token_generator = PasswordResetTokenGenerator()
+        if not token_generator.check_token(user, data['token']):
+            raise serializers.ValidationError("Invalid token")
+
+        return data
+
+    def save(self):
+        uid = force_str(urlsafe_base64_decode(self.validated_data['uidb64']))
+        user = User.objects.get(pk=uid)
+        user.set_password(self.validated_data['new_password'])
+        user.save()
+        return user        
