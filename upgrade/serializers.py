@@ -16,3 +16,7 @@ class OrgSerializer(serializers.ModelSerializer):
     class Meta:
         model = Org
         fields = ['id', 'name', 'validity', 'number_of_logins', 'package_purchased']
+
+class PurchaseSerializer(serializers.Serializer):
+    org_id = serializers.IntegerField()  # Accept org_id from the client side
+    number_of_packs = serializers.IntegerField(required=False, default=1)         
