@@ -399,7 +399,13 @@ class AssignSeriesUserViewSet(viewsets.ModelViewSet):
         series_name = instance.series.name  # Assuming the series has a name field
 
         subject = f"Series Assignment: {series_name}"
-        message = f"Dear {instance.user.first_name},\n\nYou have been assigned to the series: {series_name}. Please log in to start your series.\n\nBest regards,\nYour Team"
+        message = f"Dear {instance.user.first_name},\n\nYou have been assigned to the series: {series_name}.
+                    
+                    You can access your assessment at https://bodhiguruapp.com.
+                    
+                    Please log in using your email id to start your series. Your password is 123Zola$$Ts.
+                    
+                    \n\nBest regards,\nYour Team"
         
         from_email = settings.DEFAULT_FROM_EMAIL  # Ensure DEFAULT_FROM_EMAIL is set in your settings.py
         
