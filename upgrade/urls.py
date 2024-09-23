@@ -8,6 +8,6 @@ router.register(r'upgrade', UpgradeViewSet, basename='upgrade')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('payment_page/', views.payment_page, name='payment-page'),
+    #path('payment_page/', views.payment_page, name='payment-page'),
     #path('payment_confirmation/', views.payment_confirmation, name='payment-confirmation'),
 ]
