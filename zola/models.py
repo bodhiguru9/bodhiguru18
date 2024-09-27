@@ -7,13 +7,13 @@ from accounts.models import Account
 Library_Filter_CHOICES = [
         ("team player", "Team Player"),
         ("sales", "Sales"),
-        ("will stick or not", "Will Stick or Not"),
-        ("intrapreneurial", "Intrapreneurial"),
-        ("handling pressure", "Handling Pressure"),
-        ("managing conflicts", "Managing Conflicts"),
+        #("will stick or not", "Will Stick or Not"),
+        #("intrapreneurial", "Intrapreneurial"),
+        #("handling pressure", "Handling Pressure"),
+        #("managing conflicts", "Managing Conflicts"),
         ("handling customers", "Handling Customers"),
-        ("interpersonal skills", "Interpersonal Skills"),
-        ("managing people", "Managing People"),
+        #("interpersonal skills", "Interpersonal Skills"),
+        #("managing people", "Managing People"),
         
     ]
 
