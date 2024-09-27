@@ -139,6 +139,8 @@ CORS_ORIGIN_WHITELIST = [
     'https://bodhiguru.com',
     'https://bodhiguruapp.com',
     'https://appbodhiguru.com',
+    'https://paneladmin.bodhiguruapp.com',
+
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
