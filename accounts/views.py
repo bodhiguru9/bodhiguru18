@@ -587,7 +587,7 @@ class PasswordResetRequestView(APIView):
             uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
             token = token_generator.make_token(user)
 
-            reset_link = f"{settings.FRONTEND_URL}/reset-password/{uidb64}/{token}/"
+            reset_link = f"{settings.FRONTEND_URL}/password-reset-confirm/{uidb64}/{token}/"
 
             # Send email
             send_mail(
