@@ -236,8 +236,8 @@ USE_I18N = True
 
 USE_TZ = True
 
-#FRONTEND_URL = 'https://paneladmin.bodhiguruapp.com'
-FRONTEND_URL = 'https://bodhiguruplat.com/accounts'
+FRONTEND_URL = 'https://paneladmin.bodhiguruapp.com'
+#FRONTEND_URL = 'https://bodhiguruplat.com/accounts'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
