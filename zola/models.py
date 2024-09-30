@@ -13,7 +13,7 @@ Library_Filter_CHOICES = [
         #("managing conflicts", "Managing Conflicts"),
         ("handling customers", "Handling Customers"),
         #("interpersonal skills", "Interpersonal Skills"),
-        #("managing people", "Managing People"),
+        ("managing people", "Managing People"),
         
     ]
 
