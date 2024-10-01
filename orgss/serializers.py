@@ -80,3 +80,8 @@ class WeightageSerializer(serializers.ModelSerializer):
     def get_competency_name(self, obj):
         return obj.competency.competency_name if obj.competency else None
 
+class OrgExpirySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Org
+        fields = ['name', 'expires_on', 'is_active'] 
+

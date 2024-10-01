@@ -9,7 +9,7 @@ from rest_framework_tracking.mixins import LoggingMixin
 from orgss.models import Org, SubOrg1, Role1, Weightage
 from orgss.serializers import (OrgSerializer, OrgListSerializer, OrgAdminSerializer, SubOrgAdminSerializer,
                                 SubOrgSerializer, SubOrgListSerializer, RoleSerializer, RoleListSerializer, 
-                               WeightageSerializer)
+                               WeightageSerializer, OrgExpirySerializer )
 
 from rest_framework import viewsets
 from .permissions import IsAdminOrReadOnly, IsSubAdminOrReadOnly
@@ -25,7 +25,9 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from django.core.mail import send_mail
 from django.utils import timezone
 from datetime import timedelta
- 
+
+from rest_framework.decorators import api_view
+
 
 
 class OrgViewSet(viewsets.ModelViewSet):
@@ -141,3 +143,11 @@ class WeightageViewSet(viewsets.ModelViewSet):
     queryset = Weightage.objects.all()
     serializer_class = WeightageSerializer
     permission_classes = [IsAdminOrReadOnly]
+
+
+@api_view(['GET'])
+def org_expiry_view(request):
+    # Get all organizations with expiry information
+    orgs = Org.objects.all()
+    serializer = OrgExpirySerializer(orgs, many=True)
+    return Response(serializer.data)

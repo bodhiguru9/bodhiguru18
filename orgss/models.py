@@ -17,7 +17,7 @@ class Org(models.Model):
     number_of_logins = models.IntegerField(default=9)
     package_purchased = models.CharField(max_length=50, blank=True, null=True)
     #upgrade_expiry = models.DateField(null=True, blank=True, default=datetime.now)
-
+    expires_on = models.DateField(null=True, blank=True)
     
     def __str__(self):
         return self.name
