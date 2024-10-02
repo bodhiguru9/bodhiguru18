@@ -101,9 +101,10 @@ class ItemEmotionDownloadSerializer(serializers.ModelSerializer):
         fields = ['item_emotion']        
 
 class ItemFilterSerializer(serializers.ModelSerializer):
-    competencys = CompetencySerializer(many=True)  # Nested serializer to show competency details
+    #competencys = CompetencySerializer(many=True)  # Nested serializer to show competency details
+    competencys = CompetencyListSerializer(many=True) 
     category = serializers.CharField()  # Show category as a string
 
     class Meta:
         model = Item
-        fields = ['id', 'item_name', 'tags', 'competencys', 'library_filter', 'category']                    
+        fields = ['id', 'item_name', 'tags', 'level', 'competencys', 'library_filter', 'category']                    
