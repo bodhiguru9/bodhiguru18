@@ -3,12 +3,30 @@ from orgss.models import Org
 from django.utils import timezone
 from datetime import timedelta
 
+
+class UpgradeAssessment(models.Model):
+    Assessment_Package_Choices = [
+        ('no_assessment', 'No MCQ Assessment'),
+        ('assessment30', '30 MCQ Questions'),
+        ('assessment60', '60 MCQ Questions')
+
+    ]
+
+    name = models.CharField(max_length=90, choices=Assessment_Package_Choices)
+    description = models.TextField(null=True, blank=True)
+    cost = models.IntegerField(default=0)  # Package cost
+
+    def __str__(self):
+        return self.name
+
+
+
 class Upgrade(models.Model):
     PACKAGE_CHOICES = [
         ('bronze', 'Bronze'),
         ('silver', 'Silver'),
         ('gold', 'Gold'),
-        ('package 9', 'Package 9')
+        #('package 9', 'Package 9')
     ]
     
     name = models.CharField(max_length=50, choices=PACKAGE_CHOICES)
