@@ -26,11 +26,12 @@ class Upgrade(models.Model):
         ('bronze', 'Bronze'),
         ('silver', 'Silver'),
         ('gold', 'Gold'),
-        #('package 9', 'Package 9')
+        
     ]
     
     name = models.CharField(max_length=50, choices=PACKAGE_CHOICES)
     description = models.TextField(null=True, blank=True)
+    assessment_package = models.ForeignKey(UpgradeAssessment, on_delete=models.CASCADE, related_name='upgradeassessment', default = 1)
     cost = models.IntegerField(default=0)  # Package cost
 
     def __str__(self):
