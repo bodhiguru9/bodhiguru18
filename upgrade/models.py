@@ -31,24 +31,12 @@ class Upgrade(models.Model):
     
     name = models.CharField(max_length=50, choices=PACKAGE_CHOICES)
     description = models.TextField(null=True, blank=True)
-    assessment_package = models.ForeignKey(UpgradeAssessment, on_delete=models.CASCADE, related_name='upgradeassessment', default = 1)
+    assessment_package = models.ManyToManyField(UpgradeAssessment, blank=True, default = 1)
     cost = models.IntegerField(default=0)  # Package cost
 
     def __str__(self):
         return self.name
-"""
-class Upgradedetail(models.Model):
-    org = models.ForeignKey(Org, on_delete=models.CASCADE)
-    upgrade = models.ForeignKey(Upgrade, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    transaction_details = models.TextField()
-    #additional_logins = models.IntegerField(default=0)  # For storing additional logins for Package 9
-    expires_on = models.DateField(default=timezone.now().date() + timedelta(days=30))
 
-    def __str__(self):
-        return f"{self.org} - {self.upgrade}"
-
-"""
 
 class Upgradedetail(models.Model):
     org = models.ForeignKey(Org, on_delete=models.CASCADE)

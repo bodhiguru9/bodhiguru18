@@ -1,10 +1,11 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import UpgradeViewSet
+from .views import UpgradeViewSet, UpgradeViewSet1
 from . import views
 
 router = DefaultRouter()
-router.register(r'upgrade', UpgradeViewSet, basename='upgrade')
+#router.register(r'upgrade', UpgradeViewSet, basename='upgrade')
+router.register(r'upgrade', UpgradeViewSet1, basename='upgrade_package')
 
 urlpatterns = [
     path('', include(router.urls)),
