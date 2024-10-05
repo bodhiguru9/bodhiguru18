@@ -5,7 +5,8 @@ from accounts.serializers import (SignUpSerializer, UserSerializer, LoginSeriali
                                     profileSerializer, WelcomeEmailSerializer, RegisterSerializer,
                                     UserProfileSerializer1, UserProfileSerializer, AccountSerializer,
                                     CSVUploadSerializer, CSVDownloadSerializer, AccountORgSerializer,
-                                    AccountAdminSerializer, AccountRegisterSerializer)
+                                    AccountAdminSerializer, AccountRegisterSerializer,
+                                    PasswordResetRequestSerializer, PasswordResetConfirmSerializer)
 from accounts.models import Account, Profile, EmailConfirmationToken, UserProfile
 from django.contrib.auth.hashers import make_password
 from rest_framework import status, generics, permissions, viewsets
@@ -51,7 +52,6 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 
-from .serializers import PasswordResetRequestSerializer, PasswordResetConfirmSerializer
 from django.contrib.auth import get_user_model
 
 
