@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 from .models import Upgrade, Upgradedetail, UpgradeAssessment
 from orgss.models import Org
 from .serializers import (UpgradeSerializer, UpgradedetailSerializer, OrgSerializer, PurchaseSerializer,
-                            UpgradeSerializer1)
+                            UpgradeSerializer1, UpgradeAssessmentSerializer)
 from django.core.mail import send_mail
 
 from django.shortcuts import render
@@ -255,3 +255,10 @@ class UpgradeViewSet1(viewsets.ViewSet):
             return Response({
                 'error': 'Payment verification failed!'
             }, status=status.HTTP_400_BAD_REQUEST)
+
+class UpgradeAssessmentViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    A simple ViewSet for listing and retrieving upgrade assessment packages.
+    """
+    queryset = UpgradeAssessment.objects.all()
+    serializer_class = UpgradeAssessmentSerializer            
