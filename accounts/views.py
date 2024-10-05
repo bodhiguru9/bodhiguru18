@@ -5,7 +5,7 @@ from accounts.serializers import (SignUpSerializer, UserSerializer, LoginSeriali
                                     profileSerializer, WelcomeEmailSerializer, RegisterSerializer,
                                     UserProfileSerializer1, UserProfileSerializer, AccountSerializer,
                                     CSVUploadSerializer, CSVDownloadSerializer, AccountORgSerializer,
-                                    AccountAdminSerializer)
+                                    AccountAdminSerializer, AccountRegisterSerializer)
 from accounts.models import Account, Profile, EmailConfirmationToken, UserProfile
 from django.contrib.auth.hashers import make_password
 from rest_framework import status, generics, permissions, viewsets
@@ -312,12 +312,21 @@ class LoginViewSet(APIView):
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
+    """
     def post(self, request):
         serializer = AccountORgSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response({'message': 'User registered successfully'}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+    """
+    def post(self, request):
+        serializer = AccountRegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'User registered successfully', 'is_active': True}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
     def send_welcome_email(self, user_email, org_name):
         # Compose the email content

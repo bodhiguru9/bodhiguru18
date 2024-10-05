@@ -237,3 +237,26 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         user.set_password(self.validated_data['new_password'])
         user.save()
         return user        
+
+class AccountRegisterSerializer(serializers.ModelSerializer):
+    org = serializers.CharField(required=True)  # Expect the org name as input
+
+    class Meta:
+        model = Account
+        fields = ['email', 'username', 'first_name', 'last_name', 'contact_number', 'password', 'org', 'is_active']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        # Get the org name from the validated data
+        org_name = validated_data.pop('org')
+
+        # Fetch or create the organization by name
+        org, created = Org.objects.get_or_create(name=org_name)
+
+        # Set is_active to True for new users
+        validated_data['is_active'] = True
+
+        # Pass the org to the user creation method
+        user = Account.objects.create_user(org=org, **validated_data)
+
+        return user        

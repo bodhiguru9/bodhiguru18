@@ -8,7 +8,7 @@ Library_Filter_CHOICES = [
         ("team player", "Team Player"),
         ("sales", "Sales"),
         ("will stick or not", "Will Stick or Not"),
-        #("intrapreneurial", "Intrapreneurial"),
+        #("takes initiative", "Takes Initiative"),
         #("handling pressure", "Handling Pressure"),
         #("managing conflicts", "Managing Conflicts"),
         ("handling customers", "Handling Customers"),
@@ -57,6 +57,7 @@ class Item(models.Model):
     competencys = models.ManyToManyField(Competency, blank=True)
     words = models.TextField(default = "words")
     library_filter = models.CharField(max_length= 30, choices=Library_Filter_CHOICES, default="sales")
+    #library_filter = models.ManyToManyField(Library_Filter_CHOICES, default="sales")
     role = models.ForeignKey(Role1, on_delete=models.CASCADE, related_name='seanrole', null=True, blank=True)
     level = models.IntegerField(default=1)
     expert = models.URLField(blank = True, null=True)

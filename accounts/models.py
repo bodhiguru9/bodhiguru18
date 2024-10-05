@@ -12,16 +12,19 @@ from orgss.models import Org, Role1, SubOrg1
 from uuid import uuid4
 
 class MyAccountManager(BaseUserManager):
-    def create_user(self, email, username, first_name, org, contact_number, last_name, password=None):
+    def create_user(self, email, username, first_name, org, contact_number, last_name, password=None, is_active=True):
         if not email:
             raise ValueError('Users must have an email address')
         
         email = self.normalize_email(email)
         if org is None:
             raise ValueError('Organization is required')
-        user = self.model(email=email, username=username,
-                            first_name=first_name, last_name=last_name, contact_number=contact_number,
-                            org=org)
+        user = self.model(email=email,
+                            username=username,
+                            first_name=first_name, last_name=last_name,
+                            contact_number=contact_number,
+                            org=org,
+                            is_active=is_active)
         user.set_password(password)
         user.save(using=self._db)
         return user    
@@ -33,6 +36,7 @@ class MyAccountManager(BaseUserManager):
             last_name = last_name,
             username = username,
             password = password,
+            
         
         )   
 
