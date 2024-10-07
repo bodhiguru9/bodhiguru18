@@ -7,10 +7,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from users.models import UserRightsMapping
-#m SaaS.permissions import SaaSAccessPermissionAssessment
-from assessments.models import Question, Option, AssessmentType
+
 from assessments.models import Assessment, AssessmentResult
-from assessments.serializers import QuestionSerializer, OptionSerializer, OptionListSerializer
+
 from assessments.serializers import AssessmentSerializer, AssessmentResultSerializer
 from assessments.serializers import AssessmentListSerializer
 
@@ -19,272 +18,10 @@ from datetime import datetime
 import threading
 
 from rest_framework import viewsets
-from .models import AssessmentType
-from .serializers import AssessmentTypeSerializer
+from .models import AssessmentType, Question, Option
+from .serializers import AssessmentTypeSerializer, QuestionSerializer
 
-class QuestionViewSet(ViewSet):
-    permission_classes = [IsAuthenticated]
-    
-    @staticmethod
-    def get_queryset():
-        return Question.objects.all()
-    
-    @staticmethod
-    def get_object(pk=None):
-        return get_object_or_404(Question, pk=pk)
-    
-    def list(self, request):
-        queryset = self.get_queryset()
-        serializer = QuestionSerializer(queryset, many=True)
-        response = {
-            'status': 'success',
-            'message': 'Questions list',
-            'data': serializer.data
-        }
-        return Response(response, status=status.HTTP_200_OK)
 
-    def retrieve(self, request, pk=None):
-        instance = self.get_object(pk)
-        serializer = QuestionSerializer(instance)
-        response = {
-            'status': 'success',
-            'message': 'Question details',
-            'data': serializer.data
-        }
-        return Response(response, status=status.HTTP_200_OK)
-    
-    def create(self, request):
-        serializer = QuestionSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            response = {
-                'status': 'success',
-                'message': 'Question created',
-                'data': serializer.data
-            }
-            return Response(response, status=status.HTTP_201_CREATED)
-        response = {
-            'status': 'error',
-            'message': 'Invalid data',
-            'data': serializer.errors
-        }
-        return Response(response, status=status.HTTP_400_BAD_REQUEST)
-
-    def update(self, request, pk=None):
-        instance = self.get_object(pk)
-        serializer = QuestionSerializer(instance, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            response = {
-                'status': 'success',
-                'message': 'Question updated',
-                'data': serializer.data
-            }
-            return Response(response, status=status.HTTP_200_OK)
-        response = {
-            'status': 'error',
-            'message': 'Invalid data',
-            'data': serializer.errors
-        }
-        return Response(response, status=status.HTTP_400_BAD_REQUEST)
-
-    def destroy(self, request, pk=None):
-        instance = self.get_object(pk)
-        instance.delete()
-        response = {
-            'status': 'success',
-            'message': 'Question deleted',
-            'data': None
-        }
-        return Response(response, status=status.HTTP_204_NO_CONTENT)
-
-class OptionViewSet(ViewSet):
-    @staticmethod
-    def get_queryset():
-        return Option.objects.all()
-    
-    @staticmethod
-    def get_object(pk=None):
-        return get_object_or_404(Option, pk=pk)
-    
-    def list(self, request):
-        queryset = self.get_queryset()
-        serializer = OptionListSerializer(queryset, many=True)
-        response = {
-            'status': 'success',
-            'message': 'Options list',
-            'data': serializer.data
-        }
-        return Response(response, status=status.HTTP_200_OK)
-    
-    def retrieve(self, request, pk=None):
-        instance = self.get_object(pk)
-        serializer = OptionListSerializer(instance)
-        response = {
-            'status': 'success',
-            'message': 'Option details',
-            'data': serializer.data
-        }
-        return Response(response, status=status.HTTP_200_OK)
-    
-    def create(self, request):
-        serializer = OptionSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            response = {
-                'status': 'success',
-                'message': 'Option created',
-                'data': serializer.data
-            }
-            return Response(response, status=status.HTTP_201_CREATED)
-        response = {
-            'status': 'error',
-            'message': 'Invalid data',
-            'data': serializer.errors
-        }
-        return Response(response, status=status.HTTP_400_BAD_REQUEST)
-    
-    def update(self, request, pk=None):
-        instance = self.get_object(pk)
-        serializer = OptionSerializer(instance, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            response = {
-                'status': 'success',
-                'message': 'Option updated',
-                'data': serializer.data
-            }
-            return Response(response, status=status.HTTP_200_OK)
-        response = {
-            'status': 'error',
-            'message': 'Invalid data',
-            'data': serializer.errors
-        }
-        return Response(response, status=status.HTTP_400_BAD_REQUEST)
-    
-    def destroy(self, request, pk=None):
-        instance = self.get_object(pk)
-        instance.delete()
-        response = {
-            'status': 'success',
-            'message': 'Option deleted',
-            'data': None
-        }
-        return Response(response, status=status.HTTP_204_NO_CONTENT)
-
-class AssessmentTypeViewSet(ViewSet):
-    permission_classes = [IsAuthenticated]
-    
-    @staticmethod
-    def get_queryset():
-        return AssessmentType.objects.all()
-    
-    @staticmethod
-    def get_object(pk=None):
-        return get_object_or_404(AssessmentType, pk=pk)
-    
-    def list(self, request):
-        queryset = self.get_queryset()
-        user = request.user
-        if user.user_role not in ['admin', 'super_admin']:
-            repsonse = {
-                'status': 'error',
-                'message': 'Access denied',
-                'data': None
-            }
-        else:
-            queryset = queryset.filter(suborg=user.role.suborg)
-        serializer = AssessmentTypeSerializer(queryset, many=True)
-        response = {
-            'status': 'success',
-            'message': 'Assessment types list',
-            'data': serializer.data
-        }
-        return Response(response, status=status.HTTP_200_OK)
-    
-    def retrieve(self, request, pk=None):
-        instance = self.get_object(pk)
-        serializer = AssessmentTypeSerializer(instance)
-        response = {
-            'status': 'success',
-            'message': 'Assessment type details',
-            'data': serializer.data
-        }
-        return Response(response, status=status.HTTP_200_OK)
-    
-    def create(self, request):
-        if not request.user.role.suborg:
-            response = {
-                'status': 'error',
-                'message': 'Access denied',
-                'data': None
-            }
-            return Response(response, status=status.HTTP_403_FORBIDDEN)
-        
-        request_data = {
-            'name': request.data.get('name'),
-            'suborg': request.user.role.suborg.id,
-            'passing_criteria': request.data.get('passing_criteria'),
-            'positive_marks': request.data.get('positive_marks'),
-            'negative_marks': request.data.get('negative_marks'),
-            'time': request.data.get('time'),
-            'trigger_point': request.data.get('trigger_point'),
-            'refresher_days': request.data.get('refresher_days')
-        }
-        
-        serializer = AssessmentTypeSerializer(data=request_data)
-        if serializer.is_valid():
-            serializer.save()
-            response = {
-                'status': 'success',
-                'message': 'Assessment type created',
-                'data': serializer.data
-            }
-            return Response(response, status=status.HTTP_201_CREATED)
-        response = {
-            'status': 'error',
-            'message': 'Invalid data',
-            'data': serializer.errors
-        }
-        return Response(response, status=status.HTTP_400_BAD_REQUEST)
-    
-    def update(self, request, pk=None):
-        instance = self.get_object(pk)
-        request_data = {
-            'name': request.data.get('name', instance.name),
-            'suborg': instance.suborg.id,
-            'passing_criteria': request.data.get('passing_criteria', instance.passing_criteria),
-            'positive_marks': request.data.get('positive_marks', instance.positive_marks),
-            'negative_marks': request.data.get('negative_marks', instance.negative_marks),
-            'time': request.data.get('time', instance.time),
-            'trigger_point': request.data.get('trigger_point', instance.trigger_point),
-            'refresher_days': request.data.get('refresher_days', instance.refresher_days)
-        }
-        serializer = AssessmentTypeSerializer(instance, data=request_data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            response = {
-                'status': 'success',
-                'message': 'Assessment type updated',
-                'data': serializer.data
-            }
-            return Response(response, status=status.HTTP_200_OK)
-        response = {
-            'status': 'error',
-            'message': 'Invalid data',
-            'data': serializer.errors
-        }
-        return Response(response, status=status.HTTP_400_BAD_REQUEST)
-    
-    def destroy(self, request, pk=None):
-        instance = self.get_object(pk)
-        instance.delete()
-        response = {
-            'status': 'success',
-            'message': 'Assessment type deleted',
-            'data': None
-        }
-        return Response(response, status=status.HTTP_204_NO_CONTENT)
 
 class AssessmentViewSet(ViewSet):
     permission_classes = [IsAuthenticated]
@@ -478,4 +215,9 @@ class AssessmentResultViewSet(ViewSet):
 class AssessmentTypeViewSet(viewsets.ModelViewSet):
     queryset = AssessmentType.objects.all()
     serializer_class = AssessmentTypeSerializer
+    permission_classes = [IsAuthenticated]
+
+class QuestionViewSet(viewsets.ModelViewSet):
+    queryset = Question.objects.all()
+    serializer_class = QuestionSerializer
     permission_classes = [IsAuthenticated]

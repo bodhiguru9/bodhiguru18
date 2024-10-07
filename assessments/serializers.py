@@ -4,33 +4,43 @@ from assessments.models import Question, Option, AssessmentType
 from assessments.models import Assessment, AssessmentResult
 
 
-class QuestionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Question
-        fields = ['id', 'question', 'level', 'timer']
-        
-class QuestionListSerializer(serializers.ModelSerializer):
-    options = serializers.SerializerMethodField()
-    
-    def get_options(self, obj):
-        options_data = Option.objects.filter(question=obj)
-        serializers = OptionListSerializer(options_data, many=True)
-        return serializers.data
-    
-    class Meta:
-        model = Question
-        fields = ['question', 'level', 'timer', 'options']
-        
+
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Option
-        fields = ['id', 'question', 'option', 'is_correct']
-        
-class OptionListSerializer(serializers.ModelSerializer):
+        fields = ['id', 'option', 'is_correct']
+
+class QuestionSerializer(serializers.ModelSerializer):
+    options = OptionSerializer(many=True)  # Nest the options within the question
+
     class Meta:
-        model = Option
-        fields = ['option', 'is_correct']
-    
+        model = Question
+        fields = ['id', 'question', 'level', 'timer', 'options']
+
+    def create(self, validated_data):
+        options_data = validated_data.pop('options')  # Extract options data
+        question = Question.objects.create(**validated_data)  # Create question instance
+        
+        # Create option instances for the question
+        for option_data in options_data:
+            Option.objects.create(question=question, **option_data)
+
+        return question
+
+    def update(self, instance, validated_data):
+        options_data = validated_data.pop('options')
+        instance.question = validated_data.get('question', instance.question)
+        instance.level = validated_data.get('level', instance.level)
+        instance.timer = validated_data.get('timer', instance.timer)
+        instance.save()
+
+        # Delete existing options and create new ones (simplified update logic)
+        instance.options.all().delete()
+        for option_data in options_data:
+            Option.objects.create(question=instance, **option_data)
+
+        return instance
+
 
 
 class AssessmentSerializer(serializers.ModelSerializer):
