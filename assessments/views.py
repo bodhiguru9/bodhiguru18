@@ -11,12 +11,16 @@ from users.models import UserRightsMapping
 from assessments.models import Question, Option, AssessmentType
 from assessments.models import Assessment, AssessmentResult
 from assessments.serializers import QuestionSerializer, OptionSerializer, OptionListSerializer
-from assessments.serializers import AssessmentSerializer, AssessmentResultSerializer, AssessmentTypeSerializer
+from assessments.serializers import AssessmentSerializer, AssessmentResultSerializer
 from assessments.serializers import AssessmentListSerializer
 
 from datetime import datetime
 
 import threading
+
+from rest_framework import viewsets
+from .models import AssessmentType
+from .serializers import AssessmentTypeSerializer
 
 class QuestionViewSet(ViewSet):
     permission_classes = [IsAuthenticated]
@@ -469,3 +473,9 @@ class AssessmentResultViewSet(ViewSet):
             'data': None
         }
         return Response(response, status=status.HTTP_204_NO_CONTENT)
+
+
+class AssessmentTypeViewSet(viewsets.ModelViewSet):
+    queryset = AssessmentType.objects.all()
+    serializer_class = AssessmentTypeSerializer
+    permission_classes = [IsAuthenticated]

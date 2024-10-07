@@ -3,6 +3,7 @@ from rest_framework import serializers
 from assessments.models import Question, Option, AssessmentType
 from assessments.models import Assessment, AssessmentResult
 
+
 class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
@@ -30,11 +31,7 @@ class OptionListSerializer(serializers.ModelSerializer):
         model = Option
         fields = ['option', 'is_correct']
     
-class AssessmentTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = AssessmentType
-        fields = ['id', 'name', 'suborg', 'passing_criteria', 'positive_marks', 'negative_marks', 
-                  'time', 'trigger_point', 'refresher_days']
+
 
 class AssessmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -60,3 +57,15 @@ class AssessmentResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssessmentResult
         fields = ['id', 'user', 'assessment', 'phase', 'result']
+
+
+class AssessmentTypeSerializer(serializers.ModelSerializer):
+    suborg_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AssessmentType
+        fields = ['id', 'name', 'suborg', 'suborg_name', 'passing_criteria', 'positive_marks', 'negative_marks', 'time', 'trigger_point', 'refresher_days']
+        
+    
+    def get_suborg_name(self, obj):
+        return obj.suborg.name
