@@ -11,16 +11,17 @@ from users.models import UserRightsMapping
 from assessments.models import Assessment, AssessmentResult
 
 from assessments.serializers import AssessmentSerializer, AssessmentResultSerializer
-from assessments.serializers import AssessmentListSerializer
 
 from datetime import datetime
 
 import threading
 
 from rest_framework import viewsets
-from .models import AssessmentType, Question, Option
+from .models import AssessmentType, Question, Option, Assessment
 from .serializers import AssessmentTypeSerializer, QuestionSerializer
 
+from orgss.models import Org  # Import Org model
+from rest_framework.decorators import action
 
 
 class AssessmentViewSet(ViewSet):
@@ -221,3 +222,27 @@ class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
     permission_classes = [IsAuthenticated]
+
+class AssessmentViewSet(viewsets.ModelViewSet):
+    queryset = Assessment.objects.all()
+    serializer_class = AssessmentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        org_id = self.request.query_params.get('org_id')
+        if org_id:
+            org = Org.objects.get(id=org_id)
+            context['org'] = org
+        return context
+
+    @action(detail=True, methods=['post'])
+    def map_questions(self, request, pk=None):
+        assessment = self.get_object()
+        org_id = request.data.get('org_id')
+        org = Org.objects.get(id=org_id)
+
+        serializer = self.get_serializer(assessment, data=request.data, partial=True, context={'org': org})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)

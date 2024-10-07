@@ -10,6 +10,7 @@ from .views import AssessmentTypeViewSet, QuestionViewSet
 router = DefaultRouter()
 router.register(r'assessments', AssessmentTypeViewSet)
 router.register(r'questions', QuestionViewSet)
+router.register(r'assessments_question', AssessmentViewSet)
 
 
 urlpatterns = [
