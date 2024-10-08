@@ -5,12 +5,12 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 from rest_framework.permissions import IsAuthenticated
 
-from series.models import Series, Seasons, SeasonLota, ItemSeason
+from series.models import Series, Seasons, SeasonLota, ItemSeason, AssessmentSeason
 from assign.models import SeriesAssignUser
 from series.serializers import (SeriesSerializer, SeasonSerializer, ItemSeasonSerializer,
                                 ItemSeasonCreateUpdateSerializer, SeasonsListAssignSerializer,
                                 SeasonLotaSerializer, SeasonLotaListSerializer, SeriesAdminSerializer,
-                                SeasonAdminSerializer)
+                                SeasonAdminSerializer, AssessmentSeasonSerializer)
 
 from rest_framework import viewsets
 from .permissions import IsAdminOrSubAdmin
@@ -225,3 +225,11 @@ class ItemSeasonViewSet(viewsets.ModelViewSet):
             # Sub-admins can only see item-seasons linked to their sub-org
             return ItemSeason.objects.filter(season__series__sub_org=user_role.suborg)
         return ItemSeason.objects.none()        
+
+class AssessmentSeasonListCreateView(generics.ListCreateAPIView):
+    queryset = AssessmentSeason.objects.all()
+    serializer_class = AssessmentSeasonSerializer
+
+class AssessmentSeasonDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = AssessmentSeason.objects.all()
+    serializer_class = AssessmentSeasonSerializer  

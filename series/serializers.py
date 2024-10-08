@@ -10,6 +10,7 @@ from rest_framework import viewsets
 
 from zola.models import Item
 from orgss.models import SubOrg1
+from assessments.models import Assessment
 
 
 class SeriesSerializer(serializers.ModelSerializer):
@@ -153,3 +154,52 @@ class SeriesAdminSerializer(serializers.ModelSerializer):
         model = Series
         fields = ['id', 'name', 'sub_org', 'seasons']        
 
+class AssessmentSerializer1(serializers.ModelSerializer):
+    class Meta:
+        model = Assessment
+        fields = ['id', 'assessment_type', 'access', 'is_approved', 'is_live']  # Add relevant fields
+
+
+class SeasonsSerializer1(serializers.ModelSerializer):
+    class Meta:
+        model = Seasons
+        fields = ['id', 'name']
+
+
+class AssessmentSeasonSerializer(serializers.ModelSerializer):
+    season = SeasonsSerializer1()
+    assessments = AssessmentSerializer1()
+
+    class Meta:
+        model = AssessmentSeason
+        fields = ['id', 'season', 'assessments']
+
+    def create(self, validated_data):
+        season_data = validated_data.pop('season')
+        assessments_data = validated_data.pop('assessments')
+
+        # Create Season instance
+        season, created = Seasons.objects.get_or_create(**season_data)
+
+        # Create Assessment instance
+        assessments, created = Assessment.objects.get_or_create(**assessments_data)
+
+        assessment_season = AssessmentSeason.objects.create(season=season, assessments=assessments)
+        return assessment_season
+
+    def update(self, instance, validated_data):
+        season_data = validated_data.pop('season', None)
+        assessments_data = validated_data.pop('assessments', None)
+
+        if season_data:
+            for attr, value in season_data.items():
+                setattr(instance.season, attr, value)
+            instance.season.save()
+
+        if assessments_data:
+            for attr, value in assessments_data.items():
+                setattr(instance.assessments, attr, value)
+            instance.assessments.save()
+
+        instance.save()
+        return instance

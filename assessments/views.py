@@ -24,6 +24,10 @@ from orgss.models import Org  # Import Org model
 from rest_framework.decorators import action
 
 
+from rest_framework.views import APIView
+
+
+
 class AssessmentViewSet(ViewSet):
     permission_classes = [IsAuthenticated]
     
@@ -246,3 +250,52 @@ class AssessmentViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class AssessmentListCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Access the sub-org from the Account model
+        user_account = request.user.userprofile.account
+        user_suborg = user_account.suborg  # Assuming sub-org is in Account model
+        assessments = AssessmentType.objects.filter(suborg=user_suborg)
+        serializer = AssessmentTypeSerializer(assessments, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        # Access the sub-org from the Account model
+        user_account = request.user.userprofile.account
+        user_suborg = user_account.suborg  # Assuming sub-org is in Account model
+        data = request.data.copy()
+        data['suborg'] = user_suborg.id  # Force setting suborg to user's suborg
+        serializer = AssessmentTypeSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AssessmentUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, pk, suborg):
+        try:
+            return AssessmentType.objects.get(pk=pk, suborg=suborg)
+        except AssessmentType.DoesNotExist:
+            return None
+
+    def put(self, request, pk):
+        # Access the sub-org from the Account model
+        user_account = request.user.userprofile.account
+        user_suborg = user_account.suborg  # Assuming sub-org is in Account model
+        assessment = self.get_object(pk, user_suborg)
+
+        if assessment is None:
+            return Response({"error": "Assessment not found or you don't have access to edit it."},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AssessmentTypeSerializer(assessment, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)        

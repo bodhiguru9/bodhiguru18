@@ -4,7 +4,9 @@ from rest_framework.routers import DefaultRouter
 
 from series.views import (SeriesViewSet, SeasonViewSet, SeasonLotaViewSet,
                             ItemSeasonListCreateView, ItemSeasonRetrieveUpdateView,
-                            SeriesAdminViewSet, SeasonAdminViewSet, ItemSeasonViewSet)
+                            SeriesAdminViewSet, SeasonAdminViewSet, ItemSeasonViewSet,
+                            AssessmentSeasonListCreateView, AssessmentSeasonDetailView
+                            )
 
 
 
@@ -19,4 +21,8 @@ urlpatterns = [
     path('', include(router.urls)),
     path('itemseasons/', ItemSeasonListCreateView.as_view(), name='itemseason-list-create'),
     path('itemseasons/<int:id>/', ItemSeasonRetrieveUpdateView.as_view(), name='itemseason-retrieve-update'),
+    path('assessment-seasons/', AssessmentSeasonListCreateView.as_view(), name='assessment-season-list-create'),
+    path('assessment-seasons/<int:pk>/', AssessmentSeasonDetailView.as_view(), name='assessment-season-detail'),
+
+    
 ]
