@@ -76,9 +76,9 @@ class AssessmentResult(models.Model):
     
     user = models.ForeignKey(Account, on_delete=models.CASCADE)
     assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE)
-    phase = models.CharField(max_length=30, choices=ACCESS, default=None)
+    #phase = models.CharField(max_length=30, choices=ACCESS, default=None)
     result = models.IntegerField()
     created_at = models.DateField(default=date.today)
     
     def __str__(self):
-        return f"{self.user.first_name}-{self.assessment.assessment_type.name}-{self.phase}-{self.result}"
+        return f"{self.user.first_name}-{self.assessment.assessment_type.name}-{self.result}"
