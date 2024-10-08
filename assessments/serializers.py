@@ -194,3 +194,13 @@ class AssessmentResultSerializer(serializers.ModelSerializer):
             created_at=validated_data.get('created_at', date.today())  # Use today's date if not provided
         )
         return assessment_result        
+
+class AssessmentResultSerializer(serializers.ModelSerializer):
+    user_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AssessmentResult
+        fields = ['user', 'user_name', 'result', 'assessment', 'created_at']
+
+    def get_user_name(self, obj):
+        return f"{obj.user.first_name} {obj.user.last_name}"

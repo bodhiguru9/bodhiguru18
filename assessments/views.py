@@ -8,24 +8,28 @@ from rest_framework.permissions import IsAuthenticated
 
 from users.models import UserRightsMapping
 
-from assessments.models import Assessment, AssessmentResult
-
-from assessments.serializers import AssessmentSerializer, AssessmentResultSerializer
+from assessments.serializers import (AssessmentSerializer, AssessmentResultSerializer, AssessmentTypeSerializer,
+                                    QuestionSerializer, AssessmentResultSerializer)
 
 from datetime import datetime
 
 import threading
 
 from rest_framework import viewsets
-from .models import AssessmentType, Question, Option, Assessment
-from .serializers import AssessmentTypeSerializer, QuestionSerializer
+from .models import AssessmentType, Question, Option, Assessment, AssessmentResult
 
-from orgss.models import Org  # Import Org model
+
+from orgss.models import Org, SubOrg1  # Import Org model
 from rest_framework.decorators import action
 
 
 from rest_framework.views import APIView
-from rest_framework import generics
+from rest_framework import generics, permissions
+
+from django_filters import rest_framework as filters
+from accounts.models import Account
+
+from django.db.models import Q
 
 
 
@@ -408,3 +412,25 @@ class AssessmentResultCreateView(generics.CreateAPIView):
     queryset = AssessmentResult.objects.all()
     serializer_class = AssessmentResultSerializer
     permission_classes = [IsAuthenticated]                  
+
+class AssessmentResultFilter(filters.FilterSet):
+    # Allow filtering results by assessment name
+    assessment_name = filters.CharFilter(field_name='assessment__assessment_type__name', lookup_expr='icontains')
+
+    class Meta:
+        model = AssessmentResult
+        fields = ['assessment_name']
+
+class AssessmentResultListView(generics.ListAPIView):
+    serializer_class = AssessmentResultSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user  # Get the logged-in user
+        org = user.org
+        sub_org = user.sub_org
+
+        # Filter AssessmentResults based on the user's org and sub-org
+        return AssessmentResult.objects.filter(
+            Q(user__org=org) | Q(user__sub_org=sub_org)
+        ).order_by('-result')  # Order by result in descending order
