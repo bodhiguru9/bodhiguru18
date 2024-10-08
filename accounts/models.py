@@ -128,6 +128,7 @@ class UserProfile(models.Model):
     is_active = models.BooleanField(default = True)
     competency_score = models.TextField(blank=True, null=True)  # Ensure this is a valid field
     current_level = models.IntegerField(default=1)
+    assessment_score = models.TextField(blank=True, null=True) 
 
     def __str__(self):
         return f'{self.user.email} Profile'    
