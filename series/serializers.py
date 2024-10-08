@@ -10,7 +10,7 @@ from rest_framework import viewsets
 
 from zola.models import Item
 from orgss.models import SubOrg1
-from assessments.models import Assessment
+from assessments.models import Assessment, AssessmentType
 
 
 class SeriesSerializer(serializers.ModelSerializer):
@@ -154,10 +154,10 @@ class SeriesAdminSerializer(serializers.ModelSerializer):
         model = Series
         fields = ['id', 'name', 'sub_org', 'seasons']        
 
-class AssessmentSerializer1(serializers.ModelSerializer):
+class AssessmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Assessment
-        fields = ['id', 'assessment_type', 'access', 'is_approved', 'is_live']  # Add relevant fields
+        fields = ['id', 'assessment_type', 'access', 'is_approved', 'is_live']  
 
 
 class SeasonsSerializer1(serializers.ModelSerializer):
@@ -167,39 +167,45 @@ class SeasonsSerializer1(serializers.ModelSerializer):
 
 
 class AssessmentSeasonSerializer(serializers.ModelSerializer):
-    season = SeasonsSerializer1()
-    assessments = AssessmentSerializer1()
+    season = serializers.CharField()  # Use CharField for the name
+    assessments = AssessmentSerializer()
 
     class Meta:
         model = AssessmentSeason
         fields = ['id', 'season', 'assessments']
 
     def create(self, validated_data):
-        season_data = validated_data.pop('season')
+        # Extract the assessments data
         assessments_data = validated_data.pop('assessments')
 
-        # Create Season instance
-        season, created = Seasons.objects.get_or_create(**season_data)
+        # Look for an existing Season by name
+        season_name = validated_data.pop('season')  # Get the season name directly
+        try:
+            season = Seasons.objects.get(name=season_name)
+        except Seasons.DoesNotExist:
+            raise serializers.ValidationError({"season": "This season does not exist."})
 
-        # Create Assessment instance
-        assessments, created = Assessment.objects.get_or_create(**assessments_data)
+        # Look for an existing Assessment by assessment_type ID
+        assessment_type_id = assessments_data.get('assessment_type')
 
-        assessment_season = AssessmentSeason.objects.create(season=season, assessments=assessments)
+        if isinstance(assessment_type_id, AssessmentType):  # Check if it's already an instance
+            assessment_type = assessment_type_id
+        else:
+            try:
+                assessment_type = AssessmentType.objects.get(id=assessment_type_id)  # Fetch by ID
+            except AssessmentType.DoesNotExist:
+                raise serializers.ValidationError({"assessments": "This assessment type does not exist."})
+
+        # Use filter to find assessments
+        assessments = Assessment.objects.filter(assessment_type=assessment_type)
+
+        if not assessments.exists():
+            raise serializers.ValidationError({"assessments": "No assessments found for this assessment type."})
+
+        # Get the first assessment for simplicity
+        assessment = assessments.first()
+
+        # Create the AssessmentSeason instance
+        assessment_season = AssessmentSeason.objects.create(season=season, assessments=assessment)
         return assessment_season
 
-    def update(self, instance, validated_data):
-        season_data = validated_data.pop('season', None)
-        assessments_data = validated_data.pop('assessments', None)
-
-        if season_data:
-            for attr, value in season_data.items():
-                setattr(instance.season, attr, value)
-            instance.season.save()
-
-        if assessments_data:
-            for attr, value in assessments_data.items():
-                setattr(instance.assessments, attr, value)
-            instance.assessments.save()
-
-        instance.save()
-        return instance

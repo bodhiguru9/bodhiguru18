@@ -16,6 +16,8 @@ from rest_framework import viewsets
 from .permissions import IsAdminOrSubAdmin
 
 from zola.models import Item
+from assessments.models import Assessment
+
 
 
 class SeriesViewSet(viewsets.ModelViewSet):
@@ -226,10 +228,7 @@ class ItemSeasonViewSet(viewsets.ModelViewSet):
             return ItemSeason.objects.filter(season__series__sub_org=user_role.suborg)
         return ItemSeason.objects.none()        
 
-class AssessmentSeasonListCreateView(generics.ListCreateAPIView):
+
+class AssessmentSeasonCreateView(generics.CreateAPIView):
     queryset = AssessmentSeason.objects.all()
     serializer_class = AssessmentSeasonSerializer
-
-class AssessmentSeasonDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = AssessmentSeason.objects.all()
-    serializer_class = AssessmentSeasonSerializer  
