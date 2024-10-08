@@ -197,10 +197,14 @@ class AssessmentResultSerializer(serializers.ModelSerializer):
 
 class AssessmentResultSerializer(serializers.ModelSerializer):
     user_name = serializers.SerializerMethodField()
+    assessment_name = serializers.SerializerMethodField()  # New field for assessment name
 
     class Meta:
         model = AssessmentResult
-        fields = ['user', 'user_name', 'result', 'assessment', 'created_at']
+        fields = ['user', 'user_name', 'result', 'assessment', 'assessment_name', 'created_at']
 
     def get_user_name(self, obj):
         return f"{obj.user.first_name} {obj.user.last_name}"
+
+    def get_assessment_name(self, obj):
+        return obj.assessment.assessment_type.name if obj.assessment.assessment_type else "No Assessment Type"  # Safely get the assessment name
