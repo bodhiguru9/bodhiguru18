@@ -299,3 +299,56 @@ class AssessmentUpdateView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)        
+
+class QuestionListCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Get user's suborg from their Account
+        user_account = request.user.userprofile.account
+        user_suborg = user_account.suborg
+
+        # Filter questions based on the user's suborg
+        questions = Question.objects.filter(suborg=user_suborg)
+        serializer = QuestionSerializer(questions, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        # Ensure the question is mapped to the user's suborg
+        user_account = request.user.userprofile.account
+        user_suborg = user_account.suborg
+        data = request.data.copy()
+        data['suborg'] = user_suborg.id  # Force suborg to user's suborg
+
+        serializer = QuestionSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class QuestionUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, pk, suborg):
+        try:
+            return Question.objects.get(pk=pk, suborg=suborg)
+        except Question.DoesNotExist:
+            return None
+
+    def put(self, request, pk):
+        # Access user's suborg
+        user_account = request.user.userprofile.account
+        user_suborg = user_account.suborg
+
+        # Ensure question exists and belongs to user's suborg
+        question = self.get_object(pk, user_suborg)
+        if question is None:
+            return Response({"error": "Question not found or access denied."},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        serializer = QuestionSerializer(question, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)        

@@ -11,23 +11,20 @@ from upgrade.models import Upgrade, UpgradeAssessment
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Option
-        fields = ['id', 'option', 'is_correct']
+        fields = ['id', 'option', 'option_image', 'is_correct']
 
 class QuestionSerializer(serializers.ModelSerializer):
-    options = OptionSerializer(many=True)  # Nest the options within the question
+    options = OptionSerializer(many=True)
 
     class Meta:
         model = Question
         fields = ['id', 'question', 'level', 'timer', 'options']
 
     def create(self, validated_data):
-        options_data = validated_data.pop('options')  # Extract options data
-        question = Question.objects.create(**validated_data)  # Create question instance
-        
-        # Create option instances for the question
+        options_data = validated_data.pop('options')
+        question = Question.objects.create(**validated_data)
         for option_data in options_data:
             Option.objects.create(question=question, **option_data)
-
         return question
 
     def update(self, instance, validated_data):
@@ -37,7 +34,7 @@ class QuestionSerializer(serializers.ModelSerializer):
         instance.timer = validated_data.get('timer', instance.timer)
         instance.save()
 
-        # Delete existing options and create new ones (simplified update logic)
+        # Delete existing options and create new ones
         instance.options.all().delete()
         for option_data in options_data:
             Option.objects.create(question=instance, **option_data)

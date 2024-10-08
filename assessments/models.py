@@ -18,6 +18,7 @@ class Question(models.Model):
     question = models.CharField(max_length=200)
     level = models.CharField(max_length=30, choices=LEVEL, default='easy')
     timer = models.IntegerField(null=True, blank=True)
+    suborg = models.ForeignKey('orgss.SubOrg1', on_delete=models.CASCADE, default = 1)
     
     def __str__(self):
         return f"{self.question}-{self.level}"

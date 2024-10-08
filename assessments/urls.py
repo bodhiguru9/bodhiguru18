@@ -3,7 +3,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
 from assessments.views import (AssessmentViewSet, AssessmentResultViewSet, AssessmentListCreateView,
-                                AssessmentUpdateView)
+                                AssessmentUpdateView, QuestionListCreateView, QuestionUpdateView)
 
 from .views import AssessmentTypeViewSet, QuestionViewSet
 
@@ -19,6 +19,8 @@ urlpatterns = [
     path('', include(router.urls)),
     path('assessments/', AssessmentListCreateView.as_view(), name='assessment-list-create'),
     path('assessments/<int:pk>/', AssessmentUpdateView.as_view(), name='assessment-update'),
+    path('questions/', QuestionListCreateView.as_view(), name='question-list-create'),
+    path('questions/<int:pk>/', QuestionUpdateView.as_view(), name='question-update'),
 
 
 
