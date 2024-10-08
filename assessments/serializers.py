@@ -1,10 +1,10 @@
 from rest_framework import serializers
 
-from assessments.models import Question, Option, AssessmentType, Assessment
-from assessments.models import AssessmentResult
+from assessments.models import Question, Option, AssessmentType, Assessment, AssessmentResult
 
 from orgss.models import Org, SubOrg1
 from upgrade.models import Upgrade, UpgradeAssessment
+from accounts.models import Account
 
 
 
@@ -150,7 +150,7 @@ class AssessmentListSerializer(serializers.ModelSerializer):
 class AssessmentResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssessmentResult
-        fields = ['id', 'user', 'assessment', 'phase', 'result']
+        fields = ['id', 'user', 'assessment',  'result']
 
 
 class AssessmentTypeSerializer(serializers.ModelSerializer):
@@ -163,3 +163,33 @@ class AssessmentTypeSerializer(serializers.ModelSerializer):
     
     def get_suborg_name(self, obj):
         return obj.suborg.name
+
+class AssessmentResultSerializer(serializers.ModelSerializer):
+    user_email = serializers.EmailField(write_only=True)
+    assessment_id = serializers.IntegerField(write_only=True)
+    
+    class Meta:
+        model = AssessmentResult
+        fields = ['user_email', 'assessment_id', 'result', 'created_at']
+    
+    def create(self, validated_data):
+        # Fetch user by email
+        try:
+            user = Account.objects.get(email=validated_data['user_email'])
+        except Account.DoesNotExist:
+            raise serializers.ValidationError({"user_email": "User does not exist."})
+
+        # Fetch assessment by id
+        try:
+            assessment = Assessment.objects.get(id=validated_data['assessment_id'])
+        except Assessment.DoesNotExist:
+            raise serializers.ValidationError({"assessment_id": "Assessment does not exist."})
+
+        # Create the AssessmentResult instance
+        assessment_result = AssessmentResult.objects.create(
+            user=user,
+            assessment=assessment,
+            result=validated_data['result'],
+            created_at=validated_data.get('created_at', date.today())  # Use today's date if not provided
+        )
+        return assessment_result        

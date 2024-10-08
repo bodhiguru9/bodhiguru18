@@ -25,6 +25,8 @@ from rest_framework.decorators import action
 
 
 from rest_framework.views import APIView
+from rest_framework import generics
+
 
 
 class AssessmentViewSet(ViewSet):
@@ -400,4 +402,9 @@ class AssessmentUpdateView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)                
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)      
+
+class AssessmentResultCreateView(generics.CreateAPIView):
+    queryset = AssessmentResult.objects.all()
+    serializer_class = AssessmentResultSerializer
+    permission_classes = [IsAuthenticated]                  
