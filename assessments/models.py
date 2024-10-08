@@ -62,6 +62,7 @@ class Assessment(models.Model):
     access = models.CharField(max_length=30, choices=ACCESS, default=None)
     is_approved = models.BooleanField(default=False)
     is_live = models.BooleanField(default=False)
+    org = models.ForeignKey('orgss.Org', on_delete=models.CASCADE, default = 7)
     
     def __str__(self):
         return f"{self.assessment_type.name}-{self.access}"

@@ -27,7 +27,6 @@ from rest_framework.decorators import action
 from rest_framework.views import APIView
 
 
-
 class AssessmentViewSet(ViewSet):
     permission_classes = [IsAuthenticated]
     
@@ -352,3 +351,53 @@ class QuestionUpdateView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)        
+
+class AssessmentListCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Get the org and suborg from the user's profile through the Account model
+        org = request.user.org  # Accessing org directly from Account
+        sub_org = request.user.sub_org  # Access suborg directly from Account
+
+        # Filter assessments by org and suborg
+        assessments = Assessment.objects.filter(assessment_type__suborg=suborg)
+        serializer = AssessmentSerializer(assessments, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        # Get the org and suborg from the logged-in user's account
+        org = request.user.org  # Access org from Account
+        sub_org = request.user.sub_org  # Access suborg from Account
+        data = request.data.copy()
+
+        # Ensure the suborg is mapped to the assessment
+        data['suborg'] = sub_org.id  # Assign the suborg to the assessment type
+
+        serializer = AssessmentSerializer(data=data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class AssessmentUpdateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, pk, org):
+        try:
+            return Assessment.objects.get(pk=pk, org=org)
+        except Assessment.DoesNotExist:
+            return None
+
+    def put(self, request, pk):
+        org = request.user.userprofile.account.org
+        assessment = self.get_object(pk, org)
+        if assessment is None:
+            return Response({"error": "Assessment not found or access denied."},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AssessmentSerializer(assessment, data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)                

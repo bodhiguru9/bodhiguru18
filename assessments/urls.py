@@ -21,6 +21,8 @@ urlpatterns = [
     path('assessments/<int:pk>/', AssessmentUpdateView.as_view(), name='assessment-update'),
     path('questions/', QuestionListCreateView.as_view(), name='question-list-create'),
     path('questions/<int:pk>/', QuestionUpdateView.as_view(), name='question-update'),
+    path('assessments_questions/', AssessmentListCreateView.as_view(), name='assessment-list-create'),
+    path('assessments_questions/<int:pk>/', AssessmentUpdateView.as_view(), name='assessment-update'),
 
 
 
