@@ -430,7 +430,15 @@ class AssessmentResultListView(generics.ListAPIView):
         org = user.org
         sub_org = user.sub_org
 
+        # Get the assessment name from the query parameters
+        assessment_name = self.request.query_params.get('assessment_name', None)
+
         # Filter AssessmentResults based on the user's org and sub-org
-        return AssessmentResult.objects.filter(
+        queryset = AssessmentResult.objects.filter(
             Q(user__org=org) | Q(user__sub_org=sub_org)
-        ).order_by('-result')  # Order by result in descending order
+        )
+
+        if assessment_name:
+            queryset = queryset.filter(assessment__assessment_type__name__icontains=assessment_name)
+
+        return queryset.order_by('-result')  # Order by result in descending order
