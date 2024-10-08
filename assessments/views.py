@@ -442,3 +442,11 @@ class AssessmentResultListView(generics.ListAPIView):
             queryset = queryset.filter(assessment__assessment_type__name__icontains=assessment_name)
 
         return queryset.order_by('-result')  # Order by result in descending order
+
+class UserAssessmentResultListView(generics.ListAPIView):
+    serializer_class = AssessmentResultSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user  # Get the logged-in user
+        return AssessmentResult.objects.filter(user=user)         

@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 
 from assessments.views import (AssessmentViewSet, AssessmentResultViewSet, AssessmentListCreateView,
                                 AssessmentUpdateView, QuestionListCreateView, QuestionUpdateView, 
-                                AssessmentResultCreateView, AssessmentResultListView)
+                                AssessmentResultCreateView, AssessmentResultListView, UserAssessmentResultListView)
 
 from .views import AssessmentTypeViewSet, QuestionViewSet
 
@@ -26,6 +26,7 @@ urlpatterns = [
     path('assessments_questions/<int:pk>/', AssessmentUpdateView.as_view(), name='assessment-update'),
     path('assessment-results/', AssessmentResultCreateView.as_view(), name='create-assessment-result'),
     path('assessment-results_list/', AssessmentResultListView.as_view(), name='assessment-results-list'),
+    path('user-assessment-results/', UserAssessmentResultListView.as_view(), name='user-assessment-results'),
 
 
 
