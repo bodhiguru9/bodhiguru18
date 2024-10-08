@@ -12,7 +12,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
         fields = ['account_data', 'scenarios_attempted', 
-                  'user_powerwords', 'user_weakwords', 'competency_score', 'current_level']
+                  'user_powerwords', 'user_weakwords', 'competency_score', 'assessment_score', 'current_level']
 
     def get_account_data(self, obj):
         # Get the related Account instance via email or user_id

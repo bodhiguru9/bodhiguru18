@@ -4,23 +4,27 @@ from django.dispatch import receiver
 from assessments.models import AssessmentResult
 from accounts.models import UserProfile  # Import UserProfile from the accounts app
 
+
 @receiver(post_save, sender=AssessmentResult)
-def update_user_profile_assessment_score(sender, instance, created, **kwargs):
+def update_assessment_score(sender, instance, created, **kwargs):
     if created:
-        # Get the user profile associated with the user
+        # Ensure the UserProfile exists
         try:
             user_profile = UserProfile.objects.get(user=instance.user)
         except UserProfile.DoesNotExist:
-            return  # Handle case where UserProfile does not exist
+            return  # You can log an error here if needed
 
-        # Format the new assessment score (e.g., "AssessmentTypeName: score")
-        new_score_entry = f"{instance.assessment.assessment_type.name}: {instance.result}"
-
-        # Append the new score entry to the existing assessment_score field
+        # Update the assessment score in UserProfile
+        assessment_info = f"{instance.assessment.assessment_type.name}: {instance.result}"
+        
         if user_profile.assessment_score:
-            user_profile.assessment_score += f", {new_score_entry}"
+            # Append the new result
+            user_profile.assessment_score += f", {assessment_info}"
         else:
-            user_profile.assessment_score = new_score_entry
+            # First result being added
+            user_profile.assessment_score = assessment_info
+        
+        print(f"Signal triggered for user: {instance.user.email}")
+        print(f"Assessment info: {assessment_info}")
 
-        # Save the updated user profile
         user_profile.save()
