@@ -345,7 +345,17 @@ class RegisterView(APIView):
         from_email = settings.DEFAULT_FROM_EMAIL
 
         # Send the email
-        send_mail(subject, message, from_email, [user_email], fail_silently=False)      
+        #send_mail(subject, message, from_email, [user_email], fail_silently=False)    
+        # Email recipients
+        user_recipients = [user_email]
+        admin_recipient = ['arindam@bodhiguru.com']
+
+        # Send the email to the user
+        send_mail(subject, message, from_email, user_recipients, fail_silently=False)
+
+        # Send the email to Arindam
+        admin_message = f"A new user has registered under the organization: {org_name}."
+        send_mail(subject="New User Registration", message=admin_message, from_email=from_email, recipient_list=admin_recipient, fail_silently=False)  
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
