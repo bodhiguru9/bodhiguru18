@@ -8,7 +8,7 @@ from zola.views import ItemViewSet, ItemHandleViewSet, DownloadCSV
 from zola.views import ItemProcessingViewSet, ItemAnalysticsViewSet
 from zola.views import (LeaderBoardViewSet, CompetencyBoardViewSet, CompetencyAttemptAnalyticsViewSet,
                         SubmitScoreView, CheckLevelProgressionView, ItemSearchView, ItemLibraryAPIView,
-                        LeaderboardPercentileAPIView,ItemFilterView, LibraryFilterChoicesView)
+                        LeaderboardPercentileAPIView,ItemFilterView, LibraryFilterChoicesView, ItemCreateAPIView)
 
 ItemViewSetRouter = DefaultRouter()
 ItemHandleViewSetRouter = DefaultRouter()
@@ -46,5 +46,9 @@ urlpatterns = [
     path('download-item-emotions/', DownloadCSV.as_view(), name='download_item_emotions'),
     path('items/filter/', ItemFilterView.as_view(), name='item-filter'),
     path('items/library-filter-choices/', LibraryFilterChoicesView.as_view(), name='library-filter-choices'),
+    path('api/newitems/', ItemCreateAPIView.as_view(), name='item-create'),
+
+
+
 
 ]

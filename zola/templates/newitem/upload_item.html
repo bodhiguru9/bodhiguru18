@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload New Item</title>
+</head>
+<body>
+    <h2>Upload New Item</h2>
+    <form action="{% url 'item-create' %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <!-- Item Name -->
+        <label for="item_name">Item Name:</label><br>
+        <input type="text" id="item_name" name="item_name" maxlength="700" required><br><br>
+
+        <!-- Item Description -->
+        <label for="item_description">Item Description:</label><br>
+        <textarea id="item_description" name="item_description" maxlength="300"></textarea><br><br>
+
+        <!-- Item Video -->
+        <label for="item_video">Item Video URL:</label><br>
+        <input type="url" id="item_video" name="item_video"><br><br>
+
+        <!-- Item Background -->
+        <label for="item_background">Item Background File:</label><br>
+        <input type="file" id="item_background" name="item_background"><br><br>
+
+        <!-- Item Answer -->
+        <label for="item_answer">Item Answer:</label><br>
+        <textarea id="item_answer" name="item_answer"></textarea><br><br>
+
+        <!-- Item Emotion -->
+        <label for="item_emotion">Item Emotion:</label><br>
+        <textarea id="item_emotion" name="item_emotion"></textarea><br><br>
+
+        <!-- Item Answer Count -->
+        <label for="item_answercount">Item Answer Count:</label><br>
+        <input type="number" id="item_answercount" name="item_answercount" value="0" min="0"><br><br>
+
+        <!-- Category -->
+        <label for="category">Category:</label><br>
+        <input type="text" id="category" name="category" maxlength="256" value="Personal"><br><br>
+
+        <!-- Tags -->
+        <label for="tags">Tags:</label><br>
+        <textarea id="tags" name="tags"></textarea><br><br>
+
+        <!-- Thumbnail -->
+        <label for="thumbnail">Thumbnail:</label><br>
+        <input type="file" id="thumbnail" name="thumbnail"><br><br>
+
+        <!-- Item Gender -->
+        <label for="item_gender">Item Gender:</label><br>
+        <select id="item_gender" name="item_gender">
+            <option value="female">Female</option>
+            <option value="male">Male</option>
+            <option value="all" selected>All</option>
+        </select><br><br>
+
+        <!-- Item Type -->
+        <label for="item_type">Item Type:</label><br>
+        <select id="item_type" name="item_type">
+            <option value="simulation" selected>Simulation</option>
+            <option value="email">Email</option>
+        </select><br><br>
+
+        <!-- Scenario Type -->
+        <label for="scenario_type">Scenario Type:</label><br>
+        <select id="scenario_type" name="scenario_type">
+            <option value="sales" selected>Sales</option>
+            <option value="customer_service">Customer Service</option>
+            <option value="interview">Interview</option>
+        </select><br><br>
+
+        <!-- Coming Across As -->
+        <label for="coming_across_as">Coming Across As:</label><br>
+        <input type="text" id="coming_across_as" name="coming_across_as" maxlength="250"><br><br>
+
+        <!-- Competency (Multi-select) -->
+        <label for="competencys">Competencies:</label><br>
+        <select id="competencys" name="competencys" multiple>
+            <!-- Assuming competency options are populated dynamically -->
+            {% for competency in competencies %}
+                <option value="{{ competency.id }}">{{ competency.competency_name }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <!-- Words -->
+        <label for="words">Words:</label><br>
+        <textarea id="words" name="words">words</textarea><br><br>
+
+        <!-- Library Filter -->
+        <label for="library_filter">Library Filter:</label><br>
+        <select id="library_filter" name="library_filter">
+            <option value="sales" selected>Sales</option>
+            <option value="customer_service">Customer Service</option>
+            <option value="interview">Interview</option>
+        </select><br><br>
+
+        <!-- Role (Foreign Key to Role1) -->
+        <label for="role">Role:</label><br>
+        <select id="role" name="role">
+            <!-- Assuming role options are populated dynamically -->
+            {% for role in roles %}
+                <option value="{{ role.id }}">{{ role.role_name }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <!-- Level -->
+        <label for="level">Level:</label><br>
+        <input type="number" id="level" name="level" value="1" min="1"><br><br>
+
+        <!-- Expert URL -->
+        <label for="expert">Expert URL:</label><br>
+        <input type="url" id="expert" name="expert"><br><br>
+
+        <!-- Is Approved -->
+        <label for="is_approved">Is Approved:</label><br>
+        <input type="checkbox" id="is_approved" name="is_approved"><br><br>
+
+        <!-- Is Live -->
+        <label for="is_live">Is Live:</label><br>
+        <input type="checkbox" id="is_live" name="is_live"><br><br>
+
+        <!-- Submit Button -->
+        <button type="submit">Upload Item</button>
+    </form>
+</body>
+</html>

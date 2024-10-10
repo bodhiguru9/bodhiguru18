@@ -16,7 +16,8 @@ from rest_framework_tracking.mixins import LoggingMixin
 from zola.serializers import (ItemListSerializer1, ItemEmotionSerializer, ItemRecommendSerializer,
                                 ItemLiSerializer, ItemUserSerializer, ItemCreateSerializer,
                                 ItemResultSerializer, ItemSerializer, ItemSearchSerializer,
-                                ItemLibrarySerializer, LeaderboardSerializer, ItemFilterSerializer )
+                                ItemLibrarySerializer, LeaderboardSerializer, ItemFilterSerializer,
+                                ItemNewSerializer)
 
 from zola.models import Item, ItemResult, Library_Filter_CHOICES
 from accounts.models import Account, UserProfile
@@ -37,13 +38,15 @@ import spacy
 import threading
 nlp = spacy.load('en_core_web_sm')
 
-
+from rest_framework.permissions import AllowAny
 from rest_framework import filters
 from rest_framework.filters import SearchFilter
 
 from django.db.models.functions import PercentRank
 
 import csv
+
+from rest_framework.parsers import MultiPartParser, FormParser
 
 
 
@@ -981,3 +984,17 @@ class ItemFilterView(generics.ListAPIView):
             queryset = queryset.filter(competency__id=competency_id)
 
         return queryset
+
+class ItemCreateAPIView(generics.CreateAPIView):
+    queryset = Item.objects.all()
+    serializer_class = ItemNewSerializer
+    permission_classes = [AllowAny]
+    parser_classes = (MultiPartParser, FormParser)  # for handling file uploads        
+
+def upload_item_view(request):
+    competencies = Competency.objects.all()
+    #roles = Role1.objects.all()
+    return render(request, 'newitem/upload_item.html', {
+        'competencies': competencies,
+        
+    })    

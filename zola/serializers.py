@@ -107,4 +107,9 @@ class ItemFilterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Item
-        fields = ['id', 'item_name', 'tags', 'level', 'competencys', 'library_filter', 'category']                    
+        fields = ['id', 'item_name', 'tags', 'level', 'competencys', 'library_filter', 'category']   
+
+class ItemNewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Item
+        fields = '__all__'                         
