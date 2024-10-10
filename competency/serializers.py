@@ -61,3 +61,12 @@ class CompetencySerializer(serializers.ModelSerializer):
     class Meta:
         model = Competency
         fields = ['id', 'competency_name', 'sub_compentency', 'get_senti_as_string']    
+
+class SubCompetencySerializer1(serializers.ModelSerializer):
+    power_words = serializers.StringRelatedField(many=True)
+    negative_words = serializers.StringRelatedField(many=True)
+    emotion_words = serializers.StringRelatedField(many=True)
+
+    class Meta:
+        model = Sub_Competency
+        fields = ['name', 'power_words', 'negative_words', 'emotion_words']     
