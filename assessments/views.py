@@ -221,11 +221,12 @@ class AssessmentResultViewSet(ViewSet):
         }
         return Response(response, status=status.HTTP_204_NO_CONTENT)
 
-
+"""
 class AssessmentTypeViewSet(viewsets.ModelViewSet):
     queryset = AssessmentType.objects.all()
     serializer_class = AssessmentTypeSerializer
     permission_classes = [IsAuthenticated]
+"""
 
 class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
@@ -255,7 +256,7 @@ class AssessmentViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
-
+"""
 class AssessmentListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -304,6 +305,7 @@ class AssessmentUpdateView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)        
+"""
 
 class QuestionListCreateView(APIView):
     permission_classes = [IsAuthenticated]
@@ -386,6 +388,9 @@ class AssessmentListCreateView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+
+
 class AssessmentUpdateView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -449,4 +454,30 @@ class UserAssessmentResultListView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user  # Get the logged-in user
-        return AssessmentResult.objects.filter(user=user)         
+        return AssessmentResult.objects.filter(user=user) 
+
+class AssessmentTypeListCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Get the user's suborg
+        sub_org = request.user.sub_org
+
+        # Filter assessment types by suborg
+        assessments = AssessmentType.objects.filter(suborg=sub_org)
+        serializer = AssessmentTypeSerializer(assessments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        # Get the suborg from the logged-in user
+        sub_org = request.user.sub_org
+
+        # Add the suborg to the request data before saving
+        data = request.data.copy()
+        data['suborg'] = sub_org.id
+
+        serializer = AssessmentTypeSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)                
