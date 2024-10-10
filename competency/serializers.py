@@ -70,3 +70,11 @@ class SubCompetencySerializer1(serializers.ModelSerializer):
     class Meta:
         model = Sub_Competency
         fields = ['name', 'power_words', 'negative_words', 'emotion_words']     
+
+class CSVUploadSerializer(serializers.Serializer):
+    file = serializers.FileField()
+
+    def validate_file(self, file):
+        if not file.name.endswith('.csv'):
+            raise serializers.ValidationError("Please upload a valid CSV file.")
+        return file        
