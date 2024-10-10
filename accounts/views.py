@@ -307,26 +307,19 @@ class LoginViewSet(APIView):
         
         return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-
-
 class RegisterView(APIView):
     permission_classes = [AllowAny]
 
-    """
-    def post(self, request):
-        serializer = AccountORgSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'message': 'User registered successfully'}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
-    """
     def post(self, request):
         serializer = AccountRegisterSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            user = serializer.save()  # Save user and get the user instance
+
+            # Send the welcome email to the user and the additional email to arindam@bodhiguru.com
+            self.send_welcome_email(user.email, user.org.name)
+
             return Response({'message': 'User registered successfully', 'is_active': True}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
     def send_welcome_email(self, user_email, org_name):
         # Compose the email content
@@ -334,18 +327,18 @@ class RegisterView(APIView):
         message = f"""
         Dear User,
 
-        Welcome to {org_name}!
+        Welcome to Bodhiguru!
 
         Your organization has been registered successfully and is valid for 30 days. 
         If you wish to continue using the service after 30 days, please consider upgrading your plan.
+
+        Our Customer Success Team will connect with you shortly to help you get the maximum benefit from the platform.
 
         Best regards,
         Your Company Name
         """
         from_email = settings.DEFAULT_FROM_EMAIL
 
-        # Send the email
-        #send_mail(subject, message, from_email, [user_email], fail_silently=False)    
         # Email recipients
         user_recipients = [user_email]
         admin_recipient = ['arindam@bodhiguru.com']
@@ -355,7 +348,9 @@ class RegisterView(APIView):
 
         # Send the email to Arindam
         admin_message = f"A new user has registered under the organization: {org_name}."
-        send_mail(subject="New User Registration", message=admin_message, from_email=from_email, recipient_list=admin_recipient, fail_silently=False)  
+        send_mail(subject="New User Registration", message=admin_message, from_email=from_email, recipient_list=admin_recipient, fail_silently=False)
+
+
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
