@@ -5,7 +5,7 @@ from rest_framework.routers import DefaultRouter
 from zola.views import ItemList, item_result, item_rec
 
 from zola.views import ItemViewSet, ItemHandleViewSet, DownloadCSV
-from zola.views import ItemProcessingViewSet, ItemAnalysticsViewSet
+from zola.views import ItemProcessingViewSet, ItemAnalysticsViewSet, upload_item_view
 from zola.views import (LeaderBoardViewSet, CompetencyBoardViewSet, CompetencyAttemptAnalyticsViewSet,
                         SubmitScoreView, CheckLevelProgressionView, ItemSearchView, ItemLibraryAPIView,
                         LeaderboardPercentileAPIView,ItemFilterView, LibraryFilterChoicesView, ItemCreateAPIView)
@@ -47,6 +47,7 @@ urlpatterns = [
     path('items/filter/', ItemFilterView.as_view(), name='item-filter'),
     path('items/library-filter-choices/', LibraryFilterChoicesView.as_view(), name='library-filter-choices'),
     path('api/newitems/', ItemCreateAPIView.as_view(), name='item-create'),
+    path('upload-item/', upload_item_view, name='upload-item'),
 
 
 
