@@ -41,7 +41,7 @@ class CompetencyViewSet(ViewSet):
 class SubCompetencyViewSet(viewsets.ModelViewSet):
     queryset = Sub_Competency.objects.all()
     serializer_class = SubCompetencySerializer1
-    permission_classes = [AllowAny]
+    permission_classes = [AllowAny]  # No authentication required
 
     @action(detail=False, methods=['get'])
     def export_csv(self, request):
@@ -51,21 +51,22 @@ class SubCompetencyViewSet(viewsets.ModelViewSet):
 
         # Create a CSV writer
         writer = csv.writer(response)
-        # Write the header
+        # Write the header row
         writer.writerow(['Sub Competency Name', 'Power Words', 'Power Words Count', 
                          'Negative Words', 'Negative Words Count', 
                          'Emotion Words', 'Emotion Words Count'])
 
         # Fetch all sub-competencies
         for sub_comp in Sub_Competency.objects.all():
-            # Fetching related power words, negative words, and emotion words
-            power_words = ', '.join([word.word for word in sub_comp.power_words.all()])
-            negative_words = ', '.join([word.word for word in sub_comp.negative_words.all()])
-            emotion_words = ', '.join([word.emotion_word_name for word in sub_comp.emotion_words.all()])
+            # Fetch related power words, negative words, and emotion words
+            power_words = ', '.join([pw.word.word_name for pw in sub_comp.power_words.all()])
+            negative_words = ', '.join([nw.word.word_name for nw in sub_comp.negative_words.all()])
+            emotion_words = ', '.join([ew.emotion_word_name for ew in sub_comp.emotion_words.all()])
 
             # Write data to CSV
-            writer.writerow([sub_comp.name, power_words, sub_comp.power_words.count(),
+            writer.writerow([sub_comp.name, 
+                             power_words, sub_comp.power_words.count(),
                              negative_words, sub_comp.negative_words.count(),
                              emotion_words, sub_comp.emotion_words.count()])
 
-        return response      
+        return response
