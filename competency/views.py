@@ -59,8 +59,8 @@ class SubCompetencyViewSet(viewsets.ModelViewSet):
         # Fetch all sub-competencies
         for sub_comp in Sub_Competency.objects.all():
             # Fetching related power words, negative words, and emotion words
-            power_words = ', '.join([word.power_word_name for word in sub_comp.power_words.all()])
-            negative_words = ', '.join([word.negative_word_name for word in sub_comp.negative_words.all()])
+            power_words = ', '.join([word.word for word in sub_comp.power_words.all()])
+            negative_words = ', '.join([word.word for word in sub_comp.negative_words.all()])
             emotion_words = ', '.join([word.emotion_word_name for word in sub_comp.emotion_words.all()])
 
             # Write data to CSV
