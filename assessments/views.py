@@ -9,7 +9,8 @@ from rest_framework.permissions import IsAuthenticated
 from users.models import UserRightsMapping
 
 from assessments.serializers import (AssessmentSerializer, AssessmentResultSerializer, AssessmentTypeSerializer,
-                                    QuestionSerializer, AssessmentResultSerializer)
+                                    QuestionSerializer, AssessmentResultSerializer, 
+                                    AssessmentQuestionMappingSerializer)
 
 from datetime import datetime
 
@@ -221,17 +222,7 @@ class AssessmentResultViewSet(ViewSet):
         }
         return Response(response, status=status.HTTP_204_NO_CONTENT)
 
-"""
-class AssessmentTypeViewSet(viewsets.ModelViewSet):
-    queryset = AssessmentType.objects.all()
-    serializer_class = AssessmentTypeSerializer
-    permission_classes = [IsAuthenticated]
-"""
 
-class QuestionViewSet(viewsets.ModelViewSet):
-    queryset = Question.objects.all()
-    serializer_class = QuestionSerializer
-    permission_classes = [IsAuthenticated]
 
 class AssessmentViewSet(viewsets.ModelViewSet):
     queryset = Assessment.objects.all()
@@ -306,7 +297,7 @@ class AssessmentUpdateView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)        
 """
-
+"""
 class QuestionListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -326,6 +317,49 @@ class QuestionListCreateView(APIView):
         user_suborg = user_account.suborg
         data = request.data.copy()
         data['suborg'] = user_suborg.id  # Force suborg to user's suborg
+
+        serializer = QuestionSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+"""
+class QuestionListCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Retrieve the suborg from the logged-in user's account
+        user_account = request.user  # request.user should be the Account model instance
+
+        # Check if the user is associated with a suborg
+        if not user_account.sub_org:
+            return Response({"message": "User is not associated with any SubOrg."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Filter questions by the user's suborg
+        questions = Question.objects.filter(suborg=user_account.sub_org)
+
+        # Debugging: Print the suborg of the user
+        print(f"User SubOrg: {user_account.sub_org}")
+        print(f"Questions found for SubOrg {user_account.sub_org}: {questions.count()}")
+
+        # If no questions are found, return a message
+        if not questions.exists():
+            return Response({"message": "No Questions found for your SubOrg."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Serialize and return the questions
+        serializer = QuestionSerializer(questions, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request):
+        # Retrieve the suborg from the logged-in user's account
+        user_account = request.user
+
+        if not user_account.sub_org:
+            return Response({"message": "User is not associated with any SubOrg."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Add the suborg to the request data before saving
+        data = request.data.copy()
+        data['suborg'] = user_account.sub_org.id
 
         serializer = QuestionSerializer(data=data)
         if serializer.is_valid():
@@ -480,4 +514,49 @@ class AssessmentTypeListCreateView(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)                
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  
+
+class QuestionListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Get org and suborg from the logged-in user's account
+        org = request.user.org
+        sub_org = request.user.sub_org
+
+        # Filter questions by suborg
+        questions = Question.objects.filter(suborg=sub_org)
+        serializer = QuestionSerializer(questions, many=True)
+        
+        # If no questions are found, return a message
+        if not questions.exists():
+            return Response({"message": "No Questions found for your SubOrg."}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class AssessmentQuestionMappingView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, assessment_id):
+        # Get the specific assessment and list its questions
+        try:
+            assessment = Assessment.objects.get(id=assessment_id)
+        except Assessment.DoesNotExist:
+            return Response({"error": "Assessment not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AssessmentQuestionMappingSerializer(assessment)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, assessment_id):
+        try:
+            assessment = Assessment.objects.get(id=assessment_id)
+        except Assessment.DoesNotExist:
+            return Response({"error": "Assessment not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Update questions for the assessment
+        serializer = AssessmentQuestionMappingSerializer(assessment, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

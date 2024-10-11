@@ -19,7 +19,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = ['id', 'question', 'level', 'timer', 'options']
+        fields = ['id', 'question', 'level', 'timer', 'suborg', 'options']
 
     def create(self, validated_data):
         options_data = validated_data.pop('options')
@@ -208,3 +208,18 @@ class AssessmentResultSerializer(serializers.ModelSerializer):
 
     def get_assessment_name(self, obj):
         return obj.assessment.assessment_type.name if obj.assessment.assessment_type else "No Assessment Type"  # Safely get the assessment name
+
+
+class AssessmentQuestionMappingSerializer(serializers.ModelSerializer):
+    questions = serializers.PrimaryKeyRelatedField(queryset=Question.objects.all(), many=True)
+
+    class Meta:
+        model = Assessment
+        fields = ['id', 'questions']
+
+    def update(self, instance, validated_data):
+        # Handle question mapping
+        questions = validated_data.pop('questions', [])
+        instance.questions.set(questions)  # Replace questions
+        instance.save()
+        return instance        
