@@ -555,8 +555,22 @@ class AssessmentQuestionMappingView(APIView):
             return Response({"error": "Assessment not found"}, status=status.HTTP_404_NOT_FOUND)
 
         # Update questions for the assessment
-        serializer = AssessmentQuestionMappingSerializer(assessment, data=request.data)
+        serializer = AssessmentQuestionMappingSerializer(assessment, data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, pk):
+        try:
+            # Get the assessment by its primary key (ID)
+            assessment = Assessment.objects.get(pk=pk)
+        except Assessment.DoesNotExist:
+            return Response({'error': 'Assessment not found.'}, status=404)
+
+        # Pass the request context to the serializer to access the user
+        serializer = AssessmentQuestionMappingSerializer(assessment, data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)

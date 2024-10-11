@@ -6,7 +6,10 @@ from orgss.models import Org, SubOrg1
 from upgrade.models import Upgrade, UpgradeAssessment
 from accounts.models import Account
 from datetime import date
-
+from datetime import datetime, timedelta
+from django.utils import timezone
+from rest_framework import serializers
+from upgrade.models import Upgradedetail
 
 
 class OptionSerializer(serializers.ModelSerializer):
@@ -132,7 +135,7 @@ class AssessmentSerializer(serializers.ModelSerializer):
             instance.questions.add(question_data['id'])
 
         return instance
-        
+     
 class AssessmentListSerializer(serializers.ModelSerializer):
     questions = serializers.SerializerMethodField()
     assessment_type = serializers.SerializerMethodField()
@@ -218,34 +221,54 @@ class AssessmentQuestionMappingSerializer(serializers.ModelSerializer):
         fields = ['id', 'questions']
 
     def update(self, instance, validated_data):
+        # Access the logged-in user and their organization
         user = self.context['request'].user
-        org = user.org  # Get the user's organization
-        package = org.package_purchased  # Get the package purchased by the org
-        
+        org = user.org  # Assuming the user's org is directly available from the Account model
+        print(f"Logged-in User's Organization: {org.name}")  # Debug: print the org of the logged-in user
+
+        # Fetch the package purchased by the user's organization
+        package_purchased = org.package_purchased
         questions = validated_data.get('questions', [])
-        current_mapped_questions_count = instance.questions.count()  # Get current number of mapped questions
-        new_mapped_questions_count = len(questions)
-        total_mapped_questions_count = current_mapped_questions_count + new_mapped_questions_count
+        new_question_count = len(questions)
 
-        # Rolling date for the last 30 days
-        last_30_days = timezone.now() - timedelta(days=30)
+        # Handle default case if no package is purchased
+        if not package_purchased:
+            if new_question_count > 3:
+                raise serializers.ValidationError({
+                    'questions': 'You are only allowed to map up to 3 questions without a package.'
+                })
 
-        # Validate based on the package purchased
-        if package == 'no_assessment' and total_mapped_questions_count > 9:
-            raise serializers.ValidationError({
-                'questions': 'You are only allowed to map up to 9 questions with the "No Assessment" package.'
-            })
-        elif package == 'assessment30' and total_mapped_questions_count > 30:
-            raise serializers.ValidationError({
-                'questions': 'You are only allowed to map up to 30 questions with the "Assessment 30" package in the last 30 days.'
-            })
-        elif package == 'assessment60' and total_mapped_questions_count > 60:
-            raise serializers.ValidationError({
-                'questions': 'You are only allowed to map up to 60 questions with the "Assessment 60" package in the last 30 days.'
-            })
+        # Check for bronze/silver package upgrades
+        elif package_purchased in ['bronze', 'silver']:
+            try:
+                upgradedetail = Upgradedetail.objects.get(org=org)
+                assessment_package = upgradedetail.assessment_package
 
-        # If validation passes, set the questions
+                # Get the last 30 days' assessments
+                last_30_days = timezone.now() - timedelta(days=30)
+                mapped_questions_last_30_days = instance.questions.filter(
+                    assessment__created_at__gte=last_30_days).count()
+
+                if assessment_package == 'assessment30':
+                    # Allow up to 30 questions on a rolling 30-day basis
+                    if mapped_questions_last_30_days + new_question_count > 30:
+                        raise serializers.ValidationError({
+                            'questions': 'You are only allowed to map up to 30 questions within the last 30 days.'
+                        })
+
+                elif assessment_package == 'assessment60':
+                    # Allow up to 60 questions on a rolling 30-day basis
+                    if mapped_questions_last_30_days + new_question_count > 60:
+                        raise serializers.ValidationError({
+                            'questions': 'You are only allowed to map up to 60 questions within the last 30 days.'
+                        })
+
+            except Upgradedetail.DoesNotExist:
+                raise serializers.ValidationError({
+                    'upgrade': 'No upgrade details found for this organization.'
+                })
+
+        # Set the new questions and save the assessment
         instance.questions.set(questions)
         instance.save()
-
         return instance

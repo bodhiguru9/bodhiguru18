@@ -43,6 +43,8 @@ class Upgradedetail(models.Model):
     upgrade = models.ForeignKey(Upgrade, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     transaction_details = models.TextField()
+    #assessment_package = models.ManyToManyField(UpgradeAssessment, blank=True, default = 1)
+    assessment_package = models.CharField(max_length=50, blank=True, null=True)
     expires_on = models.DateField(null=True, blank=True)  # Will be set based on package
 
     def save(self, *args, **kwargs):

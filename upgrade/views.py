@@ -141,6 +141,16 @@ def payment_page(request):
         'amount': amount * 100,  # Convert to paise
     })
 
+
+
+class UpgradeAssessmentViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    A simple ViewSet for listing and retrieving upgrade assessment packages.
+    """
+    queryset = UpgradeAssessment.objects.all()
+    serializer_class = UpgradeAssessmentSerializer            
+
+
 class UpgradeViewSet1(viewsets.ViewSet):
     """
     API to handle listing packages and processing payments.
@@ -149,7 +159,7 @@ class UpgradeViewSet1(viewsets.ViewSet):
     # List all available upgrade packages including assessment packages
     def list(self, request):
         upgrades = Upgrade.objects.all()
-        serializer = UpgradeSerializer1(upgrades, many=True)
+        serializer = UpgradeSerializer(upgrades, many=True)
         return Response(serializer.data)
 
     # Razorpay Payment initiation
@@ -199,13 +209,12 @@ class UpgradeViewSet1(viewsets.ViewSet):
         assessment_id = request.data.get('assessment_id')
 
         try:
+            # Verify payment signature
             razorpay_client.utility.verify_payment_signature({
                 'razorpay_order_id': razorpay_order_id,
                 'razorpay_payment_id': razorpay_payment_id,
                 'razorpay_signature': razorpay_signature
             })
-            print(razorpay_client.utility.verify_payment_signature)
-
 
             # Get Org and Package details
             org = get_object_or_404(Org, pk=org_id)
@@ -231,7 +240,7 @@ class UpgradeViewSet1(viewsets.ViewSet):
 
             org.save()
 
-            # Create a new Upgradedetail entry
+            # Create a new Upgradedetail entry and save the assessment package
             Upgradedetail.objects.create(
                 org=org,
                 upgrade=upgrade,
@@ -254,11 +263,4 @@ class UpgradeViewSet1(viewsets.ViewSet):
         except razorpay.errors.SignatureVerificationError:
             return Response({
                 'error': 'Payment verification failed!'
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-class UpgradeAssessmentViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    A simple ViewSet for listing and retrieving upgrade assessment packages.
-    """
-    queryset = UpgradeAssessment.objects.all()
-    serializer_class = UpgradeAssessmentSerializer            
+            }, status=status.HTTP_400_BAD_REQUEST)    
