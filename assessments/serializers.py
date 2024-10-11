@@ -135,7 +135,25 @@ class AssessmentSerializer(serializers.ModelSerializer):
             instance.questions.add(question_data['id'])
 
         return instance
-     
+
+class OptionListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Option
+        fields = ['option', 'is_correct']
+
+class QuestionListSerializer(serializers.ModelSerializer):
+    options = serializers.SerializerMethodField()
+    
+    def get_options(self, obj):
+        options_data = Option.objects.filter(question=obj)
+        serializers = OptionListSerializer(options_data, many=True)
+        return serializers.data
+    
+    class Meta:
+        model = Question
+        fields = ['question', 'level', 'timer', 'options']
+        
+
 class AssessmentListSerializer(serializers.ModelSerializer):
     questions = serializers.SerializerMethodField()
     assessment_type = serializers.SerializerMethodField()
