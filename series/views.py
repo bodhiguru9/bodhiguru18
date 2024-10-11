@@ -10,7 +10,7 @@ from assign.models import SeriesAssignUser
 from series.serializers import (SeriesSerializer, SeasonSerializer, ItemSeasonSerializer,
                                 ItemSeasonCreateUpdateSerializer, SeasonsListAssignSerializer,
                                 SeasonLotaSerializer, SeasonLotaListSerializer, SeriesAdminSerializer,
-                                SeasonAdminSerializer, AssessmentSeasonSerializer)
+                                SeasonAdminSerializer, AssessmentSeasonSerializer, AssessmentSeasonSerializer1)
 
 from rest_framework import viewsets
 from .permissions import IsAdminOrSubAdmin
@@ -232,3 +232,18 @@ class ItemSeasonViewSet(viewsets.ModelViewSet):
 class AssessmentSeasonCreateView(generics.CreateAPIView):
     queryset = AssessmentSeason.objects.all()
     serializer_class = AssessmentSeasonSerializer
+
+class AssessmentSeasonView(generics.ListCreateAPIView):
+    queryset = AssessmentSeason.objects.all()
+    serializer_class = AssessmentSeasonSerializer1
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        sub_org = user.sub_org  # User's sub_org
+
+        if sub_org:
+            # Filter seasons based on the series that are mapped to the user's sub_org
+            return Seasons.objects.filter(series__sub_org=sub_org)
+        else:
+            raise serializers.ValidationError("User is not associated with any sub-organization.")

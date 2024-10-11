@@ -209,3 +209,13 @@ class AssessmentSeasonSerializer(serializers.ModelSerializer):
         assessment_season = AssessmentSeason.objects.create(season=season, assessments=assessment)
         return assessment_season
 
+class AssessmentSeasonSerializer1(serializers.ModelSerializer):
+    season_id = serializers.PrimaryKeyRelatedField(queryset=Seasons.objects.all(), source='season', write_only=True)
+    assessment_id = serializers.PrimaryKeyRelatedField(queryset=Assessment.objects.all(), source='assessments', write_only=True)
+
+    class Meta:
+        model = AssessmentSeason
+        fields = ['id', 'season_id', 'assessment_id']
+
+    def create(self, validated_data):
+        return AssessmentSeason.objects.create(**validated_data)
