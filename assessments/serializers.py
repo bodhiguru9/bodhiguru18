@@ -228,12 +228,15 @@ class AssessmentQuestionMappingSerializer(serializers.ModelSerializer):
 
         # Fetch the package purchased by the user's organization
         package_purchased = org.package_purchased
-        questions = validated_data.get('questions', [])
-        new_question_count = len(questions)
+        new_questions = validated_data.get('questions', [])
+        new_question_count = len(new_questions)
+
+        # Get the count of already mapped questions
+        existing_question_count = instance.questions.count()
 
         # Handle default case if no package is purchased
         if not package_purchased:
-            if new_question_count > 3:
+            if existing_question_count + new_question_count > 3:
                 raise serializers.ValidationError({
                     'questions': 'You are only allowed to map up to 3 questions without a package.'
                 })
@@ -268,7 +271,13 @@ class AssessmentQuestionMappingSerializer(serializers.ModelSerializer):
                     'upgrade': 'No upgrade details found for this organization.'
                 })
 
-        # Set the new questions and save the assessment
-        instance.questions.set(questions)
+        # Append new questions to the existing questions
+        instance.questions.add(*new_questions)
+        
+        # Calculate total questions after appending
+        total_questions = instance.questions.count()
+
+        # Save the assessment
         instance.save()
+
         return instance
