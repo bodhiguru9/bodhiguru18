@@ -218,8 +218,34 @@ class AssessmentQuestionMappingSerializer(serializers.ModelSerializer):
         fields = ['id', 'questions']
 
     def update(self, instance, validated_data):
-        # Handle question mapping
-        questions = validated_data.pop('questions', [])
-        instance.questions.set(questions)  # Replace questions
+        user = self.context['request'].user
+        org = user.org  # Get the user's organization
+        package = org.package_purchased  # Get the package purchased by the org
+        
+        questions = validated_data.get('questions', [])
+        current_mapped_questions_count = instance.questions.count()  # Get current number of mapped questions
+        new_mapped_questions_count = len(questions)
+        total_mapped_questions_count = current_mapped_questions_count + new_mapped_questions_count
+
+        # Rolling date for the last 30 days
+        last_30_days = timezone.now() - timedelta(days=30)
+
+        # Validate based on the package purchased
+        if package == 'no_assessment' and total_mapped_questions_count > 9:
+            raise serializers.ValidationError({
+                'questions': 'You are only allowed to map up to 9 questions with the "No Assessment" package.'
+            })
+        elif package == 'assessment30' and total_mapped_questions_count > 30:
+            raise serializers.ValidationError({
+                'questions': 'You are only allowed to map up to 30 questions with the "Assessment 30" package in the last 30 days.'
+            })
+        elif package == 'assessment60' and total_mapped_questions_count > 60:
+            raise serializers.ValidationError({
+                'questions': 'You are only allowed to map up to 60 questions with the "Assessment 60" package in the last 30 days.'
+            })
+
+        # If validation passes, set the questions
+        instance.questions.set(questions)
         instance.save()
-        return instance        
+
+        return instance
