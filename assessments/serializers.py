@@ -236,9 +236,9 @@ class AssessmentQuestionMappingSerializer(serializers.ModelSerializer):
 
         # Handle default case if no package is purchased
         if not package_purchased:
-            if existing_question_count + new_question_count > 3:
+            if existing_question_count + new_question_count > 9:
                 raise serializers.ValidationError({
-                    'questions': 'You are only allowed to map up to 3 questions without a package.'
+                    'questions': 'You are only allowed to map up to 9 questions without a package.'
                 })
 
         # Check for bronze/silver package upgrades
