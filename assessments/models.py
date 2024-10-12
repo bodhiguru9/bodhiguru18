@@ -26,7 +26,8 @@ class Question(models.Model):
 class Option(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
     option = models.CharField(max_length=200)
-    option_image = models.FileField(upload_to='media/option_image', null=True, blank=True)
+    #option_image = models.FileField(upload_to='media/option/option_image', null=True, blank=True)
+    option_image = models.ImageField(upload_to='media/option/option_image', null=True, blank=True)
     is_correct = models.BooleanField(default=False)
     
     def __str__(self):

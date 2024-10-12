@@ -15,7 +15,7 @@ from upgrade.models import Upgradedetail
 class OptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Option
-        fields = ['id', 'option', 'option_image', 'is_correct']
+        fields = ['id', 'option', 'option_image', 'is_correct']      
 
 class QuestionSerializer(serializers.ModelSerializer):
     options = OptionSerializer(many=True)
