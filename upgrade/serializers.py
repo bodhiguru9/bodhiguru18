@@ -5,9 +5,16 @@ from orgss.models import Org
 
 
 class UpgradeAssessmentSerializer(serializers.ModelSerializer):
+    name = serializers.SerializerMethodField()
+
     class Meta:
         model = UpgradeAssessment
         fields = ['id', 'name', 'description', 'cost']
+
+    def get_name(self, obj):
+        return obj.get_name_display()
+
+        
 
 class UpgradeSerializer1(serializers.ModelSerializer):
     # Include the assessment packages as part of the upgrade listing
