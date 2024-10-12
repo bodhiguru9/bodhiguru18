@@ -17,6 +17,9 @@ class UpgradeSerializer1(serializers.ModelSerializer):
         model = Upgrade
         fields = ['id', 'name', 'description', 'cost', 'assessment_packages']
 
+    def get_assessment_packages(self, obj):
+        return [package.get_name_display() for package in obj.assessment_package.all()]    
+
 class UpgradeSerializer(serializers.ModelSerializer):
     assessment_package = UpgradeAssessmentSerializer()
 
@@ -29,6 +32,10 @@ class UpgradedetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Upgradedetail
         fields = '__all__'
+
+    def get_assessment_package(self, obj):
+        # If you're storing the actual value (like 'assessment30') in a CharField
+        return dict(UpgradeAssessment.Assessment_Package_Choices).get(obj.assessment_package, obj.assessment_package)    
 
 class OrgSerializer(serializers.ModelSerializer):
     class Meta:
