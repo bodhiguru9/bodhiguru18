@@ -33,7 +33,7 @@ class UpgradeViewSet(viewsets.ViewSet):
     # List all available packages
     def list(self, request):
         upgrade = Upgrade.objects.all()
-        serializer = UpgradeSerializer(upgrade, many=True)
+        serializer = UpgradeSerializer1(upgrade, many=True)
         return Response(serializer.data)
 
 
@@ -159,7 +159,7 @@ class UpgradeViewSet1(viewsets.ViewSet):
     # List all available upgrade packages including assessment packages
     def list(self, request):
         upgrades = Upgrade.objects.all()
-        serializer = UpgradeSerializer(upgrades, many=True)
+        serializer = UpgradeSerializer1(upgrades, many=True)
         return Response(serializer.data)
 
     # Razorpay Payment initiation
