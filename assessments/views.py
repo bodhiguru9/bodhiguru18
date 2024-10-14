@@ -10,7 +10,7 @@ from users.models import UserRightsMapping
 
 from assessments.serializers import (AssessmentSerializer, AssessmentResultSerializer, AssessmentTypeSerializer,
                                     QuestionSerializer, AssessmentResultSerializer, 
-                                    AssessmentQuestionMappingSerializer)
+                                    AssessmentQuestionMappingSerializer, AssessmentSerializer1)
 
 from datetime import datetime
 
@@ -423,8 +423,6 @@ class AssessmentListCreateView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
-
 class AssessmentUpdateView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -503,6 +501,7 @@ class AssessmentTypeListCreateView(APIView):
         serializer = AssessmentTypeSerializer(assessments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
     def post(self, request):
         # Get the suborg from the logged-in user
         sub_org = request.user.sub_org
@@ -516,6 +515,53 @@ class AssessmentTypeListCreateView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  
+
+class AssessmentTypeListCreateView1(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Get the org and suborg from the user's profile through the Account model
+        org = request.user.org
+        sub_org = request.user.sub_org
+
+        # Filter assessment types by suborg
+        assessment_types = AssessmentType.objects.filter(suborg=sub_org)
+        serializer = AssessmentTypeSerializer(assessment_types, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        # Get org and suborg from user's profile
+        org = request.user.org
+        sub_org = request.user.sub_org
+
+        # Include suborg in the request data for assessment type creation
+        data = request.data.copy()
+        data['suborg'] = sub_org.id
+
+        # Serialize and validate AssessmentType data
+        serializer = AssessmentTypeSerializer(data=data)
+        if serializer.is_valid():
+            assessment_type = serializer.save()
+
+            # Automatically create an entry in the Assessment model
+            assessment_data = {
+                'assessment_type': assessment_type.id,
+                'access': 'pre',  # Assuming 'pre' is the default access, this can be adjusted as needed
+                'org': org.id,  # Assign org to the assessment
+                'is_approved': True,
+                'is_live': True
+            }
+            assessment_serializer = AssessmentSerializer1(data=assessment_data)
+            if assessment_serializer.is_valid():
+                assessment_serializer.save()
+            else:
+                # Rollback in case assessment creation fails
+                assessment_type.delete()
+                return Response(assessment_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)        
 
 class QuestionListView(APIView):
     permission_classes = [IsAuthenticated]

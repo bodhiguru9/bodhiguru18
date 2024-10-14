@@ -50,6 +50,12 @@ class QuestionSerializer1(serializers.ModelSerializer):
         model = Question
         fields = ['id', 'question', 'level']
 
+class AssessmentSerializer1(serializers.ModelSerializer):
+    class Meta:
+        model = Assessment
+        fields = ['id', 'assessment_type', 'access', 'is_approved', 'is_live', 'org']
+
+
 class AssessmentSerializer(serializers.ModelSerializer):
     questions = QuestionSerializer(many=True)
 
@@ -181,10 +187,10 @@ class AssessmentTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = AssessmentType
         fields = ['id', 'name', 'suborg', 'suborg_name', 'passing_criteria', 'positive_marks', 'negative_marks', 'time', 'trigger_point', 'refresher_days', 'is_live', 'is_approved']
-        
-    
+
     def get_suborg_name(self, obj):
-        return obj.suborg.name
+        return obj.suborg.name if obj.suborg else None
+
 
 class AssessmentResultSerializer(serializers.ModelSerializer):
     user_email = serializers.EmailField(write_only=True)
