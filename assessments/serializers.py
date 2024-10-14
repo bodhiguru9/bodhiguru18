@@ -262,7 +262,7 @@ class AssessmentQuestionMappingSerializer(serializers.ModelSerializer):
         if not package_purchased:
             if existing_question_count + new_question_count > 2:
                 raise serializers.ValidationError({
-                    'questions': 'You are only allowed to map up to 9 questions without a package.'
+                    'questions': 'You are only allowed to map up to 9 questions without a package. Please upgrade your package'
                 })
 
         # Check for bronze/silver package upgrades
@@ -358,7 +358,7 @@ class AssessmentSubmissionSerializer(serializers.Serializer):
                 wrong_answers += 1
 
         # Calculate total score
-        total_score = (correct_answers - wrong_answers) * 9
+        total_score = (correct_answers - wrong_answers) * 18
 
         # Save the result in AssessmentResult
         result = AssessmentResult.objects.create(
