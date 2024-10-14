@@ -305,3 +305,66 @@ class AssessmentQuestionMappingSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+
+class OptionResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Option
+        fields = ['id', 'option', 'is_correct']
+
+class AssessmentSubmissionSerializer(serializers.Serializer):
+    assessment_id = serializers.IntegerField()
+    responses = serializers.ListField(
+        child=serializers.DictField(
+            child=serializers.IntegerField(),
+        ),
+        help_text="List of responses with question ID and selected option ID"
+    )
+
+    def validate(self, data):
+        try:
+            # Ensure the assessment exists
+            assessment = Assessment.objects.get(id=data['assessment_id'])
+        except Assessment.DoesNotExist:
+            raise serializers.ValidationError('Assessment does not exist')
+
+        # Validate that each question exists in the assessment
+        question_ids = [response['question'] for response in data['responses']]
+        valid_questions = assessment.questions.filter(id__in=question_ids)
+
+        if valid_questions.count() != len(question_ids):
+            raise serializers.ValidationError('Some questions are not part of the assessment')
+
+        return data
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        assessment = Assessment.objects.get(id=validated_data['assessment_id'])
+        correct_answers = 0
+        wrong_answers = 0
+
+        for response in validated_data['responses']:
+            question_id = response['question']
+            selected_option_id = response['selected_option']
+
+            # Fetch question and selected option
+            question = Question.objects.get(id=question_id)
+            selected_option = Option.objects.get(id=selected_option_id)
+
+            # Check if the selected option is correct
+            if selected_option.is_correct:
+                correct_answers += 1
+            else:
+                wrong_answers += 1
+
+        # Calculate total score
+        total_score = (correct_answers - wrong_answers) * 9
+
+        # Save the result in AssessmentResult
+        result = AssessmentResult.objects.create(
+            user=user,
+            assessment=assessment,
+            result=total_score
+        )
+
+        return result        

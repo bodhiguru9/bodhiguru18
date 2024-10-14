@@ -6,7 +6,7 @@ from assessments.views import (AssessmentViewSet, AssessmentResultViewSet, Asses
                                 AssessmentUpdateView, QuestionListCreateView, QuestionUpdateView, 
                                 AssessmentResultCreateView, AssessmentResultListView,
                                 UserAssessmentResultListView, AssessmentTypeListCreateView, AssessmentTypeListCreateView1, 
-                                QuestionListView, AssessmentQuestionMappingView)
+                                QuestionListView, AssessmentQuestionMappingView, SubmitAssessmentView)
 
 
 router = DefaultRouter()
@@ -28,6 +28,7 @@ urlpatterns = [
     path('assessment-results/', AssessmentResultCreateView.as_view(), name='create-assessment-result'),
     path('assessment-results_list/', AssessmentResultListView.as_view(), name='assessment-results-list'),
     path('user-assessment-results/', UserAssessmentResultListView.as_view(), name='user-assessment-results'),
+    path('submit-assessment/', SubmitAssessmentView.as_view(), name='submit-assessment'),
     path('questions_assessment/', QuestionListView.as_view(), name='question-list'),  # List questions based on org/suborg
     path('assessment/<int:assessment_id>/map-questions/', AssessmentQuestionMappingView.as_view(), name='map-questions'),  # Map questions to assessment
 

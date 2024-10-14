@@ -9,7 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from users.models import UserRightsMapping
 
 from assessments.serializers import (AssessmentSerializer, AssessmentResultSerializer, AssessmentTypeSerializer,
-                                    QuestionSerializer, AssessmentResultSerializer, 
+                                    QuestionSerializer, AssessmentResultSerializer, AssessmentSubmissionSerializer,
                                     AssessmentQuestionMappingSerializer, AssessmentSerializer1)
 
 from datetime import datetime
@@ -622,3 +622,18 @@ class AssessmentQuestionMappingView(APIView):
             return Response(serializer.data)
         
         return Response(serializer.errors, status=400)
+
+class SubmitAssessmentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = AssessmentSubmissionSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            # Calculate score and save result
+            result = serializer.save()
+            return Response({
+                "message": "Assessment submitted successfully",
+                "result_id": result.id,
+                "total_score": result.result
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)        
