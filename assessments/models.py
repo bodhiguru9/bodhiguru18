@@ -17,7 +17,7 @@ class Question(models.Model):
     
     question = models.CharField(max_length=200)
     level = models.CharField(max_length=30, choices=LEVEL, default='easy')
-    timer = models.IntegerField(null=True, blank=True)
+    #timer = models.IntegerField(null=True, blank=True)
     suborg = models.ForeignKey('orgss.SubOrg1', on_delete=models.CASCADE, default = 1)
     
     def __str__(self):
@@ -40,12 +40,12 @@ class AssessmentType(models.Model):
     
     name = models.CharField(max_length=100)
     suborg = models.ForeignKey(SubOrg1, on_delete=models.CASCADE)
-    passing_criteria = models.IntegerField(default=60)
-    positive_marks = models.IntegerField(null=True, blank=True)
-    negative_marks = models.IntegerField(null=True, blank=True)
-    time = models.IntegerField(null=True, blank=True)
-    trigger_point = models.CharField(max_length=30, choices=TIGGER_POINT, default=None)
-    refresher_days = models.IntegerField(null=True, blank=True)
+    #passing_criteria = models.IntegerField(default=60)
+    #positive_marks = models.IntegerField(null=True, blank=True)
+    #negative_marks = models.IntegerField(null=True, blank=True)
+    #time = models.IntegerField(null=True, blank=True)
+    #trigger_point = models.CharField(max_length=30, choices=TIGGER_POINT, default=None)
+    #refresher_days = models.IntegerField(null=True, blank=True)
     is_approved = models.BooleanField(default=True)
     is_live = models.BooleanField(default=True)
     

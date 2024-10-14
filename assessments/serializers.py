@@ -22,7 +22,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = ['id', 'question', 'level', 'timer', 'suborg', 'options']
+        fields = ['id', 'question', 'level', 'suborg', 'options']
 
     def create(self, validated_data):
         options_data = validated_data.pop('options')
@@ -35,7 +35,7 @@ class QuestionSerializer(serializers.ModelSerializer):
         options_data = validated_data.pop('options')
         instance.question = validated_data.get('question', instance.question)
         instance.level = validated_data.get('level', instance.level)
-        instance.timer = validated_data.get('timer', instance.timer)
+        #instance.timer = validated_data.get('timer', instance.timer)
         instance.save()
 
         # Delete existing options and create new ones
@@ -72,13 +72,13 @@ class AssessmentSerializer(serializers.ModelSerializer):
 
         # Get the organization's purchased package
         if org.package_purchased == 'no_assessment':
-            max_questions = 9
+            max_questions = 2
         elif org.package_purchased == 'assessment30':
             max_questions = 30
         elif org.package_purchased == 'assessment60':
             max_questions = 60
         else:
-            max_questions = 9  # Default to 9 questions if no package found
+            max_questions = 2  # Default to 9 questions if no package found
 
         # Get the total number of questions already mapped to assessments
         total_mapped_questions = Assessment.objects.filter(org=org).values_list('questions', flat=True).count()
@@ -109,7 +109,7 @@ class AssessmentSerializer(serializers.ModelSerializer):
             question_instance = Question.objects.create(
                 question=question_data['question'],
                 level=question_data['level'],  # Ensure all required fields are included
-                timer=question_data.get('timer'),  # Handle optional fields if needed
+                #timer=question_data.get('timer'),  # Handle optional fields if needed
                 suborg=suborg_instance  # Assign the fetched SubOrg1 instance here
             )
 
@@ -186,7 +186,7 @@ class AssessmentTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AssessmentType
-        fields = ['id', 'name', 'suborg', 'suborg_name', 'passing_criteria', 'positive_marks', 'negative_marks', 'time', 'trigger_point', 'refresher_days', 'is_live', 'is_approved']
+        fields = ['id', 'name', 'suborg', 'suborg_name', 'is_live', 'is_approved']
 
     def get_suborg_name(self, obj):
         return obj.suborg.name if obj.suborg else None
@@ -260,7 +260,7 @@ class AssessmentQuestionMappingSerializer(serializers.ModelSerializer):
 
         # Handle default case if no package is purchased
         if not package_purchased:
-            if existing_question_count + new_question_count > 9:
+            if existing_question_count + new_question_count > 2:
                 raise serializers.ValidationError({
                     'questions': 'You are only allowed to map up to 9 questions without a package.'
                 })
