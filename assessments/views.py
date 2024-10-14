@@ -490,6 +490,7 @@ class UserAssessmentResultListView(generics.ListAPIView):
         user = self.request.user  # Get the logged-in user
         return AssessmentResult.objects.filter(user=user) 
 
+
 class AssessmentTypeListCreateView(APIView):
     permission_classes = [IsAuthenticated]
 
