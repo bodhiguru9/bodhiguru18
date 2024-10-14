@@ -65,6 +65,7 @@ class Assessment(models.Model):
     is_approved = models.BooleanField(default=False)
     is_live = models.BooleanField(default=False)
     org = models.ForeignKey('orgss.Org', on_delete=models.CASCADE, default = 7)
+    suborg = models.ForeignKey(SubOrg1, on_delete=models.CASCADE, default = 1)
     
     def __str__(self):
         return f"{self.assessment_type.name}-{self.access}"
