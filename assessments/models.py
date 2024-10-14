@@ -46,6 +46,8 @@ class AssessmentType(models.Model):
     time = models.IntegerField(null=True, blank=True)
     trigger_point = models.CharField(max_length=30, choices=TIGGER_POINT, default=None)
     refresher_days = models.IntegerField(null=True, blank=True)
+    is_approved = models.BooleanField(default=True)
+    is_live = models.BooleanField(default=True)
     
     def __str__(self):
         return f"{self.name}-{self.suborg.name}"

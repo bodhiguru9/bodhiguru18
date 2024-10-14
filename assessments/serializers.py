@@ -180,7 +180,7 @@ class AssessmentTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AssessmentType
-        fields = ['id', 'name', 'suborg', 'suborg_name', 'passing_criteria', 'positive_marks', 'negative_marks', 'time', 'trigger_point', 'refresher_days']
+        fields = ['id', 'name', 'suborg', 'suborg_name', 'passing_criteria', 'positive_marks', 'negative_marks', 'time', 'trigger_point', 'refresher_days', 'is_live', 'is_approved']
         
     
     def get_suborg_name(self, obj):
