@@ -145,7 +145,7 @@ class AssessmentSerializer(serializers.ModelSerializer):
 class OptionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Option
-        fields = ['option', 'is_correct']
+        fields = ['id', 'option', 'is_correct']
 
 class QuestionListSerializer(serializers.ModelSerializer):
     options = serializers.SerializerMethodField()
@@ -157,7 +157,7 @@ class QuestionListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Question
-        fields = ['question', 'level', 'options']
+        fields = ['id','question', 'level', 'options']
         
 
 class AssessmentListSerializer(serializers.ModelSerializer):
