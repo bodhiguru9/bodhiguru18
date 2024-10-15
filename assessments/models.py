@@ -84,4 +84,4 @@ class AssessmentResult(models.Model):
     created_at = models.DateField(default=date.today, null=True, blank=True)
     
     def __str__(self):
-        return f"{self.user.first_name}-{self.assessment.assessment_type.name}-{self.result}"
+        return f"{self.user.email}-{self.assessment.assessment_type.name}-{self.result}"
