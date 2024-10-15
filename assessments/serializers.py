@@ -176,11 +176,12 @@ class AssessmentListSerializer(serializers.ModelSerializer):
         fields = ['id', 'questions', 'access', 'assessment_type', 'is_live', 'is_approved']
 
 class AssessmentResultSerializer(serializers.ModelSerializer):
-    user_email = serializers.EmailField(source='user.email', read_only=True)  # Add this field for email
+    user_email = serializers.EmailField(source='user.email', read_only=True)  # User's email
+    assessment_name = serializers.CharField(source='assessment.assessment_type.name', read_only=True)  # Assessment name
 
     class Meta:
         model = AssessmentResult
-        fields = ['id', 'user_email', 'assessment', 'result'] 
+        fields = ['id', 'user_email', 'assessment_name', 'result']
 
 
 class AssessmentTypeSerializer(serializers.ModelSerializer):
@@ -225,18 +226,25 @@ class AssessmentResultSerializer(serializers.ModelSerializer):
         return assessment_result        
 
 class AssessmentResultSerializer(serializers.ModelSerializer):
-    user_name = serializers.SerializerMethodField()
+    #user_name = serializers.SerializerMethodField()  # For user email or name
+    user_email = serializers.SerializerMethodField()  # New field for user email
     assessment_name = serializers.SerializerMethodField()  # New field for assessment name
 
     class Meta:
         model = AssessmentResult
-        fields = ['user', 'user_name', 'result', 'assessment', 'assessment_name', 'created_at']
-
+        fields = ['user', 'user_email', 'result', 'assessment', 'assessment_name', 'created_at']
+    """
     def get_user_name(self, obj):
-        return f"{obj.user.first_name} {obj.user.last_name}"
+        # You can modify this to include both the first name and last name, or just return the email as the name
+        return f"{obj.user.first_name} {obj.user.last_name}" if obj.user.first_name and obj.user.last_name else obj.user.email
+    """
+    
+    def get_user_email(self, obj):
+        return obj.user.email  # Return the email as a separate field
 
     def get_assessment_name(self, obj):
-        return obj.assessment.assessment_type.name if obj.assessment.assessment_type else "No Assessment Type"  # Safely get the assessment name
+        return obj.assessment.assessment_type.name if obj.assessment.assessment_type else "No Assessment Type"
+
 
 
 class AssessmentQuestionMappingSerializer(serializers.ModelSerializer):

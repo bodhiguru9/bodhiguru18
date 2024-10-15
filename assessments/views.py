@@ -478,7 +478,7 @@ class AssessmentResultListView(generics.ListAPIView):
         if assessment_name:
             queryset = queryset.filter(assessment__assessment_type__name__icontains=assessment_name)
 
-        return queryset.order_by('-result')  # Order by result in descending order
+        return queryset.order_by('-result')
 
 class UserAssessmentResultListView(generics.ListAPIView):
     serializer_class = AssessmentResultSerializer
