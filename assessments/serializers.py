@@ -157,7 +157,7 @@ class QuestionListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Question
-        fields = ['question', 'level', 'timer', 'options']
+        fields = ['question', 'level', 'options']
         
 
 class AssessmentListSerializer(serializers.ModelSerializer):
