@@ -176,9 +176,11 @@ class AssessmentListSerializer(serializers.ModelSerializer):
         fields = ['id', 'questions', 'access', 'assessment_type', 'is_live', 'is_approved']
 
 class AssessmentResultSerializer(serializers.ModelSerializer):
+    user_email = serializers.EmailField(source='user.email', read_only=True)  # Add this field for email
+
     class Meta:
         model = AssessmentResult
-        fields = ['id', 'user', 'assessment',  'result']
+        fields = ['id', 'user_email', 'assessment', 'result'] 
 
 
 class AssessmentTypeSerializer(serializers.ModelSerializer):
