@@ -72,13 +72,13 @@ class AssessmentSerializer(serializers.ModelSerializer):
 
         # Get the organization's purchased package
         if org.package_purchased == 'no_assessment':
-            max_questions = 2
+            max_questions = 9
         elif org.package_purchased == 'assessment30':
             max_questions = 30
         elif org.package_purchased == 'assessment60':
             max_questions = 60
         else:
-            max_questions = 2  # Default to 9 questions if no package found
+            max_questions = 9  # Default to 9 questions if no package found
 
         # Get the total number of questions already mapped to assessments
         total_mapped_questions = Assessment.objects.filter(org=org).values_list('questions', flat=True).count()
@@ -238,7 +238,7 @@ class AssessmentResultSerializer(serializers.ModelSerializer):
         # You can modify this to include both the first name and last name, or just return the email as the name
         return f"{obj.user.first_name} {obj.user.last_name}" if obj.user.first_name and obj.user.last_name else obj.user.email
     """
-    
+
     def get_user_email(self, obj):
         return obj.user.email  # Return the email as a separate field
 
@@ -270,7 +270,7 @@ class AssessmentQuestionMappingSerializer(serializers.ModelSerializer):
 
         # Handle default case if no package is purchased
         if not package_purchased:
-            if existing_question_count + new_question_count > 2:
+            if existing_question_count + new_question_count > 9:
                 raise serializers.ValidationError({
                     'questions': 'You are only allowed to map up to 9 questions without a package. Please upgrade your package'
                 })
