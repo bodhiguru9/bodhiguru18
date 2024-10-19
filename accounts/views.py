@@ -487,7 +487,7 @@ class EnableUserView(generics.UpdateAPIView):
         # Check the number of active logins in the organization
         active_user_count = Account.objects.filter(org=org, is_active=True).count()
         if active_user_count >= org.number_of_logins:
-            return Response({"error": "Maximum number of active logins for this organization has been reached."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Maximum number of active logins for this organization has been reached. Please Upgrade your package"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Extract the extended_days from request data
         extended_days = request.data.get('extended_days', None)
@@ -523,44 +523,7 @@ class EnableUserView(generics.UpdateAPIView):
         return Response({"success": "User enabled successfully."}, status=status.HTTP_200_OK)
 
 
-"""
-class EnableUserView(generics.UpdateAPIView):
-    queryset = Account.objects.all()
-    serializer_class = AccountSerializer
-    permission_classes = [IsAdminOrSubAdminOfOrg]  # Apply custom permission
 
-    def update(self, request, *args, **kwargs):
-        # Get the user instance to be updated
-        user = self.get_object()
-
-        # Extract the extended_days from request data
-        extended_days = request.data.get('extended_days', None)
-
-        # Validate the extended_days field
-        if extended_days is None:
-            return Response({"error": "Extended days field is required."}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            extended_days = int(extended_days)
-        except ValueError:
-            return Response({"error": "Extended days must be an integer."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Check if extended_days is a multiple of 30
-        if extended_days % 30 != 0:
-            return Response({"error": "Extended days must be a multiple of 30."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # If valid, proceed with updating the user's validity
-        user.validity += extended_days
-        user.is_active = True  # Set user as active
-        user.save()
-
-        # Update the related UserProfile model
-        user_profile = user.userprofile
-        user_profile.is_active = True
-        user_profile.save()
-
-        return Response({"success": "User enabled successfully."}, status=status.HTTP_200_OK)
-"""
 #csv for bulk upload
 
 class AccountViewSet(viewsets.ViewSet):
