@@ -38,6 +38,12 @@ class SeriesSerializer(serializers.ModelSerializer):
                 # If user role is sub-admin, show only sub-orgs mapped to him
                 self.fields['sub_org'].queryset = SubOrg1.objects.filter(id=user.role.suborg.id)
 
+            # Print the sub-orgs for the logged-in user
+            print("Sub-orgs available for the logged-in user:")
+            for sub_org in self.fields['sub_org'].queryset:
+                print(f"- {sub_org.name} (ID: {sub_org.id})")
+
+        
 
 class SeriesListSerializer(serializers.ModelSerializer):
     sub_org = serializers.SerializerMethodField()

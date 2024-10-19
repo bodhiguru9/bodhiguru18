@@ -17,9 +17,10 @@ from .permissions import IsAdminOrSubAdmin
 
 from zola.models import Item
 from assessments.models import Assessment
+from orgss.models import SubOrg1
 
 
-
+"""
 class SeriesViewSet(viewsets.ModelViewSet):
     queryset = Series.objects.all()
     serializer_class = SeriesSerializer
@@ -49,8 +50,68 @@ class SeriesViewSet(viewsets.ModelViewSet):
         context = super().get_serializer_context()
         context['user'] = self.request.user
         return context
+"""
 
+class SeriesViewSet(viewsets.ModelViewSet):
+    queryset = Series.objects.all()
+    serializer_class = SeriesSerializer
+    permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        user = self.request.user
+        sub_orgs = []
+
+        if user.is_admin:
+            # Admin can see all series under their org
+            sub_orgs = SubOrg1.objects.filter(org=user.org)
+            return Series.objects.filter(sub_org__org=user.org)
+
+        user_role = user.role  # This can return None if not set
+
+        if user_role and user_role.role_type == 'admin':
+            # Admins can see all series under their org
+            sub_orgs = SubOrg1.objects.filter(org=user_role.suborg.org)
+            return Series.objects.filter(sub_org__org=user_role.suborg.org)
+
+        elif user_role and user_role.role_type == 'sub-admin':
+            # Sub-admins can only see series linked to their sub-org
+            sub_orgs = [user_role.suborg]
+            return Series.objects.filter(sub_org=user_role.suborg)
+
+        # Print the sub-orgs for debugging
+        print("Sub-orgs available for the logged-in user:")
+        for sub_org in sub_orgs:
+            print(f"- {sub_org.name} (ID: {sub_org.id})")
+
+        return Series.objects.none()  # No access for other roles
+
+    def list(self, request, *args, **kwargs):
+        # Override the list method to include additional context in the response
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+
+        # Get sub-orgs again for the response
+        user = self.request.user
+        sub_orgs = []
+
+        if user.is_admin:
+            sub_orgs = SubOrg1.objects.filter(org=user.org)
+        elif user.role and user.role.role_type == 'admin':
+            sub_orgs = SubOrg1.objects.filter(org=user.role.suborg.org)
+        elif user.role and user.role.role_type == 'sub-admin':
+            sub_orgs = [user.role.suborg]
+
+        # Include the sub-orgs in the response
+        return Response({
+            'series': serializer.data,
+            'sub_orgs': [{'id': sub_org.id, 'name': sub_org.name} for sub_org in sub_orgs]
+        })
+
+    def get_serializer_context(self):
+        # Add the user to the context
+        context = super().get_serializer_context()
+        context['user'] = self.request.user
+        return context
 
 class SeasonViewSet(viewsets.ModelViewSet):
     queryset = Seasons.objects.all()
