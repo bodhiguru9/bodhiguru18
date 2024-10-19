@@ -243,7 +243,7 @@ class AccountRegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Account
-        fields = ['email', 'username', 'first_name', 'last_name', 'contact_number', 'password', 'org', 'is_active']
+        fields = ['email', 'username', 'first_name', 'last_name', 'contact_number', 'password', 'org', 'is_active', 'is_admin']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -253,10 +253,14 @@ class AccountRegisterSerializer(serializers.ModelSerializer):
         # Fetch or create the organization by name
         org, created = Org.objects.get_or_create(name=org_name)
 
-        # Set is_active to True for new users
+        # Set `is_active` to True for new users
         validated_data['is_active'] = True
 
-        # Pass the org to the user creation method
+        # Create the user and assign the organization
         user = Account.objects.create_user(org=org, **validated_data)
 
-        return user        
+        # Set `is_admin` to True for the newly registered user
+        user.is_admin = True
+        user.save()
+
+        return user

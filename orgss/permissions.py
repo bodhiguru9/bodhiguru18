@@ -23,3 +23,10 @@ class IsSubAdminOrReadOnly(BasePermission):
         if role.role_type == 'admin':
             return True
         return obj == role.sub_org
+
+class IsAdminOrSubAdmin(BasePermission):
+    """
+    Custom permission to only allow admin or sub-admin users to access the API.
+    """
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and (request.user.is_admin or request.user.role.role_type in ['admin', 'sub-admin'])        

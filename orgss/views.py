@@ -12,7 +12,7 @@ from orgss.serializers import (OrgSerializer, OrgListSerializer, OrgAdminSeriali
                                WeightageSerializer, OrgExpirySerializer )
 
 from rest_framework import viewsets
-from .permissions import IsAdminOrReadOnly, IsSubAdminOrReadOnly
+from .permissions import IsAdminOrReadOnly, IsSubAdminOrReadOnly, IsAdminOrSubAdmin
 
 from rest_framework import viewsets, generics, permissions
 from rest_framework.decorators import action
@@ -35,34 +35,54 @@ class OrgViewSet(viewsets.ModelViewSet):
     serializer_class = OrgSerializer
     permission_classes = [IsAuthenticated]
 
+
 class SubOrgViewSet(viewsets.ModelViewSet):
     queryset = SubOrg1.objects.all()
     serializer_class = SubOrgSerializer
     permission_classes = [IsAuthenticated]
 
-    # Admin or sub-admin can only access sub-orgs linked to their org/sub-org
     def get_queryset(self):
-        user_role = self.request.user.role
-        if user_role.role_type == 'admin':
+        user = self.request.user
+
+        # If user is an admin, allow them to see sub-orgs linked to their org
+        if user.is_admin:
+            return SubOrg1.objects.filter(org=user.org)
+
+        # For non-admin users, check the role
+        user_role = user.role
+        if user_role and user_role.role_type == 'admin':
+            # Admin of a sub-org, can see all sub-orgs in their org
             return SubOrg1.objects.filter(org=user_role.suborg.org)
-        elif user_role.role_type == 'sub-admin':
+        elif user_role and user_role.role_type == 'sub-admin':
+            # Sub-admin can only see their own sub-org
             return SubOrg1.objects.filter(id=user_role.suborg.id)
+
         return SubOrg1.objects.none()
+
+
 
 class RoleViewSet(viewsets.ModelViewSet):
     queryset = Role1.objects.all()
     serializer_class = RoleSerializer
     permission_classes = [IsAuthenticated]
 
-    # Admin or sub-admin can only access roles linked to their org/sub-org
     def get_queryset(self):
-        user_role = self.request.user.role
-        if user_role.role_type == 'admin':
-            return Role1.objects.filter(suborg__org=user_role.suborg.org)
-        elif user_role.role_type == 'sub-admin':
-            return Role1.objects.filter(suborg=user_role.suborg)
-        return Role1.objects.none()
+        user = self.request.user
 
+        # If user is an admin, allow them to see roles linked to their org
+        if user.is_admin:
+            return Role1.objects.filter(suborg__org=user.org)
+
+        # For non-admin users, check the role
+        user_role = user.role
+        if user_role and user_role.role_type == 'admin':
+            # Admin of a sub-org, can see all roles in their org
+            return Role1.objects.filter(suborg__org=user_role.suborg.org)
+        elif user_role and user_role.role_type == 'sub-admin':
+            # Sub-admin can only see roles in their sub-org
+            return Role1.objects.filter(suborg=user_role.suborg)
+
+        return Role1.objects.none()
 
 
 class OrgAdminViewSet(viewsets.ModelViewSet):

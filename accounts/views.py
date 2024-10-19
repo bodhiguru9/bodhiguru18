@@ -318,7 +318,7 @@ class RegisterView(APIView):
             # Send the welcome email to the user and the additional email to arindam@bodhiguru.com
             self.send_welcome_email(user.email, user.org.name)
 
-            return Response({'message': 'User registered successfully', 'is_active': True}, status=status.HTTP_201_CREATED)
+            return Response({'message': 'User registered successfully', 'is_active': True, 'is_admin': user.is_admin}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def send_welcome_email(self, user_email, org_name):
