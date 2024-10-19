@@ -464,6 +464,69 @@ class DisableUserView(generics.UpdateAPIView):
 class EnableUserView(generics.UpdateAPIView):
     queryset = Account.objects.all()
     serializer_class = AccountSerializer
+    permission_classes = [IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        # Get the user instance to be updated
+        user = self.get_object()
+
+        # Check if user is linked to an organization
+        if not user.org:
+            return Response({"error": "User is not associated with an organization."}, status=status.HTTP_400_BAD_REQUEST)
+
+        org = user.org
+
+        # Check if the org is still valid
+        if not org.is_active:
+            return Response({"error": "Organization is not active."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if org.expires_on is not None and if the expiry date is in the past
+        if org.expires_on and org.expires_on < timezone.now().date():
+            return Response({"error": "Organization validity has expired."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check the number of active logins in the organization
+        active_user_count = Account.objects.filter(org=org, is_active=True).count()
+        if active_user_count >= org.number_of_logins:
+            return Response({"error": "Maximum number of active logins for this organization has been reached."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Extract the extended_days from request data
+        extended_days = request.data.get('extended_days', None)
+
+        # Validate the extended_days field
+        if extended_days is None:
+            return Response({"error": "Extended days field is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            extended_days = int(extended_days)
+        except ValueError:
+            return Response({"error": "Extended days must be an integer."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Check if extended_days is a multiple of 30
+        if extended_days % 30 != 0:
+            return Response({"error": "Extended days must be a multiple of 30."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Calculate new user expiry date and compare with the org expiry date
+        new_user_expiry = timezone.now().date() + timedelta(days=extended_days)
+        if org.expires_on and new_user_expiry > org.expires_on:
+            return Response({"error": "User's validity extension cannot exceed the organization's validity."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # If valid, proceed with updating the user's validity
+        user.validity += extended_days
+        user.is_active = True  # Set user as active
+        user.save()
+
+        # Update the related UserProfile model
+        user_profile = user.userprofile
+        user_profile.is_active = True
+        user_profile.save()
+
+        return Response({"success": "User enabled successfully."}, status=status.HTTP_200_OK)
+
+
+"""
+class EnableUserView(generics.UpdateAPIView):
+    queryset = Account.objects.all()
+    serializer_class = AccountSerializer
     permission_classes = [IsAdminOrSubAdminOfOrg]  # Apply custom permission
 
     def update(self, request, *args, **kwargs):
@@ -497,7 +560,7 @@ class EnableUserView(generics.UpdateAPIView):
         user_profile.save()
 
         return Response({"success": "User enabled successfully."}, status=status.HTTP_200_OK)
-
+"""
 #csv for bulk upload
 
 class AccountViewSet(viewsets.ViewSet):
