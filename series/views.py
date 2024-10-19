@@ -26,14 +26,17 @@ class SeriesViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        user_role = self.request.user.role
-        if user_role.role_type == 'admin':
+        user = self.request.user
+        user_role = getattr(user, 'role', None)
+
+        if user.is_admin or (user_role and user_role.role_type == 'admin'):
             # Admins can see all series under their org
-            return Series.objects.filter(sub_org__org=user_role.suborg.org)
-        elif user_role.role_type == 'sub-admin':
+            return Series.objects.filter(sub_org__org=user.org)
+        elif user_role and user_role.role_type == 'sub-admin':
             # Sub-admins can only see series linked to their sub-org
-            return Series.objects.filter(suborg=user_role.suborg)
+            return Series.objects.filter(sub_org=user.sub_org)
         return Series.objects.none()
+
 
 
 class SeasonViewSet(viewsets.ModelViewSet):
@@ -42,13 +45,15 @@ class SeasonViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        user_role = self.request.user.role
-        if user_role.role_type == 'admin':
+        user = self.request.user
+        user_role = getattr(user, 'role', None)
+
+        if user.is_admin or (user_role and user_role.role_type == 'admin'):
             # Admins can see all seasons under series in their org
-            return Seasons.objects.filter(series__sub_org__org=user_role.suborg.org)
-        elif user_role.role_type == 'sub-admin':
+            return Seasons.objects.filter(series__sub_org__org=user.org)
+        elif user_role and user_role.role_type == 'sub-admin':
             # Sub-admins can only see seasons linked to series in their sub-org
-            return Seasons.objects.filter(series__sub_org=user_role.suborg)
+            return Seasons.objects.filter(series__sub_org=user.sub_org)
         return Seasons.objects.none()
 
 
