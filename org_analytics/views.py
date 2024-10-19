@@ -16,12 +16,17 @@ class OrgAnalyticsView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, org_id=None, suborg_id=None):
-        # Get the current user's role
+        # Get the current user's profile and role
         current_user_profile = UserProfile.objects.get(user=request.user)
-        user_role = current_user_profile.user.role.role_type
+        current_account = current_user_profile.user
+        user_role = current_account.role.role_type if current_account.role else None
 
-        # Allow access only to admin or sub-admin
-        if user_role not in ['admin', 'sub-admin']:
+        # Check access based on `is_admin` or the role
+        if current_account.is_admin:
+            # Allow if the user is a super admin, even if their role is blank
+            pass
+        elif user_role not in ['admin', 'sub-admin']:
+            # Allow only if the role is admin or sub-admin
             raise PermissionDenied(detail="You do not have permission to view this data.")
 
         # Get the org and suborg
@@ -50,4 +55,3 @@ class OrgAnalyticsView(generics.GenericAPIView):
         }
 
         return Response(response_data)
-
