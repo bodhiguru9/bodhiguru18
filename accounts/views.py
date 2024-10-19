@@ -569,20 +569,19 @@ class AccountViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Only allow admin or sub-admin users to manage users of their org/sub-org
         user = self.request.user
-        if user.role.role_type in ['admin', 'sub-admin']:
+        if user.is_admin or user.role.role_type in ['admin', 'sub-admin']:
             return Account.objects.filter(org=user.org, sub_org=user.sub_org)
         return Account.objects.none()
-        
 
     @action(detail=False, methods=['get'], url_path='download-csv')
     def download_csv(self, request):
-        # Get the admin/sub-admin's org and prepare CSV template
         user = request.user
-        if not user.role.role_type in ['admin', 'sub-admin']:
+
+        # Check if user has permission based on 'is_admin' or 'role'
+        if not user.is_admin and not (user.role and user.role.role_type in ['admin', 'sub-admin']):
             return Response({"error": "You are not authorized"}, status=status.HTTP_403_FORBIDDEN)
-        
+
         org_name = user.org.name
         sub_org_name = user.sub_org.name if user.sub_org else "N/A"
         
@@ -593,13 +592,19 @@ class AccountViewSet(viewsets.ViewSet):
         writer = csv.writer(response)
         writer.writerow(['first_name', 'last_name', 'email', 'username'])  # Headers
         
+        # Fetch users under this org and sub-org
+        users = Account.objects.filter(org=user.org, sub_org=user.sub_org)
+        for account in users:
+            writer.writerow([account.first_name, account.last_name, account.email, account.username])
+        
         return response
 
     @action(detail=False, methods=['post'], url_path='upload-csv')
     def upload_csv(self, request):
-        # Get the admin/sub-admin's org/sub-org
         user = request.user
-        if not user.role.role_type in ['admin', 'sub-admin']:
+
+        # Check if user has permission based on 'is_admin' or 'role'
+        if not user.is_admin and not (user.role and user.role.role_type in ['admin', 'sub-admin']):
             return Response({"error": "You are not authorized"}, status=status.HTTP_403_FORBIDDEN)
 
         org = user.org
