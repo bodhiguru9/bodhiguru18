@@ -870,6 +870,13 @@ class LeaderboardPercentileAPIView(generics.ListAPIView):
         except Account.DoesNotExist:
             return []
 
+        # Check if the user has a sub_org mapped
+        if user_account.sub_org is None:
+            return Response(
+                {"status": "Failed", "message": "Please map and create a sub-organization."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         org_id = user_account.org.id
         suborg_id = user_account.sub_org.id
 
@@ -916,11 +923,8 @@ class LeaderboardPercentileAPIView(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        if not queryset:
-            return Response(
-                {"status": "Failed", "message": "Competency ID and Suborg ID are required"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        if isinstance(queryset, Response):
+            return queryset  # Return the error response if there is one
 
         return Response({
             "status": "Success",
