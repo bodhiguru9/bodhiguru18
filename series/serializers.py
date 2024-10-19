@@ -14,11 +14,29 @@ from assessments.models import Assessment, AssessmentType
 
 
 class SeriesSerializer(serializers.ModelSerializer):
-    sub_org = serializers.SlugRelatedField(queryset=SubOrg1.objects.all(), slug_field='name')
+    sub_org = serializers.SlugRelatedField(
+        slug_field='name',  # Displays SubOrg's name in the dropdown
+        queryset=SubOrg1.objects.none()  # Start with an empty queryset
+    )
 
     class Meta:
         model = Series
-        fields = ["id", "name", "description", "thumbnail", "sub_org"]
+        fields = ['id', 'name', 'description', 'thumbnail', 'sub_org']
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)  # Get the user from the context
+        super(SeriesSerializer, self).__init__(*args, **kwargs)
+
+        if user is not None:
+            if user.is_admin:
+                # If user is admin, show all sub-orgs
+                self.fields['sub_org'].queryset = SubOrg1.objects.filter(org=user.org)
+            elif user.role and user.role.role_type == 'admin':
+                # If user role is admin, show sub-orgs mapped to the org
+                self.fields['sub_org'].queryset = SubOrg1.objects.filter(org=user.role.suborg.org)
+            elif user.role and user.role.role_type == 'sub-admin':
+                # If user role is sub-admin, show only sub-orgs mapped to him
+                self.fields['sub_org'].queryset = SubOrg1.objects.filter(id=user.role.suborg.id)
 
 
 class SeriesListSerializer(serializers.ModelSerializer):
