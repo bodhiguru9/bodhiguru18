@@ -1,7 +1,8 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from orgss.views import OrgViewSet, SubOrgViewSet, RoleViewSet, OrgAdminViewSet, WeightageViewSet, org_expiry_view
+from orgss.views import (OrgViewSet, SubOrgViewSet, RoleViewSet, OrgAdminViewSet, WeightageViewSet,
+                            org_expiry_view, RoleChoicesAPIView)
 
 router = DefaultRouter()
 
@@ -15,5 +16,7 @@ router.register(r'weightages', WeightageViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('org-expiry/', org_expiry_view, name='org-expiry'), 
+    path('role-choices/', RoleChoicesAPIView.as_view(), name='role-choices'),
+    
     
 ]

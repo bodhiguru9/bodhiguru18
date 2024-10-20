@@ -9,7 +9,7 @@ from rest_framework_tracking.mixins import LoggingMixin
 from orgss.models import Org, SubOrg1, Role1, Weightage
 from orgss.serializers import (OrgSerializer, OrgListSerializer, OrgAdminSerializer, SubOrgAdminSerializer,
                                 SubOrgSerializer, SubOrgListSerializer, RoleSerializer, RoleListSerializer, 
-                               WeightageSerializer, OrgExpirySerializer )
+                               WeightageSerializer, OrgExpirySerializer, RoleChoiceSerializer )
 
 from rest_framework import viewsets
 from .permissions import IsAdminOrReadOnly, IsSubAdminOrReadOnly, IsAdminOrSubAdmin
@@ -171,3 +171,9 @@ def org_expiry_view(request):
     orgs = Org.objects.all()
     serializer = OrgExpirySerializer(orgs, many=True)
     return Response(serializer.data)
+
+class RoleChoicesAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+        role_choices = Role1.ROLE_CHOICES  # Get the ROLE_CHOICES from the model
+        serializer = RoleChoiceSerializer(role_choices, many=True)
+        return Response(serializer.data)    

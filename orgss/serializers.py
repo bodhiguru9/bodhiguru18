@@ -85,3 +85,13 @@ class OrgExpirySerializer(serializers.ModelSerializer):
         model = Org
         fields = ['name', 'expires_on', 'is_active'] 
 
+class RoleChoiceSerializer(serializers.Serializer):
+    value = serializers.CharField()
+    display = serializers.CharField()
+
+    def to_representation(self, instance):
+        return {
+            'value': instance[0],  # actual value like 'employee', 'admin'
+            'display': instance[1],  # human-readable form like 'Employee', 'Admin'
+        }        
+
