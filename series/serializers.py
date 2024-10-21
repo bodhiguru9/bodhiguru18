@@ -42,7 +42,7 @@ class SeriesSerializer(serializers.ModelSerializer):
             print("Sub-orgs available for the logged-in user:")
             for sub_org in self.fields['sub_org'].queryset:
                 print(f"- {sub_org.name} (ID: {sub_org.id})")
-"""
+
 
 class SeriesSerializer(serializers.ModelSerializer):
     sub_org = serializers.SlugRelatedField(
@@ -68,7 +68,34 @@ class SeriesSerializer(serializers.ModelSerializer):
             elif user.role and user.role.role_type == 'sub-admin':
                 # If user role is sub-admin, show only sub-orgs mapped to him
                 self.fields['sub_org'].queryset = SubOrg1.objects.filter(id=user.role.suborg.id)
-        
+"""
+class SeriesSerializer(serializers.ModelSerializer):
+    sub_org = serializers.SlugRelatedField(
+        slug_field='name',  # Displays SubOrg's name in the dropdown
+        queryset=SubOrg1.objects.none()  # Start with an empty queryset
+    )
+
+    class Meta:
+        model = Series
+        fields = ['id', 'name', 'description', 'thumbnail', 'sub_org']
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)  # Get the user from the context
+        super(SeriesSerializer, self).__init__(*args, **kwargs)
+
+        # Check if user exists and print it for debugging
+        if user:
+            print(f"User in serializer: {user}")
+            if user.is_admin:
+                self.fields['sub_org'].queryset = SubOrg1.objects.filter(org=user.org)
+            elif user.role and user.role.role_type == 'admin':
+                self.fields['sub_org'].queryset = SubOrg1.objects.filter(org=user.role.suborg.org)
+            elif user.role and user.role.role_type == 'sub-admin':
+                self.fields['sub_org'].queryset = SubOrg1.objects.filter(id=user.role.suborg.id)
+        else:
+            print("User is not passed to the serializer!")
+
+
 
 class SeriesListSerializer(serializers.ModelSerializer):
     sub_org = serializers.SerializerMethodField()

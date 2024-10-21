@@ -82,7 +82,7 @@ class SeriesViewSet(viewsets.ModelViewSet):
         context = super().get_serializer_context()
         context['user'] = self.request.user
         return context
-"""
+
 
 class SeriesViewSet(viewsets.ModelViewSet):
     queryset = Series.objects.all()
@@ -113,6 +113,43 @@ class SeriesViewSet(viewsets.ModelViewSet):
         context = super().get_serializer_context()
         context['user'] = self.request.user
         return context
+"""
+
+class SeriesViewSet(viewsets.ModelViewSet):
+    queryset = Series.objects.all()
+    serializer_class = SeriesSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        
+        if user.is_admin:
+            # Admin can see all series under their org
+            return Series.objects.filter(sub_org__org=user.org)
+        
+        user_role = user.role  # This can return None if not set
+        
+        if user_role and user_role.role_type == 'admin':
+            # Admins can see all series under their org
+            return Series.objects.filter(sub_org__org=user_role.suborg.org)
+        
+        elif user_role and user_role.role_type == 'sub-admin':
+            # Sub-admins can only see series linked to their sub-org
+            return Series.objects.filter(sub_org=user_role.suborg)
+        
+        return Series.objects.none()
+
+    def get_serializer_context(self):
+        # Add the user to the context
+        context = super().get_serializer_context()
+        context['user'] = self.request.user
+        return context
+
+    def get_serializer(self, *args, **kwargs):
+        # Explicitly pass the user to the serializer
+        kwargs['user'] = self.request.user
+        return super().get_serializer(*args, **kwargs)
+
 
 
 class SeasonViewSet(viewsets.ModelViewSet):

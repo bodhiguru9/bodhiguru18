@@ -37,10 +37,14 @@ class SubOrgListSerializer(serializers.ModelSerializer):
 
 class RoleSerializer(serializers.ModelSerializer):
     suborg = serializers.SlugRelatedField(queryset=SubOrg1.objects.all(), slug_field='name')
+    role_with_suborg = serializers.SerializerMethodField()
 
     class Meta:
         model = Role1
-        fields = ['id', 'role_type', 'suborg']
+        fields = ['id', 'role_type', 'suborg', 'role_with_suborg']
+
+    def get_role_with_suborg(self, obj):
+        return f"{obj.role_type}: {obj.suborg.name}"
         
 class RoleListSerializer(serializers.ModelSerializer):
     suborg = serializers.SerializerMethodField()
