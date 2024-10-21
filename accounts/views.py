@@ -6,7 +6,8 @@ from accounts.serializers import (SignUpSerializer, UserSerializer, LoginSeriali
                                     UserProfileSerializer1, UserProfileSerializer, AccountSerializer,
                                     CSVUploadSerializer, CSVDownloadSerializer, AccountORgSerializer,
                                     AccountAdminSerializer, AccountRegisterSerializer,
-                                    PasswordResetRequestSerializer, PasswordResetConfirmSerializer)
+                                    PasswordResetRequestSerializer, PasswordResetConfirmSerializer,
+                                    AccountUpdateSerializer)
 from accounts.models import Account, Profile, EmailConfirmationToken, UserProfile
 from django.contrib.auth.hashers import make_password
 from rest_framework import status, generics, permissions, viewsets
@@ -37,7 +38,7 @@ from rest_framework.parsers import MultiPartParser
 from .serializers import BulkUserUploadSerializer
 
 import csv
-from .permissions import IsAdminOrSubAdminOfOrg
+from .permissions import IsAdminOrSubAdminOfOrg, IsAdminOrHasRoleAdmin
 
 from django.contrib.sites.shortcuts import get_current_site
 from rest_framework.status import HTTP_201_CREATED, HTTP_400_BAD_REQUEST
@@ -661,3 +662,15 @@ class PasswordResetConfirmView(APIView):
             return Response({'message': 'Password has been reset successfully.'}, status=status.HTTP_200_OK)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
+
+class UserUpdateView(generics.RetrieveUpdateAPIView):
+    """
+    Admin can update user details in their org/sub-org.
+    """
+    serializer_class = AccountUpdateSerializer
+    permission_classes = [IsAuthenticated, IsAdminOrHasRoleAdmin]
+
+    def get_queryset(self):
+        user = self.request.user
+        # Admins should only be able to update users in their own org/sub-org
+        return Account.objects.filter(org=user.org, sub_org=user.sub_org)        

@@ -3,10 +3,10 @@ from rest_framework.validators import UniqueValidator
 from accounts.models import Account, Profile, EmailConfirmationToken, UserProfile
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
-from orgss.models import Org
+from orgss.models import Org, SubOrg1, Role1
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from orgss.serializers import OrgSerializer
+from orgss.serializers import OrgSerializer, RoleSerializer
 
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.utils.encoding import force_bytes, force_str
@@ -264,3 +264,32 @@ class AccountRegisterSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
+
+class AccountUpdateSerializer(serializers.ModelSerializer):
+    sub_org = serializers.SlugRelatedField(
+        queryset=SubOrg1.objects.all(),
+        slug_field='name',
+        required=True
+    )
+    role = serializers.PrimaryKeyRelatedField(
+        queryset=Role1.objects.all(),
+        required=False
+    )
+
+    class Meta:
+        model = Account
+        fields = ['id', 'first_name', 'last_name', 'email', 'org', 'sub_org', 'role', 'is_active'] 
+        read_only_fields = ['email', 'org']
+
+    def update(self, instance, validated_data):
+        user = self.context['request'].user
+        if user.is_admin or user.role == 'admin':
+            # Allow changing sub_org and role
+            instance.sub_org = validated_data.get('sub_org', instance.sub_org)
+            instance.role = validated_data.get('role', instance.role)
+        else:
+            # Do not allow updating sub_org or role for non-admin users
+            validated_data.pop('sub_org', None)
+            validated_data.pop('role', None)
+
+        return super().update(instance, validated_data)      

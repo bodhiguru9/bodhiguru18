@@ -32,4 +32,14 @@ class IsAdminOrSubAdminOfOrg(permissions.BasePermission):
 
     def has_object_permission(self, request, view, obj):
         # Allow access only if the user is an admin of the org/sub-org
-        return obj.org == request.user.org or obj.sub_org == request.user.sub_org    
+        return obj.org == request.user.org or obj.sub_org == request.user.sub_org   
+
+class IsAdminOrHasRoleAdmin(permissions.BasePermission):
+    """
+    Custom permission to only allow admins or users with role admin to edit sub_org and role.
+    """
+
+    def has_permission(self, request, view):
+        user = request.user
+        # Allow if the user is authenticated and either is_admin is True or role is 'admin'
+        return user.is_authenticated and (user.is_admin or user.role == 'admin')         
