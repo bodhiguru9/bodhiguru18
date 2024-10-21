@@ -13,8 +13,7 @@ from series.serializers import (SeriesSerializer, SeasonSerializer, ItemSeasonSe
                                 SeasonAdminSerializer, AssessmentSeasonSerializer, AssessmentSeasonSerializer1)
 
 from rest_framework import viewsets
-from .permissions import IsAdminOrSubAdmin
-
+from .permissions import IsAdminOrSubAdmin, IsAdminOrSubAdmin1
 from zola.models import Item
 from assessments.models import Assessment
 from orgss.models import SubOrg1
@@ -299,6 +298,10 @@ class ItemSeasonRetrieveUpdateView(generics.RetrieveUpdateAPIView):
             'data': serializer.data
         }, status=status.HTTP_200_OK)
 
+
+
+
+
 class SeriesAdminViewSet(viewsets.ModelViewSet):
     serializer_class = SeriesAdminSerializer
     permission_classes = [IsAuthenticated, IsAdminOrSubAdmin]
@@ -330,7 +333,7 @@ class SeasonAdminViewSet(viewsets.ModelViewSet):
                 # Sub-admin can only see seasons in their sub-org's series
                 return Season.objects.filter(series__sub_org=role.sub_org)
         return Season.objects.none()
-
+"""
 class ItemSeasonViewSet(viewsets.ModelViewSet):
     queryset = ItemSeason.objects.all()
     serializer_class = ItemSeasonSerializer
@@ -345,6 +348,53 @@ class ItemSeasonViewSet(viewsets.ModelViewSet):
             # Sub-admins can only see item-seasons linked to their sub-org
             return ItemSeason.objects.filter(season__series__sub_org=user_role.suborg)
         return ItemSeason.objects.none()        
+"""
+
+class ItemSeasonViewSet(viewsets.ModelViewSet):
+    queryset = ItemSeason.objects.all()
+    serializer_class = ItemSeasonSerializer
+    permission_classes = [IsAuthenticated, IsAdminOrSubAdmin1]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_admin:
+            # If user has is_admin=True, allow access to all ItemSeason objects
+            return ItemSeason.objects.all()
+        
+        user_role = getattr(user, 'role', None)
+        
+        if user_role:
+            if user_role.role_type == 'admin':
+                # Admins can see all item-seasons linked to their org
+                return ItemSeason.objects.filter(season__series__sub_org__org=user_role.suborg.org)
+            elif user_role.role_type == 'sub-admin':
+                # Sub-admins can only see item-seasons linked to their sub-org
+                return ItemSeason.objects.filter(season__series__sub_org=user_role.suborg)
+        
+        # If the user has no role or unauthorized role
+        return ItemSeason.objects.none()
+
+    def create(self, request, *args, **kwargs):
+        user = request.user
+        # Check if user has the correct permissions to create a mapping
+        if not user.is_admin and not getattr(user, 'role', None):
+            return Response({
+                'status': 'failure',
+                'message': 'You do not have permission to perform this action'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        user = request.user
+        # Check if user has the correct permissions to update a mapping
+        if not user.is_admin and not getattr(user, 'role', None):
+            return Response({
+                'status': 'failure',
+                'message': 'You do not have permission to perform this action'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        return super().update(request, *args, **kwargs)
 
 
 class AssessmentSeasonCreateView(generics.CreateAPIView):
