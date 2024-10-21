@@ -333,22 +333,7 @@ class SeasonAdminViewSet(viewsets.ModelViewSet):
                 # Sub-admin can only see seasons in their sub-org's series
                 return Season.objects.filter(series__sub_org=role.sub_org)
         return Season.objects.none()
-"""
-class ItemSeasonViewSet(viewsets.ModelViewSet):
-    queryset = ItemSeason.objects.all()
-    serializer_class = ItemSeasonSerializer
-    permission_classes = [IsAuthenticated, IsAdminOrSubAdmin]
 
-    def get_queryset(self):
-        user_role = self.request.user.role
-        if user_role.role_type == 'admin':
-            # Admins can see all item-seasons linked to their org
-            return ItemSeason.objects.filter(season__series__sub_org__org=user_role.suborg.org)
-        elif user_role.role_type == 'sub-admin':
-            # Sub-admins can only see item-seasons linked to their sub-org
-            return ItemSeason.objects.filter(season__series__sub_org=user_role.suborg)
-        return ItemSeason.objects.none()        
-"""
 
 class ItemSeasonViewSet(viewsets.ModelViewSet):
     queryset = ItemSeason.objects.all()

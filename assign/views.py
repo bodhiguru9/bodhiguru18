@@ -15,8 +15,9 @@ from series.models import Seasons, AssessmentSeason, ItemSeason, Series
 
 from orgss.models import Role1
 from accounts.models import Account
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 
 from series.permissions import IsAdminOrSubAdmin
 
@@ -370,7 +371,7 @@ class AssignSeriesUserViewSet(viewsets.ModelViewSet):
             # Sub-admins can see assignments linked to their sub-org only
             return SeriesAssignUser.objects.filter(series__sub_org=user_role.suborg)
         return SeriesAssignUser.objects.none()        
-"""
+
 
 class AssignSeriesUserViewSet(viewsets.ModelViewSet):
     queryset = SeriesAssignUser.objects.all()
@@ -408,3 +409,60 @@ class AssignSeriesUserViewSet(viewsets.ModelViewSet):
         except Exception as e:
             # Handle email sending failure
             print(f"Failed to send email to {user_email}: {e}")
+"""
+
+class AssignSeriesUserViewSet(viewsets.ModelViewSet):
+    queryset = SeriesAssignUser.objects.all()
+    serializer_class = SeriesAssignUserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user_role = self.request.user.role
+        
+        if self.request.user.is_admin:
+            # Super admins can see all assignments
+            return SeriesAssignUser.objects.all()
+        elif user_role.role_type == 'admin':
+            # Admins can see all assignments in their org
+            return SeriesAssignUser.objects.filter(series__sub_org__org=user_role.suborg.org)
+        elif user_role.role_type == 'sub-admin':
+            # Sub-admins can see assignments linked to their sub-org only
+            return SeriesAssignUser.objects.filter(series__sub_org=user_role.suborg)
+        
+        return SeriesAssignUser.objects.none()
+
+    def perform_create(self, serializer):
+        # Admins can assign series to any user, even without a role
+        if self.request.user.is_admin:
+            instance = serializer.save()
+        else:
+            user_role = self.request.user.role
+
+            if user_role and user_role.role_type in ['admin', 'sub-admin']:
+                # Ensure the user being assigned is part of the same org or sub-org
+                if user_role.role_type == 'admin':
+                    if serializer.validated_data['series'].sub_org.org != user_role.suborg.org:
+                        raise PermissionDenied("You can only assign users within your organization.")
+                elif user_role.role_type == 'sub-admin':
+                    if serializer.validated_data['series'].sub_org != user_role.suborg:
+                        raise PermissionDenied("You can only assign users within your sub-organization.")
+                instance = serializer.save()
+            else:
+                raise PermissionDenied("You don't have the necessary permissions to assign series.")
+
+        # Send the assignment email
+        self.send_assignment_email(instance)
+
+    def send_assignment_email(self, instance):
+        user_email = instance.user.email
+        series_name = instance.series.name
+
+        subject = f"Series Assignment: {series_name}"
+        message = f"Dear {instance.user.first_name},\n\nYou have been assigned to the series: {series_name}.\n\nYou can access your assessment at https://user1.bodhiguruapp.com.\n\nPlease log in using your email id to start your series. Your password is 123Zola$$Ts.\n\nBest regards,\nTeam Bodhiguru"
+        
+        from_email = settings.DEFAULT_FROM_EMAIL
+        
+        try:
+            send_mail(subject, message, from_email, [user_email], fail_silently=False)
+        except Exception as e:
+            print(f"Failed to send email to {user_email}: {e}")            
