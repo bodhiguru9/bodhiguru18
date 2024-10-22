@@ -356,60 +356,6 @@ class AssignSeriesByRoleViewSet(ViewSet):
             "message": "No users found with this role"
         }
         return Response(response, status=status.HTTP_200_OK)
-"""
-class AssignSeriesUserViewSet(viewsets.ModelViewSet):
-    queryset = SeriesAssignUser.objects.all()
-    serializer_class = SeriesAssignUserSerializer
-    permission_classes = [IsAuthenticated, IsAdminOrSubAdmin]
-
-    def get_queryset(self):
-        user_role = self.request.user.role
-        if user_role.role_type == 'admin':
-            # Admins can see all assignments in their org
-            return SeriesAssignUser.objects.filter(series__sub_org__org=user_role.suborg.org)
-        elif user_role.role_type == 'sub-admin':
-            # Sub-admins can see assignments linked to their sub-org only
-            return SeriesAssignUser.objects.filter(series__sub_org=user_role.suborg)
-        return SeriesAssignUser.objects.none()        
-
-
-class AssignSeriesUserViewSet(viewsets.ModelViewSet):
-    queryset = SeriesAssignUser.objects.all()
-    serializer_class = SeriesAssignUserSerializer
-    permission_classes = [IsAuthenticated, IsAdminOrSubAdmin]
-
-    def get_queryset(self):
-        user_role = self.request.user.role
-        if user_role.role_type == 'admin':
-            # Admins can see all assignments in their org
-            return SeriesAssignUser.objects.filter(series__sub_org__org=user_role.suborg.org)
-        elif user_role.role_type == 'sub-admin':
-            # Sub-admins can see assignments linked to their sub-org only
-            return SeriesAssignUser.objects.filter(series__sub_org=user_role.suborg)
-        return SeriesAssignUser.objects.none()
-
-    def perform_create(self, serializer):
-        # Save the new assignment
-        instance = serializer.save()
-
-        # Send email to the user
-        self.send_assignment_email(instance)
-
-    def send_assignment_email(self, instance):
-        user_email = instance.user.email  # Assuming the user has an email field
-        series_name = instance.series.name  # Assuming the series has a name field
-
-        subject = f"Series Assignment: {series_name}"
-        message = f"Dear {instance.user.first_name},\n\nYou have been assigned to the series: {series_name}.\n\nYou can access your assessment at https://user1.bodhiguruapp.com.\n\nPlease log in using your email id to start your series. Your password is 123Zola$$Ts.\n\nBest regards,\nTeam Bodhiguru"
-        
-        from_email = settings.DEFAULT_FROM_EMAIL  # Ensure DEFAULT_FROM_EMAIL is set in your settings.py
-        
-        try:
-            send_mail(subject, message, from_email, [user_email], fail_silently=False)
-        except Exception as e:
-            # Handle email sending failure
-            print(f"Failed to send email to {user_email}: {e}")
-"""
 
 class AssignSeriesUserViewSet(viewsets.ModelViewSet):
     queryset = SeriesAssignUser.objects.all()
