@@ -422,6 +422,32 @@ class ItemProcessingViewSet(LoggingMixin, ViewSet):
                         negative_word_weight += negative_word.weight
                 score += competency_weightage*(power_word_count*power_word_weight - negative_word_count*negative_word_weight)
         
+        user_power_words = list(set(user_power_words))
+        user_weak_words = list(set(user_weak_words))
+
+        # Check if both user_power_words and user_weak_words are empty
+        if not user_power_words and not user_weak_words:
+            score = 0
+        else:
+            # Proceed with score calculation logic when words are detected
+            instance.item_emotion = instance.item_emotion + ',' + emotion_str
+            instance.item_answercount += 1
+            processing_thread = threading.Thread(
+                target=process_user_data,
+                args=(userprofile_instance, user_power_words, user_weak_words, score, competencys, emotion_str)
+            )
+            processing_thread.start()
+
+            words = string_to_words(
+                request.user.username,
+                emotion_str,
+                power_word_list,
+                negative_word_list
+            )
+
+        
+        
+        """
         instance.item_emotion = instance.item_emotion + ',' + emotion_str
         user_power_words = list(set(user_power_words))
         user_weak_words = list(set(user_weak_words))
@@ -438,6 +464,7 @@ class ItemProcessingViewSet(LoggingMixin, ViewSet):
             power_word_list,
             negative_word_list
         )
+        """
         """
         detected_power_words = [word for word in words if 'power' in detect_words(word).lower()]
         detected_weak_words = [word for word in words if 'weak' in detect_words(word).lower()]
@@ -671,95 +698,6 @@ class CompetencyAttemptAnalyticsViewSet(LoggingMixin, ViewSet):
         return Response(response, status=status.HTTP_200_OK)
 
 
-"""
-class CompetencyAttemptAnalyticsViewSet(LoggingMixin, ViewSet):
-    permission_classes = [IsAuthenticated]
-    
-    def list(self, request):
-        suborg_result = {}
-        global_result = {}
-        try:
-            current_user_profile = UserProfile.objects.get(user=request.user)
-        except UserProfile.DoesNotExist:
-            response = {
-                'status': 'Failed',
-                'message': 'User Profile does not exist'
-            }
-            return Response(response, status=status.HTTP_200_OK)
-        
-        user_competency_score = json.loads(current_user_profile.competency_score)
-        if not user_competency_score:
-            response = {
-                'status': 'Failed',
-                'message': 'No Competency Score Found, Please Attempt Your Scenario First'
-            }
-            return Response(response, status=status.HTTP_200_OK)
-        cumalative_competencies_score = {}
-        
-        for user_competency, score_str in user_competency_score.items():
-            cumalative_competencies_score[user_competency] = sum(int(score) for score in score_str.split(','))
-            
-        
-        suborg_user_profiles = UserProfile.objects.filter(
-            user__role__suborg=request.user.role.suborg
-        ).prefetch_related('user')
-
-        global_user_profiles = UserProfile.objects.all().prefetch_related('user')
-        
-        comparision = {
-            'better': 0,
-            'lower': 0,
-            'score': 0,
-            'percentile': 0,
-        }
-        
-        def get_competency_scores(user_profiles, competency_name):
-            scores = []
-            for profile in user_profiles:
-                if profile.competency_score:
-                    competency_score = json.loads(profile.competency_score)
-                    score_str = competency_score.get(competency_name, '')
-                    user_scores = [int(score) for score in score_str.split(',') if score.strip()]
-                    scores.extend(user_scores)
-            return scores
-        
-        for name, score in cumalative_competencies_score.items():
-            suborg_scores = get_competency_scores(suborg_user_profiles, name)
-            global_scores = get_competency_scores(global_user_profiles, name)
-        
-            def calculate_metrics(user_scores, current_score):
-                better_count = sum(1 for s in user_scores if s <= current_score)
-                lower_count = sum(1 for s in user_scores if s > current_score)
-                if (better_count + lower_count) > 0:
-                    percentile = (better_count / (better_count + lower_count)) * 100
-                else:
-                    percentile = 0
-                return {
-                    'better': better_count,
-                    'lower': lower_count,
-                    'score': current_score,
-                    'percentile': percentile,
-                }
-
-            suborg_result[name] = calculate_metrics(suborg_scores, score)
-            global_result[name] = calculate_metrics(global_scores, score)
-            
-        if cumalative_competencies_score is not None:
-            response = {
-                'status': 'success',
-                'message': 'Retrieved Successfully',
-                'data': {
-                    'suborg_result': suborg_result,
-                    'global_result': global_result
-                }
-            }
-        else:
-            response = {
-                'status': 'Failed',
-                'message': 'No Entry has been recorded, Attempt First To Seen Result'
-            }
-        return Response(response, status=status.HTTP_200_OK)
-"""
 
 class DownloadFiles(APIView):
     permission_classes = [AllowAny]
