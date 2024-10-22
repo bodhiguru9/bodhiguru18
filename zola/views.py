@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import F, Q, Sum, FloatField, Count
 from django.http import JsonResponse, HttpResponse
 from django.http import FileResponse, Http404
+from django.db.models import Sum
 
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
@@ -17,7 +18,7 @@ from zola.serializers import (ItemListSerializer1, ItemEmotionSerializer, ItemRe
                                 ItemLiSerializer, ItemUserSerializer, ItemCreateSerializer,
                                 ItemResultSerializer, ItemSerializer, ItemSearchSerializer,
                                 ItemLibrarySerializer, LeaderboardSerializer, ItemFilterSerializer,
-                                ItemNewSerializer)
+                                ItemNewSerializer, ItemAvailableSerializer)
 
 from zola.models import Item, ItemResult, Library_Filter_CHOICES
 from accounts.models import Account, UserProfile
@@ -1048,3 +1049,77 @@ def upload_item_view(request):
         'competencies': competencies,
         
     })    
+
+class AvailableItemsView(generics.ListAPIView):
+    serializer_class = ItemAvailableSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        user_profile = user.userprofile
+        current_level = user_profile.current_level
+
+        # Calculate the total score for the current user for all items at the current level
+        total_score = ItemResult.objects.filter(
+            user=user,
+            item__level=current_level
+        ).aggregate(total=Sum('score'))['total'] or 0
+
+        # Define score thresholds for each level
+        level_thresholds = {
+            1: 180,  # Need 180 to move to level 2
+            2: 360,  # Need 360 to move to level 3
+        }
+
+        # Check if user has enough score to access the next level
+        next_level_threshold = level_thresholds.get(current_level)
+
+        if next_level_threshold and total_score < next_level_threshold:
+            # User is not allowed to access the next level; restrict items to the current level only
+            return Item.objects.filter(
+                level=current_level,
+                itemseason__season__series__seriesassignuser__user=user,
+                itemseason__season__series__seriesassignuser__is_completed=False
+            )
+        else:
+            # If user qualifies for the next level, allow them to see items from both current and next level
+            return Item.objects.filter(
+                level__in=[current_level, current_level + 1],
+                itemseason__season__series__seriesassignuser__user=user,
+                itemseason__season__series__seriesassignuser__is_completed=False
+            )
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+
+        # Check the user's total score and display message if they can't move to the next level
+        user = request.user
+        current_level = user.userprofile.current_level
+
+        total_score = ItemResult.objects.filter(
+            user=user,
+            item__level=current_level
+        ).aggregate(total=Sum('score'))['total'] or 0
+
+        # Define level thresholds again
+        level_thresholds = {
+            1: 180,
+            2: 360,
+        }
+
+        # Calculate if user has met the threshold
+        next_level_threshold = level_thresholds.get(current_level)
+
+        if next_level_threshold and total_score < next_level_threshold:
+            message = f'Your total score is {total_score}. You need {next_level_threshold - total_score} more points to reach the next level.'
+        else:
+            message = 'You are eligible to access the next level items.'
+
+        # Add message to the response
+        return Response({
+            'items': serializer.data,
+            'message': message,
+            'current_level': current_level,
+            'total_score': total_score
+        }, status=status.HTTP_200_OK)
