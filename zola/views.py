@@ -568,6 +568,112 @@ class ItemAnalysticsViewSet(LoggingMixin, ViewSet):
 
 class CompetencyAttemptAnalyticsViewSet(LoggingMixin, ViewSet):
     permission_classes = [IsAuthenticated]
+
+    def list(self, request):
+        suborg_result = {}
+        global_result = {}
+        try:
+            current_user_profile = UserProfile.objects.get(user=request.user)
+        except UserProfile.DoesNotExist:
+            response = {
+                'status': 'Failed',
+                'message': 'User Profile does not exist'
+            }
+            return Response(response, status=status.HTTP_200_OK)
+
+        # Check if competency_score exists and is valid JSON
+        if not current_user_profile.competency_score:
+            response = {
+                'status': 'Failed',
+                'message': 'No Competency Score Found'
+            }
+            return Response(response, status=status.HTTP_200_OK)
+
+        try:
+            user_competency_score = json.loads(current_user_profile.competency_score)
+        except (json.JSONDecodeError, TypeError):
+            response = {
+                'status': 'Failed',
+                'message': 'Invalid Competency Score Format'
+            }
+            return Response(response, status=status.HTTP_200_OK)
+
+        if not user_competency_score:
+            response = {
+                'status': 'Failed',
+                'message': 'No Competency Score Found, Please Attempt Your Scenario First'
+            }
+            return Response(response, status=status.HTTP_200_OK)
+
+        cumalative_competencies_score = {}
+
+        for user_competency, score_str in user_competency_score.items():
+            cumalative_competencies_score[user_competency] = sum(int(score) for score in score_str.split(','))
+
+        suborg_user_profiles = UserProfile.objects.filter(
+            user__role__suborg=request.user.role.suborg
+        ).prefetch_related('user')
+
+        global_user_profiles = UserProfile.objects.all().prefetch_related('user')
+
+        comparision = {
+            'better': 0,
+            'lower': 0,
+            'score': 0,
+            'percentile': 0,
+        }
+
+        def get_competency_scores(user_profiles, competency_name):
+            scores = []
+            for profile in user_profiles:
+                if profile.competency_score:
+                    competency_score = json.loads(profile.competency_score)
+                    score_str = competency_score.get(competency_name, '')
+                    user_scores = [int(score) for score in score_str.split(',') if score.strip()]
+                    scores.extend(user_scores)
+            return scores
+
+        for name, score in cumalative_competencies_score.items():
+            suborg_scores = get_competency_scores(suborg_user_profiles, name)
+            global_scores = get_competency_scores(global_user_profiles, name)
+
+            def calculate_metrics(user_scores, current_score):
+                better_count = sum(1 for s in user_scores if s <= current_score)
+                lower_count = sum(1 for s in user_scores if s > current_score)
+                if (better_count + lower_count) > 0:
+                    percentile = (better_count / (better_count + lower_count)) * 100
+                else:
+                    percentile = 0
+                return {
+                    'better': better_count,
+                    'lower': lower_count,
+                    'score': current_score,
+                    'percentile': percentile,
+                }
+
+            suborg_result[name] = calculate_metrics(suborg_scores, score)
+            global_result[name] = calculate_metrics(global_scores, score)
+
+        if cumalative_competencies_score is not None:
+            response = {
+                'status': 'success',
+                'message': 'Retrieved Successfully',
+                'data': {
+                    'suborg_result': suborg_result,
+                    'global_result': global_result
+                }
+            }
+        else:
+            response = {
+                'status': 'Failed',
+                'message': 'No Entry has been recorded, Attempt First To See Results'
+            }
+        return Response(response, status=status.HTTP_200_OK)
+
+
+"""
+class CompetencyAttemptAnalyticsViewSet(LoggingMixin, ViewSet):
+    permission_classes = [IsAuthenticated]
     
     def list(self, request):
         suborg_result = {}
@@ -653,6 +759,7 @@ class CompetencyAttemptAnalyticsViewSet(LoggingMixin, ViewSet):
                 'message': 'No Entry has been recorded, Attempt First To Seen Result'
             }
         return Response(response, status=status.HTTP_200_OK)
+"""
 
 class DownloadFiles(APIView):
     permission_classes = [AllowAny]
