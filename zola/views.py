@@ -1022,7 +1022,7 @@ class ItemFilterView(generics.ListAPIView):
 
         # Filter by library_filter (case-insensitive)
         if library_filter:
-            queryset = queryset.filter(library_filter__iexact=library_filter)
+            queryset = queryset.filter(library_filter__name__iexact=library_filter)
 
         # Filter by tags (comma-separated values, case-insensitive)
         if tags:
@@ -1032,9 +1032,11 @@ class ItemFilterView(generics.ListAPIView):
 
         # Filter by competency
         if competency_id:
-            queryset = queryset.filter(competency__id=competency_id)
+            queryset = queryset.filter(competencys__id=competency_id)
 
         return queryset
+
+
 
 class ItemCreateAPIView(generics.CreateAPIView):
     queryset = Item.objects.all()
