@@ -377,4 +377,13 @@ class AssessmentSubmissionSerializer(serializers.Serializer):
             result=total_score
         )
 
-        return result        
+        return result  
+
+
+class UserAssessmentResultSerializer(serializers.ModelSerializer):
+    user_email = serializers.EmailField(source='user.email', read_only=True)
+    assessment_name = serializers.CharField(source='assessment.assessment_type.name', read_only=True)
+
+    class Meta:
+        model = AssessmentResult
+        fields = ['user_email', 'assessment_name', 'result', 'created_at']              

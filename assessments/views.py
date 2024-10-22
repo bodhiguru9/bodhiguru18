@@ -10,7 +10,8 @@ from users.models import UserRightsMapping
 
 from assessments.serializers import (AssessmentSerializer, AssessmentResultSerializer, AssessmentTypeSerializer,
                                     QuestionSerializer, AssessmentResultSerializer, AssessmentSubmissionSerializer,
-                                    AssessmentQuestionMappingSerializer, AssessmentSerializer1)
+                                    AssessmentQuestionMappingSerializer, AssessmentSerializer1,
+                                    UserAssessmentResultSerializer)
 
 from datetime import datetime
 
@@ -405,12 +406,13 @@ class AssessmentResultListView(generics.ListAPIView):
         return queryset.order_by('-result')
 
 class UserAssessmentResultListView(generics.ListAPIView):
-    serializer_class = AssessmentResultSerializer
+    serializer_class = UserAssessmentResultSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = None  # Disable pagination for this view
 
     def get_queryset(self):
-        user = self.request.user  # Get the logged-in user
-        return AssessmentResult.objects.filter(user=user) 
+        user = self.request.user
+        return AssessmentResult.objects.filter(user=user)
 
 
 class AssessmentTypeListCreateView(APIView):
