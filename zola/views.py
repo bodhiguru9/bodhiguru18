@@ -1074,20 +1074,20 @@ class AvailableItemsView(generics.ListAPIView):
         # Check if user has enough score to access the next level
         next_level_threshold = level_thresholds.get(current_level)
 
+        # Create the level range based on the user's current level
         if next_level_threshold and total_score < next_level_threshold:
-            # User is not allowed to access the next level; restrict items to the current level only
-            return Item.objects.filter(
-                level=current_level,
-                itemseason__season__series__seriesassignuser__user=user,
-                itemseason__season__series__seriesassignuser__is_completed=False
-            )
+            # User is restricted to their current level and all previous levels
+            level_range = list(range(1, current_level + 1))
         else:
-            # If user qualifies for the next level, allow them to see items from both current and next level
-            return Item.objects.filter(
-                level__in=[current_level, current_level + 1],
-                itemseason__season__series__seriesassignuser__user=user,
-                itemseason__season__series__seriesassignuser__is_completed=False
-            )
+            # User can access the current level, previous levels, and the next level
+            level_range = list(range(1, current_level + 2))
+
+        # Return items that belong to the levels within the calculated level range
+        return Item.objects.filter(
+            level__in=level_range,
+            itemseason__season__series__seriesassignuser__user=user,
+            itemseason__season__series__seriesassignuser__is_completed=False
+        )
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
