@@ -17,6 +17,13 @@ Library_Filter_CHOICES = [
         
     ]
 
+class LibraryFilter(models.Model):
+    def __str__(self):
+        return self.name
+
+    name = models.CharField(max_length= 250)    
+
+
 class Item(models.Model):
     def __str__(self):
         return self.item_name
