@@ -117,4 +117,14 @@ class ItemNewSerializer(serializers.ModelSerializer):
 class ItemAvailableSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
-        fields = ['id', 'item_name', 'item_description', 'level']                              
+        fields = ['id', 'item_name', 'item_description', 'level']        
+
+class ItemResultUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ItemResult
+        fields = ['item', 'score', 'created_at']
+
+    def create(self, validated_data):
+        # Call the default create method
+        item_result = super().create(validated_data)
+        return item_result                              

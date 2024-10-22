@@ -18,7 +18,7 @@ from zola.serializers import (ItemListSerializer1, ItemEmotionSerializer, ItemRe
                                 ItemLiSerializer, ItemUserSerializer, ItemCreateSerializer,
                                 ItemResultSerializer, ItemSerializer, ItemSearchSerializer,
                                 ItemLibrarySerializer, LeaderboardSerializer, ItemFilterSerializer,
-                                ItemNewSerializer, ItemAvailableSerializer)
+                                ItemNewSerializer, ItemAvailableSerializer, ItemResultUpdateSerializer)
 
 from zola.models import Item, ItemResult, Library_Filter_CHOICES
 from accounts.models import Account, UserProfile
@@ -1123,3 +1123,21 @@ class AvailableItemsView(generics.ListAPIView):
             'current_level': current_level,
             'total_score': total_score
         }, status=status.HTTP_200_OK)
+
+class ItemResultCreateView(generics.CreateAPIView):
+    queryset = ItemResult.objects.all()
+    serializer_class = ItemResultUpdateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        # Save the logged-in user as the user for the item result
+        serializer.save(user=self.request.user)
+
+class ItemResultListView(generics.ListAPIView):
+    queryset = ItemResult.objects.all()
+    serializer_class = ItemResultUpdateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Filter to show only the logged-in user's item results
+        return ItemResult.objects.filter(user=self.request.user)        
