@@ -1053,7 +1053,8 @@ def upload_item_view(request):
     })    
 
 class AvailableItemsView(generics.ListAPIView):
-    serializer_class = ItemAvailableSerializer
+    #serializer_class = ItemAvailableSerializer
+    serializer_class = ItemSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
