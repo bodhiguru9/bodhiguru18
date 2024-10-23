@@ -1171,6 +1171,7 @@ class LibraryFilterItemCountView(APIView):
         return Response(response_data, status=status.HTTP_200_OK)
 
 # API to download items mapped to each library filter as CSV
+@permission_classes([AllowAny])
 class DownloadLibraryItemsCSVView(APIView):
     def get(self, request, *args, **kwargs):
         library_filters = LibraryFilter.objects.all()
