@@ -18,7 +18,8 @@ from zola.serializers import (ItemListSerializer1, ItemEmotionSerializer, ItemRe
                                 ItemLiSerializer, ItemUserSerializer, ItemCreateSerializer,
                                 ItemResultSerializer, ItemSerializer, ItemSearchSerializer,
                                 ItemLibrarySerializer, LeaderboardSerializer, ItemFilterSerializer,
-                                ItemNewSerializer, ItemAvailableSerializer, ItemResultUpdateSerializer)
+                                ItemNewSerializer, ItemAvailableSerializer, ItemResultUpdateSerializer,
+                                ItemAvailableSerializer1)
 
 from zola.models import Item, ItemResult, Library_Filter_CHOICES
 from accounts.models import Account, UserProfile
@@ -1053,8 +1054,8 @@ def upload_item_view(request):
     })    
 
 class AvailableItemsView(generics.ListAPIView):
-    #serializer_class = ItemAvailableSerializer
-    serializer_class = ItemSerializer
+    serializer_class = ItemAvailableSerializer1
+    #serializer_class = ItemSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):

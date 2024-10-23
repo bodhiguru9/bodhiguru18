@@ -127,4 +127,14 @@ class ItemResultUpdateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # Call the default create method
         item_result = super().create(validated_data)
-        return item_result                              
+        return item_result  
+
+class ItemAvailableSerializer1(serializers.ModelSerializer):
+    competencys = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Item
+        fields = '__all__'
+
+    def get_competencys(self, obj):
+        return obj.get_competencys_as_string()                                    
