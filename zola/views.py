@@ -19,9 +19,9 @@ from zola.serializers import (ItemListSerializer1, ItemEmotionSerializer, ItemRe
                                 ItemResultSerializer, ItemSerializer, ItemSearchSerializer,
                                 ItemLibrarySerializer, LeaderboardSerializer, ItemFilterSerializer,
                                 ItemNewSerializer, ItemAvailableSerializer, ItemResultUpdateSerializer,
-                                ItemAvailableSerializer1)
+                                ItemAvailableSerializer1, LibraryFilterSerializer)
 
-from zola.models import Item, ItemResult, Library_Filter_CHOICES
+from zola.models import Item, ItemResult, Library_Filter_CHOICES, LibraryFilter
 from accounts.models import Account, UserProfile
 from orgss.models import Role1, Weightage
 from assessments.models import AssessmentResult
@@ -1144,4 +1144,55 @@ class ItemResultListView(generics.ListAPIView):
 
     def get_queryset(self):
         # Filter to show only the logged-in user's item results
-        return ItemResult.objects.filter(user=self.request.user)        
+        return ItemResult.objects.filter(user=self.request.user)     
+
+class LibraryFilterItemCountView(APIView):
+    def get(self, request, *args, **kwargs):
+        library_filters = LibraryFilter.objects.all()
+        total_item_count = 0
+        data = []
+        
+        for library_filter in library_filters:
+            items = library_filter.item_set.all()
+            item_count = items.count()
+            item_names = [item.item_name for item in items]
+            total_item_count += item_count
+            data.append({
+                'library_name': library_filter.name,
+                'item_count': item_count,
+                'item_names': item_names,
+            })
+        
+        response_data = {
+            'total_items': total_item_count,
+            'libraries': data
+        }
+        
+        return Response(response_data, status=status.HTTP_200_OK)
+
+# API to download items mapped to each library filter as CSV
+class DownloadLibraryItemsCSVView(APIView):
+    def get(self, request, *args, **kwargs):
+        library_filters = LibraryFilter.objects.all()
+        total_item_count = 0
+        
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="library_items.csv"'
+
+        writer = csv.writer(response)
+        
+        # Calculate total items
+        for library_filter in library_filters:
+            total_item_count += library_filter.item_set.count()
+
+        # Write total items count at the top
+        writer.writerow(['Total Items', total_item_count])
+        writer.writerow([])  # Empty row for spacing
+        writer.writerow(['Library Name', 'Item Count', 'Item Names'])
+
+        for library_filter in library_filters:
+            items = library_filter.item_set.all()
+            item_names = [item.item_name for item in items]
+            writer.writerow([library_filter.name, items.count(), ', '.join(item_names)])
+
+        return response

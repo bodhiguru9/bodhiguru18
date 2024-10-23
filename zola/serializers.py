@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from zola.models import Item, ItemResult
+from zola.models import Item, ItemResult, LibraryFilter
 from competency.serializers import CompetencySerializer, CompetencyListSerializer
 from competency.models import Competency
 
@@ -137,4 +137,20 @@ class ItemAvailableSerializer1(serializers.ModelSerializer):
         fields = '__all__'
 
     def get_competencys(self, obj):
-        return obj.get_competencys_as_string()                                    
+        return obj.get_competencys_as_string()   
+
+class ItemLibrarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Item
+        fields = ['item_name']
+
+class LibraryFilterSerializer(serializers.ModelSerializer):
+    items = serializers.SerializerMethodField()
+
+    class Meta:
+        model = LibraryFilter
+        fields = ['name', 'items']
+
+    def get_items(self, obj):
+        items = obj.item_set.all()
+        return ItemLibrarySerializer(items, many=True).data

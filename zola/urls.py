@@ -9,7 +9,8 @@ from zola.views import ItemProcessingViewSet, ItemAnalysticsViewSet, upload_item
 from zola.views import (LeaderBoardViewSet, CompetencyBoardViewSet, CompetencyAttemptAnalyticsViewSet,
                         SubmitScoreView, CheckLevelProgressionView, ItemSearchView, ItemLibraryAPIView,
                         LeaderboardPercentileAPIView,ItemFilterView, LibraryFilterChoicesView,
-                        ItemCreateAPIView, AvailableItemsView, ItemResultCreateView, ItemResultListView)
+                        ItemCreateAPIView, AvailableItemsView, ItemResultCreateView, ItemResultListView,
+                        LibraryFilterItemCountView, DownloadLibraryItemsCSVView)
 
 ItemViewSetRouter = DefaultRouter()
 ItemHandleViewSetRouter = DefaultRouter()
@@ -52,6 +53,8 @@ urlpatterns = [
     path('user-items/', AvailableItemsView.as_view(), name='user-items'),
     path('item-result/create/', ItemResultCreateView.as_view(), name='item-result-create'),
     path('item-result/', ItemResultListView.as_view(), name='item-result-list'),
+    path('library/items/', LibraryFilterItemCountView.as_view(), name='library-item-count'),
+    path('library/items/download/', DownloadLibraryItemsCSVView.as_view(), name='library-items-csv'),
 
 
 
