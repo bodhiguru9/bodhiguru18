@@ -139,7 +139,7 @@ class ItemAvailableSerializer1(serializers.ModelSerializer):
     def get_competencys(self, obj):
         return obj.get_competencys_as_string()   
 
-class ItemLibrarySerializer(serializers.ModelSerializer):
+class ItemLibrarySerializer1(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = ['item_name']
@@ -153,4 +153,4 @@ class LibraryFilterSerializer(serializers.ModelSerializer):
 
     def get_items(self, obj):
         items = obj.item_set.all()
-        return ItemLibrarySerializer(items, many=True).data
+        return ItemLibrarySerializer1(items, many=True).data

@@ -19,7 +19,7 @@ from zola.serializers import (ItemListSerializer1, ItemEmotionSerializer, ItemRe
                                 ItemResultSerializer, ItemSerializer, ItemSearchSerializer,
                                 ItemLibrarySerializer, LeaderboardSerializer, ItemFilterSerializer,
                                 ItemNewSerializer, ItemAvailableSerializer, ItemResultUpdateSerializer,
-                                ItemAvailableSerializer1, LibraryFilterSerializer)
+                                ItemAvailableSerializer1, LibraryFilterSerializer, ItemLibrarySerializer1)
 
 from zola.models import Item, ItemResult, Library_Filter_CHOICES, LibraryFilter
 from accounts.models import Account, UserProfile
