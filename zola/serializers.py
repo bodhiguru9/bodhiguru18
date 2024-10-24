@@ -93,15 +93,17 @@ class ItemLibrarySerializer(serializers.ModelSerializer):
 
 
 class ItemLibrarySerializer12(serializers.ModelSerializer):
+    # Custom field to return competencys as a list of dictionaries with name and id
     competencys = serializers.SerializerMethodField()
 
     class Meta:
         model = Item
-        fields = ['item_name', 'competencys', 'category', 'level']  # Specify the required fields
+        fields = ['item_name', 'competencys', 'category', 'level']  # Only show the required fields
 
-
+    # This method returns the competencies in the desired format (id and name as a string)
     def get_competencys(self, obj):
-        return obj.get_competencys_as_string()        
+        return [{'id': comp.id, 'name': comp.competency_name} for comp in obj.competencys.all()]
+             
 
 class LeaderboardSerializer(serializers.Serializer):
     user_email = serializers.CharField()
