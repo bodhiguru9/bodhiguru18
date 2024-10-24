@@ -90,9 +90,9 @@ class ItemLibrarySerializer(serializers.ModelSerializer):
         model = Item
         depth = 1
         fields = '__all__'    
-"""
 
-class ItemLibrarySerializer(serializers.ModelSerializer):
+
+class ItemLibrarySerializer12(serializers.ModelSerializer):
     competencys = serializers.SerializerMethodField()
 
     class Meta:
@@ -102,7 +102,7 @@ class ItemLibrarySerializer(serializers.ModelSerializer):
 
     def get_competencys(self, obj):
         return obj.get_competencys_as_string()        
-"""
+
 class LeaderboardSerializer(serializers.Serializer):
     user_email = serializers.CharField()
     percentile = serializers.FloatField()   

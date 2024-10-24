@@ -19,7 +19,8 @@ from zola.serializers import (ItemListSerializer1, ItemEmotionSerializer, ItemRe
                                 ItemResultSerializer, ItemSerializer, ItemSearchSerializer,
                                 ItemLibrarySerializer, LeaderboardSerializer, ItemFilterSerializer,
                                 ItemNewSerializer, ItemAvailableSerializer, ItemResultUpdateSerializer,
-                                ItemAvailableSerializer1, LibraryFilterSerializer, ItemLibrarySerializer1)
+                                ItemAvailableSerializer1, LibraryFilterSerializer, ItemLibrarySerializer1,
+                                ItemLibrarySerializer12)
 
 from zola.models import Item, ItemResult, Library_Filter_CHOICES, LibraryFilter
 from accounts.models import Account, UserProfile
@@ -892,7 +893,7 @@ class ItemSearchView(generics.ListAPIView):
 
 class ItemLibraryAPIView(generics.ListAPIView):
     queryset = Item.objects.all()  # Fetch all items from the database
-    serializer_class = ItemLibrarySerializer
+    serializer_class = ItemLibrarySerializer12
     filter_backends = [filters.SearchFilter]  # Enable searching
     search_fields = ['name', 'description', 'tags']  
 
