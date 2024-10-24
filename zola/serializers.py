@@ -82,7 +82,7 @@ class ItemSearchSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = ['id', 'item_name', 'tags', 'competencys', 'category']   
-"""
+
 class ItemLibrarySerializer(serializers.ModelSerializer):
     competencys = CompetencySerializer(many=True)
 
@@ -98,6 +98,7 @@ class ItemLibrarySerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = ['item_name', 'competencys', 'category', 'level']  # Specify the required fields
+"""
 
     def get_competencys(self, obj):
         return obj.get_competencys_as_string()        
